@@ -1,0 +1,21 @@
+stages:
+  - test
+  - deploy
+
+custom-tests:
+  stage: test
+  image: none
+  script:
+    - chmod +x tests/test.sh
+    - ./tests/test.sh -save
+
+deploy-prod:
+  stage: deploy
+  image: none
+  only:
+    refs:
+        - master
+  script:
+    - echo "Building docker images and start containers ..."
+    - chmod +x start-production.sh
+    - ./start-production.sh
