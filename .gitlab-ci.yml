@@ -6,6 +6,7 @@ custom-tests:
   stage: test
   image: none
   script:
+    - ls
     - chmod +x tests/test.sh
     - ./tests/test.sh -save
 
