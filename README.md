@@ -11,8 +11,9 @@ Maybe a description
 https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 
 <h2>User Story Ideas</h2>
-<p>deal with timezones</p>
+<p>deal with timezones
 https://docs.djangoproject.com/en/3.2/topics/i18n/timezones/
-
-<p>add translation</p>
+</p>
+<p>add translation
 https://docs.djangoproject.com/en/3.2/topics/i18n/translation/
+</p>
