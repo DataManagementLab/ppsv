@@ -14,3 +14,5 @@ https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 <p>deal with timezones</p>
 https://docs.djangoproject.com/en/3.2/topics/i18n/timezones/
 
+<p>add translation</p>
+https://docs.djangoproject.com/en/3.2/topics/i18n/translation/
