@@ -10,6 +10,9 @@ Maybe a description
 <p>after steps of Tutorial 2</p>
 https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 
+<h2>Open Questions</h2>
+How do you write Tests for CI?
+
 <h2>User Story Ideas</h2>
 <p>deal with timezones
 https://docs.djangoproject.com/en/3.2/topics/i18n/timezones/
