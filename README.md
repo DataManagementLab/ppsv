@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 
 <h2>Open Questions</h2>
 How do you write Tests for CI?
+What's the idea behind the collab-coursebook app structure?
+How do we interact with the VM?
 
 <h2>User Story Ideas</h2>
 <p>deal with timezones
