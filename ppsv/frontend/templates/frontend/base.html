@@ -1,0 +1,26 @@
+{% load static %}
+{% load i18n %}
+
+<html>
+    <head>
+        <title>{% block title %}  {% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    </head>
+    <body>
+
+    {# Header container #}
+    <div class="container-fluid" style="background-color: #0a3d62;padding-top:2em;padding-bottom:3em;color:#ffffff;">
+        {% include 'frontend/navbar.html' %}
+        {% block ncontent %}
+        {% endblock %}
+    </div>
+
+    {# Content container #}
+    <div class="container" style="padding-top: 2em;min-height:75vh;margin-bottom:50px;">
+        {% block content %}
+
+        {% endblock %}
+    </div>
+    </body>
+</html>

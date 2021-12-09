@@ -1,1 +1,60 @@
-<head> Hallo </head>
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}
+  Selection Page
+{% endblock title%}
+
+
+{% block content %}
+
+    <script src="{% static 'js/selection_page.js' %}"> </script>
+
+    <table class="table" id="course_table">
+        <thead>
+            <tr>
+                <th> ID </th>
+                <th> Name </th>
+                <th> Type </th>
+                <th> Max_P </th>
+                <th> CP </th>
+                <th> Selection </th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for course in courses %}
+            <tr>
+                <td> {{ course.id }}</td>
+                <td> {{ course.title }}</td>
+                <td> {{ course.type }}</td>
+                <td> {{ course.max_participants }}</td>
+                <td> {{ course.cp }}</td>
+                <td> <input class="input" type="checkbox" name="{{course.title}}" id="{{course.id}}" onclick="sendCourseInfos(this)"> </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <table class="table" name="topic_table">
+        <thead>
+            <tr>
+                <th> ID </th>
+                <th> Title </th>
+                <th> Max_P </th>
+                <th> Selection </th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for topic in topics %}
+                <tr>
+                    <td> {{ topic.id }}</td>
+                    <td> {{ topic.title }}</td>
+                    <td> {{ topic.max_participants }}</td>
+                    <td> <input class="input" type="checkbox">  </td>
+                </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock content %}
