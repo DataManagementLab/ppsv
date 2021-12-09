@@ -6,7 +6,7 @@ Structure
 - [ ] Are there any complex modules that can be broken down into smaller chunks?
 - [ ] Can a code be replaced by standard library calls?
 - [ ] Are there any leftover stubs or test routines in the code?
-- [ ] Are there any uncalled or unneeded procedures or any unreachable code or otherwise unsued items?
+- [ ] Are there any uncalled or unneeded procedures or any unreachable code or otherwise unsued items (e.g. variables)?
 - [ ] Are there any blocks of repeated code that could be condensed into a single procedure?
 - [ ] Are symbolics used rather than “magic number” constants or string constants?
 - [ ] Are all variables properly defined with meaningful, consistent, and clear names?
