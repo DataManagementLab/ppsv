@@ -40,7 +40,7 @@ msgstr "Beschreibung"
 
 #: .\models.py:24 .\models.py:72
 msgid "maximum Participants"
-msgstr "maximale Teilnehmerzahl"
+msgstr "maximale Teilnehmeranzahl"
 
 #: .\models.py:35
 msgid "category"
