@@ -6,7 +6,7 @@ from django.utils import timezone
 
 
 class Course(models.Model):
-    name = models.CharField(max_length=200)
+    title = models.CharField(max_length=200)
 
     # maybe we need more choices
     SEMINAR = 'SE'
