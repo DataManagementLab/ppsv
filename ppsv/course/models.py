@@ -111,10 +111,12 @@ class Student(models.Model):
 
 
 class Group(models.Model):
-    students = models.ManyToManyField(Student, verbose_name=_("student"))
+    # adding this as a primary key would require DB reset
+    # group_nr = models.IntegerField(primary_key=True, verbose_name=_("group Nr"))
+    students = models.ManyToManyField(Student, verbose_name=_("students"))
     size = models.IntegerField(verbose_name=_("group Size"), default=1,
                                validators=[MaxValueValidator(99), MinValueValidator(1)])
-    assignments = models.ManyToManyField(Topic, verbose_name=_("topic"), blank=True)
+    assignments = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
 
     class Meta:
         """Meta options
