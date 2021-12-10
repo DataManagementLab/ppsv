@@ -1,5 +1,7 @@
 <h2>Checkliste für Codereviews</h2>
 
+<h3>Wichtig für Wartbarkeit</h3>
+
 Structure
 - [ ] Is the code well-structured, consistent in style, and consistently formatted (Pycharm conventions)?
 - [ ] Are there any uncalled or unneeded procedures or any unreachable code?
@@ -14,6 +16,10 @@ Structure
 Documentation
 - [ ] Is the code clearly and adequately documented with an easy-to-maintain commenting style?
 - [ ] Are all comments consistent with the code?
+
+<br>
+
+<h3>Nicht wichtig für Wartbarkeit, Rest der beiden Fragebögen</h3>
 
 Loops and Branches
 - [ ] Are all loops, branches, and logic constructs complete, correct, and properly nested?
