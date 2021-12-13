@@ -12,7 +12,7 @@ def selection(request):
     return render(request, template_name, args)
 
 
-def homepage(request, args):
+def homepage(request):
     template_name = 'frontend/homepage.html'
     args = {}
     return render(request, template_name, args)
