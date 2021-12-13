@@ -1,19 +1,74 @@
 {% load static %}
 {% load i18n %}
 
-<html>
+<html lang="de">
     <head>
+        <meta charset="UTF-8">
         <title>{% block title %}  {% endblock %}</title>
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
         <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     </head>
+
     <body>
 
-    {# Header container #}
-    <div class="container-fluid" style="background-color: #0a3d62;padding-top:2em;padding-bottom:3em;color:#ffffff;">
-        {% include 'frontend/navbar.html' %}
-        {% block ncontent %}
-        {% endblock %}
+    <style>
+        .navbar-btn {
+            font-weight: 400;
+            color: #FFFFFF;
+            background-color: #0C8FCC;
+            text-decoration: none;
+            font-size: 1.2em;
+            border: none;
+            outline: none;
+            padding-right:1em;
+            padding-left:1em;
+            padding-bottom:0em;
+            padding-top:0em;
+        }
+
+        .navbar-btn:hover {
+            background-color: #0a3d62;
+        }
+
+        .navbar-btn:focus {
+            outline: none;
+            background-color: #0a3d62;
+        }
+
+        .content {
+            position: relative;
+        }
+
+        .content i {
+            position: absolute;
+            top: -1em;
+            right: 0em;
+        }
+
+        .navbar-form {
+            padding:0;
+            margin:0;
+        }
+    </style>
+
+    {# Navbar container #}
+    <div name="header" class="container-fluid" style="background-color: #0a3d62;padding-top:1em;padding-bottom:1em;color:#ffffff;">
+        <h3 style="font-weight: 500" > Praktikums- & Seminarplatzvergabe </h3>
+        <div class="content">
+            <i class="fa fa-user-circle-o fa-3x" aria-hidden="true" style="align:right"> </i>
+        </div>
+    </div>
+
+    <div name="navbar" class="container-fluid" style="background-color: #0C8FCC;padding-top:0em;padding-bottom:0em;color:#ffffff;padding-left:0em;padding-right:0em;float:right" >
+            {# Navbar muss bis zur rechten Seite #}
+            <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px"> <button type="submit" class="navbar-btn"> <i class="fa fa-home fa-lg" aria-hidden="true" style="padding-bottom: 0.2em;padding-top: 0.2em"></i> </button> </form>
+            <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px"> <button type="submit" class="navbar-btn"> Übersicht </button> </form>
+            <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px"> <button type="submit" class="navbar-btn"> Deine Wahl </button> </form>
+            <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px"> <button type="submit" class="navbar-btn"> Gruppen </button> </form>
+            {# Sprache ändern #}
+            <button class="navbar-btn" style="float:right"> <i class="fa fa-globe fa-lg" aria-hidden="true" style="padding-top:0.2em;padding-bottom:0.2em;"> </i> </button>
+
     </div>
 
     {# Content container #}

@@ -15,6 +15,11 @@ Including another URLconf
 from django.urls import path
 from . import views
 
+app_name = "frontend"
+
 urlpatterns = [
-    path('selection_page/', views.selection_page),
+    path('homepage/', views.homepage, name='homepage'),
+    path('overview/', views.overview, name='overview'),
+    path('selection/', views.selection, name='selection'),
+    path('groups/', views.groups, name='groups'),
 ]

@@ -47,12 +47,12 @@
         </thead>
         <tbody>
         {% for topic in topics %}
-                <tr>
-                    <td> {{ topic.id }}</td>
-                    <td> {{ topic.title }}</td>
-                    <td> {{ topic.max_participants }}</td>
-                    <td> <input class="input" type="checkbox">  </td>
-                </tr>
+            <tr>
+                <td> {{ topic.id }}</td>
+                <td> {{ topic.title }}</td>
+                <td> {{ topic.max_participants }}</td>
+                <td> <input class="input" type="checkbox">  </td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>
