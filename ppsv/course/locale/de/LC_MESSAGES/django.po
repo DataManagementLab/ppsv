@@ -133,3 +133,8 @@ msgstr "gespeicherte Texte"
 #: .\views.py:7
 msgid "Hello, world. You're at the course view."
 msgstr "Hallo, Welt. Du bist bei der Kursansicht."
+
+#: .\models.py:64
+msgid "Dept. 20 - Computer Science"
+msgstr "FB20 Informatik"
+

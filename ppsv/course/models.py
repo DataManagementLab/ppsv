@@ -9,14 +9,12 @@ from django.utils.translation import gettext_lazy as _
 class Course(models.Model):
     title = models.CharField(max_length=200, verbose_name=_("title"))
 
-    # maybe we need more choices
-    SEMINAR = 'SE'
-    PRAKTIKUM = 'PR'
     COURSE_TYPE_CHOICES = [
-        (SEMINAR, 'Seminar'),
-        (PRAKTIKUM, 'Praktikum'),
+        ('SE', 'Seminar'),
+        ('PR', _('Internship')),
+        ('SO', _('Miscellaneous')),
     ]
-    type = models.CharField(max_length=2, choices=COURSE_TYPE_CHOICES, default=SEMINAR, verbose_name=_("type"))
+    type = models.CharField(max_length=2, choices=COURSE_TYPE_CHOICES, default='SE', verbose_name=_("type"))
 
     registration_start = models.DateTimeField(default=timezone.now, verbose_name=_("registration Start"))
     registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
@@ -25,21 +23,43 @@ class Course(models.Model):
                                            validators=[MaxValueValidator(9999), MinValueValidator(0)])
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
     # maybe we need more choices
-    OBLIGATORY = 'PF'
-    OPTIONAL = 'WA'
-    COURSE_CATEGORY_CHOICES = [
-        (OBLIGATORY, 'obligatory'),
-        (OPTIONAL, 'optional'),
-    ]
-    category = models.CharField(max_length=2, choices=COURSE_CATEGORY_CHOICES, default=OPTIONAL,
-                                verbose_name=_("category"))
+    # OBLIGATORY = 'PF'
+    # OPTIONAL = 'WA'
+    # COURSE_CATEGORY_CHOICES = [
+    #     (OBLIGATORY, 'obligatory'),
+    #     (OPTIONAL, 'optional'),
+    # ]
+    # category = models.CharField(max_length=2, choices=COURSE_CATEGORY_CHOICES, default=OPTIONAL,
+    #                             verbose_name=_("category"))
 
     # maybe we need more choices
-    INFORMATIK = 'FB20'
-    PHYSIK = 'FB05'
+    # LAW_AND_ECONOMICS = 'FB01'
+    # HISTORY_AND_SOCIAL_SCIENCES = 'FB02'
+    # HUMAN_SCIENCES = 'FB03'
+    # MATHEMATICS = 'FB04'
+    # PHYSICS = 'FB05'
+    # CHEMISTRY = 'FB07'
+    # BIOLOGY = 'FB10'
+    # MATERIALS_AND_EARTH_SCIENCES = 'FB11'
+    # CIVIL_AND_ENVIRONMENTAL_ENGINEERING = 'FB13'
+    # ARCHITECTURE = 'FB15'
+    # MECHANICAL_ENGINEERING = 'FB16'
+    # ELECTRICAL_ENGINEERING_AND_INFORMATION_TECHNOLOGY = 'FB18'
+    # COMPUTER_SCIENCE = 'FB20'
     COURSE_FACULTY_CHOICES = [
-        (INFORMATIK, 'FB20 Informatik'),
-        (PHYSIK, 'FB05 PHYSIK'),
+        ('FB01', _('Dept. 01 - Law and Economics')),
+        ('FB02', _('Dept. 02 - History and Social Sciences')),
+        ('FB03', _('Dept. 03 - Human Sciences')),
+        ('FB04', _('Dept. 04 - Mathematics')),
+        ('FB05', _('Dept. 05 – Physics')),
+        ('FB07', _('Dept. 07 - Chemistry')),
+        ('FB10', _('Dept. 10 - Biology')),
+        ('FB11', _('Dept. 11 - Materials and Earth Sciences')),
+        ('FB13', _('Dept. 13 - Civil and Environmental Engineering')),
+        ('FB15', _('Dept. 15 - Architecture')),
+        ('FB16', _('Dept. 16 - Mechanical Engineering')),
+        ('FB18', _('Dept. 18 - Electrical Engineering and Information Technology')),
+        ('FB20', _('Dept. 20 - Computer Science')),
     ]
     faculty = models.CharField(max_length=4, choices=COURSE_FACULTY_CHOICES, verbose_name=_("faculty"))
 
