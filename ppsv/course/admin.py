@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 
 from .models import Course
 from .models import Topic
@@ -9,6 +10,12 @@ from .models import TextSaves
 
 
 class CourseAdmin(admin.ModelAdmin):
+    fieldsets = [
+        (None, {'fields': ['title', 'type']}),
+        (_('Date Information'), {'fields': ['registration_start', 'registration_deadline']}),
+        (_('Course Information'), {'fields': ['description', 'cp', 'faculty', 'organizer']}),
+        (_('Participant Number'), {'fields': ['unlimited', 'max_participants']}),
+        ]
     list_display = ('title', 'type', 'registration_deadline', 'cp', 'max_participants')
     list_filter = ['registration_deadline']
     search_fields = ['title']

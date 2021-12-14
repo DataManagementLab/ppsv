@@ -1,5 +1,3 @@
-import datetime
-
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
@@ -19,8 +17,12 @@ class Course(models.Model):
     registration_start = models.DateTimeField(default=timezone.now, verbose_name=_("registration Start"))
     registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
     description = models.TextField(verbose_name=_("description"))
+
+    unlimited = models.BooleanField('unlimited Number of Participants', blank=True, default=False)
     max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
-                                           validators=[MaxValueValidator(9999), MinValueValidator(0)])
+                                           validators=[MaxValueValidator(9999), MinValueValidator(0)],
+                                           help_text="optional")
+
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
     # maybe we need more choices
     # OBLIGATORY = 'PF'
@@ -68,7 +70,9 @@ class Course(models.Model):
 
     class Meta:
         """Meta options
+
         This class handles all possible meta options that you can give to this model.
+
         :attr Meta.verbose_name: A human-readable name for the object in singular
         :type Meta.verbose_name: __proxy__
         :attr Meta.verbose_name_plural: A human-readable name for the object in plural
@@ -96,7 +100,9 @@ class Topic(models.Model):
 
     class Meta:
         """Meta options
+
         This class handles all possible meta options that you can give to this model.
+
         :attr Meta.verbose_name: A human-readable name for the object in singular
         :type Meta.verbose_name: __proxy__
         :attr Meta.verbose_name_plural: A human-readable name for the object in plural
@@ -117,7 +123,9 @@ class Student(models.Model):
 
     class Meta:
         """Meta options
+
         This class handles all possible meta options that you can give to this model.
+
         :attr Meta.verbose_name: A human-readable name for the object in singular
         :type Meta.verbose_name: __proxy__
         :attr Meta.verbose_name_plural: A human-readable name for the object in plural
@@ -140,7 +148,9 @@ class Group(models.Model):
 
     class Meta:
         """Meta options
+
         This class handles all possible meta options that you can give to this model.
+
         :attr Meta.verbose_name: A human-readable name for the object in singular
         :type Meta.verbose_name: __proxy__
         :attr Meta.verbose_name_plural: A human-readable name for the object in plural
@@ -159,7 +169,9 @@ class TopicSelection(models.Model):
 
     class Meta:
         """Meta options
+
         This class handles all possible meta options that you can give to this model.
+
         :attr Meta.verbose_name: A human-readable name for the object in singular
         :type Meta.verbose_name: __proxy__
         :attr Meta.verbose_name_plural: A human-readable name for the object in plural
@@ -176,7 +188,9 @@ class TextSaves(models.Model):
 
     class Meta:
         """Meta options
+
         This class handles all possible meta options that you can give to this model.
+
         :attr Meta.verbose_name: A human-readable name for the object in singular
         :type Meta.verbose_name: __proxy__
         :attr Meta.verbose_name_plural: A human-readable name for the object in plural
