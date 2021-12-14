@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-09 20:46+0100\n"
+"POT-Creation-Date: 2021-12-14 18:09+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,115 +18,171 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\models.py:10 .\models.py:71
+#: .\models.py:10 .\models.py:91
 msgid "title"
 msgstr "Titel"
 
-#: .\models.py:19
+#: .\models.py:14
+msgid "Internship"
+msgstr "Praktikum"
+
+#: .\models.py:15
+msgid "Miscellaneous"
+msgstr "Sonstiges"
+
+#: .\models.py:17
 msgid "type"
 msgstr "Art"
 
-#: .\models.py:21
+#: .\models.py:19
 msgid "registration Start"
 msgstr "Registrierungsbeginn"
 
-#: .\models.py:22
+#: .\models.py:20
 msgid "registration Deadline"
 msgstr "Anmeldeschluss"
 
-#: .\models.py:23 .\models.py:74
+#: .\models.py:21 .\models.py:94
 msgid "description"
 msgstr "Beschreibung"
 
-#: .\models.py:24 .\models.py:72
+#: .\models.py:22 .\models.py:92
 msgid "maximum Participants"
 msgstr "maximale Teilnehmeranzahl"
 
-#: .\models.py:35
-msgid "category"
-msgstr "Kategorie"
+#: .\models.py:50
+msgid "Dept. 01 - Law and Economics"
+msgstr "FB01 - Rechts- und Wirtschaftswissenschaften"
 
-#: .\models.py:44
+#: .\models.py:51
+msgid "Dept. 02 - History and Social Sciences"
+msgstr "FB02 - Gesellschafts- und Geschichtswissenschaften"
+
+#: .\models.py:52
+msgid "Dept. 03 - Human Sciences"
+msgstr "FB03 - Humanwissenschaften"
+
+#: .\models.py:53
+msgid "Dept. 04 - Mathematics"
+msgstr "FB04 - Mathematik"
+
+#: .\models.py:54
+msgid "Dept. 05 – Physics"
+msgstr "FB05 - Physik"
+
+#: .\models.py:55
+msgid "Dept. 07 - Chemistry"
+msgstr "FB07 - Chemie"
+
+#: .\models.py:56
+msgid "Dept. 10 - Biology"
+msgstr "FB10 - Biologie"
+
+#: .\models.py:57
+msgid "Dept. 11 - Materials and Earth Sciences"
+msgstr "FB11 - Material- und Geowissenschaften"
+
+#: .\models.py:58
+msgid "Dept. 13 - Civil and Environmental Engineering"
+msgstr "FB13 - Bau- und Umweltingenieurwissenschaften"
+
+#: .\models.py:59
+msgid "Dept. 15 - Architecture"
+msgstr "FB15 - Architektur"
+
+#: .\models.py:60
+msgid "Dept. 16 - Mechanical Engineering"
+msgstr "FB16 - Maschinenbau"
+
+#: .\models.py:61
+msgid "Dept. 18 - Electrical Engineering and Information Technology"
+msgstr "FB18 - Elektrotechnik und Informationstechnik"
+
+#: .\models.py:62
+msgid "Dept. 20 - Computer Science"
+msgstr "FB20 - Informatik"
+
+#: .\models.py:64
 msgid "faculty"
 msgstr "Fachbereich"
 
-#: .\models.py:47
+#: .\models.py:67
 msgid "organizer"
 msgstr "Veranstalter"
 
-#: .\models.py:57 .\models.py:70
+#: .\models.py:77 .\models.py:90
 msgid "course"
 msgstr "Kurs"
 
-#: .\models.py:58
+#: .\models.py:78
 msgid "courses"
 msgstr "Kurse"
 
-#: .\models.py:75
+#: .\models.py:95
 msgid "file"
 msgstr "Datei"
 
-#: .\models.py:85 .\models.py:117 .\models.py:133 .\models.py:152
+#: .\models.py:105 .\models.py:155 .\models.py:174
 msgid "topic"
 msgstr "Thema"
 
-#: .\models.py:86
+#: .\models.py:106 .\models.py:139
 msgid "topics"
 msgstr "Themen"
 
-#: .\models.py:93
+#: .\models.py:113
 msgid "student ID"
 msgstr "ID"
 
-#: .\models.py:94
+#: .\models.py:114
 msgid "first Name"
 msgstr "Vorname"
 
-#: .\models.py:95
+#: .\models.py:115
 msgid "last Name"
 msgstr "Nachname"
 
-#: .\models.py:106 .\models.py:114 .\models.py:151
+#: .\models.py:126 .\models.py:173
 msgid "student"
 msgstr "Student:in"
 
-#: .\models.py:107
+#: .\models.py:127 .\models.py:136
 msgid "students"
 msgstr "Studierende"
 
-#: .\models.py:115
+#: .\models.py:137
 msgid "group Size"
 msgstr "Gruppengröße"
 
-#: .\models.py:127 .\models.py:132
+#: .\models.py:149 .\models.py:154
 msgid "group"
 msgstr "Gruppe"
 
-#: .\models.py:128
+#: .\models.py:150
 msgid "groups"
 msgstr "Gruppen"
 
-#: .\models.py:134 .\models.py:153
+#: .\models.py:156 .\models.py:175
 msgid "motivation Text"
 msgstr "Motivationstext"
 
-#: .\models.py:135
+#: .\models.py:157
 msgid "priority"
 msgstr "Priorität"
 
-#: .\models.py:146
+#: .\models.py:168
 msgid "topic Selection"
 msgstr "Themenwahl"
 
-#: .\models.py:147
+#: .\models.py:169
 msgid "topic Selections"
 msgstr "Themenwahlen"
 
-#: .\models.py:163
+#: .\models.py:185
 msgid "text Save"
 msgstr "gespeicherter Text"
 
-#: .\models.py:164
+#: .\models.py:186
 msgid "text Saves"
 msgstr "gespeicherte Texte"
 
@@ -134,7 +190,5 @@ msgstr "gespeicherte Texte"
 msgid "Hello, world. You're at the course view."
 msgstr "Hallo, Welt. Du bist bei der Kursansicht."
 
-#: .\models.py:64
-msgid "Dept. 20 - Computer Science"
-msgstr "FB20 Informatik"
-
+#~ msgid "category"
+#~ msgstr "Kategorie"
