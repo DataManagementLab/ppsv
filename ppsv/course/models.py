@@ -45,7 +45,7 @@ class Course(models.Model):
     organizer = models.CharField(max_length=200)
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 def course_directory_path(instance, filename):
