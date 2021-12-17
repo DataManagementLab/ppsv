@@ -1,5 +1,81 @@
 {% extends 'frontend/base.html' %}
 
+{% block title %} Overview {% endblock %}
+
 {% block content %}
-<h1> Übersicht </h1>
+
+
+    <h2>
+        <div class="container-fluid" style="margin: 1em;">
+            <input type="search">
+            <i class="fa fa-search fa-1x" aria-hidden="true"></i>
+        </div>
+    </h2>
+
+    <div class="ppsv-grid-container">
+        <div class="ppsv-item">
+            <ul class="responsive-table">
+                <li class="table-header">
+                    <div class="col">Faculty</div>
+                </li>
+                {% for faculty in faculties %}
+                <form method="post" id="{{ forloop.counter0 }}" style="margin 0; padding 0;">
+                {% csrf_token %}
+                    <button class="ppsv-button" type="submit" name="{{ faculty.faculty }}" style="margin 0; padding 0;">
+                        <li class="table-row">
+                            <div class="col">  {{ faculty.faculty }}  </div>
+                        </li>
+                    </button>
+                </form>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="ppsv-item">
+            <ul class="responsive-table">
+                <li class="table-header">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Title
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Type
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Registration Start
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Registration End
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
+                        Participants
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">CP
+                    </div>
+                </li>
+                {% for course in courses %}
+                <li class="table-row">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Title">
+                        {{ course.title }}
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Type">
+                        {{ course.type }}
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="RegStart">
+                        {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="RegEnd">
+                        {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="MaxPart">
+                        {{ course.max_participants }}
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="CP">
+                        {{ course.cp }}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+<div class="container"></div>
+
 {% endblock content %}
