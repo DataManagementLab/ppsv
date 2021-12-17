@@ -1,3 +1,9 @@
+"""Purpose of this file
+
+This file describes or defines the basic structure of the PPSV.
+A class that extends the models.Model class may represent a Model
+of the platform and can be registered in admin.py.
+"""
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
@@ -5,6 +11,34 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Course(models.Model):
+    """Course
+
+    This model represents a course on the platform. A course contains a title, a type, a registration start date,
+    a registration Deadline, a description, a boolean to set if it is unlimited, the number of maximum participants,
+    the CP of the course, a faculty and an organizer.
+
+    :attr Course.title: The title of the course
+    :type Course.title: CharField
+    :attr Course.type: The type of the course
+    :type Course.type: CharField
+    :attr Course.registration_start: The start date of the registration
+    :type Course.registration_start: DateTimeField
+    :attr Course.registration_deadline: The end date of the registration
+    :type Course.registration_deadline: DateTimeField
+    :attr Course.description: The description of the course
+    :type Course.description: TextField
+    :attr Course.unlimited: if the number of participants is unlimited
+    :type Course.unlimited: BooleanField
+    :attr Course.max_participants: the maximum number of participants
+    :type Course.max_participants: IntegerField
+    :attr Course.cp: the CP of the Course
+    :type Course.cp: IntegerField
+    :attr Course.type: The faculty of the course
+    :type Course.type: CharField
+    :attr Course.type: The organizer of the course
+    :type Course.type: CharField
+
+    """
     title = models.CharField(max_length=200, verbose_name=_("title"))
 
     COURSE_TYPE_CHOICES = [
@@ -20,34 +54,10 @@ class Course(models.Model):
 
     unlimited = models.BooleanField('unlimited Number of Participants', blank=True, default=False)
     max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
-                                           validators=[MaxValueValidator(9999), MinValueValidator(0)],
-                                           help_text="optional")
+                                           validators=[MaxValueValidator(9999), MinValueValidator(0)],)
 
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
-    # maybe we need more choices
-    # OBLIGATORY = 'PF'
-    # OPTIONAL = 'WA'
-    # COURSE_CATEGORY_CHOICES = [
-    #     (OBLIGATORY, 'obligatory'),
-    #     (OPTIONAL, 'optional'),
-    # ]
-    # category = models.CharField(max_length=2, choices=COURSE_CATEGORY_CHOICES, default=OPTIONAL,
-    #                             verbose_name=_("category"))
 
-    # maybe we need more choices
-    # LAW_AND_ECONOMICS = 'FB01'
-    # HISTORY_AND_SOCIAL_SCIENCES = 'FB02'
-    # HUMAN_SCIENCES = 'FB03'
-    # MATHEMATICS = 'FB04'
-    # PHYSICS = 'FB05'
-    # CHEMISTRY = 'FB07'
-    # BIOLOGY = 'FB10'
-    # MATERIALS_AND_EARTH_SCIENCES = 'FB11'
-    # CIVIL_AND_ENVIRONMENTAL_ENGINEERING = 'FB13'
-    # ARCHITECTURE = 'FB15'
-    # MECHANICAL_ENGINEERING = 'FB16'
-    # ELECTRICAL_ENGINEERING_AND_INFORMATION_TECHNOLOGY = 'FB18'
-    # COMPUTER_SCIENCE = 'FB20'
     COURSE_FACULTY_CHOICES = [
         ('FB01', _('Dept. 01 - Law and Economics')),
         ('FB02', _('Dept. 02 - History and Social Sciences')),
@@ -82,6 +92,11 @@ class Course(models.Model):
         verbose_name_plural = _("courses")
 
     def __str__(self):
+        """String representation
+        Returns the string representation of this object.
+        :return: the string representation of this object
+        :rtype: str
+        """
         return self.title
 
 
@@ -112,6 +127,11 @@ class Topic(models.Model):
         verbose_name_plural = _("topics")
 
     def __str__(self):
+        """String representation
+        Returns the string representation of this object.
+        :return: the string representation of this object
+        :rtype: str
+        """
         return self.title
 
 
@@ -135,6 +155,11 @@ class Student(models.Model):
         verbose_name_plural = _("students")
 
     def __str__(self):
+        """String representation
+        Returns the string representation of this object.
+        :return: the string representation of this object
+        :rtype: str
+        """
         return self.tucan_id
 
 
