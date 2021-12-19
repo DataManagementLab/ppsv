@@ -8,6 +8,7 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.forms import MultiValueField
 
 
 class Course(models.Model):
@@ -106,10 +107,33 @@ def course_directory_path(instance, filename):
 
 
 class Topic(models.Model):
+    """Topic
+
+    This model represents a topic on the platform. A Topic contains a title, the maximum number of participants and a
+    description. It can contain a file.
+
+    Multiple topics can be part of one course.
+
+    :attr Topic.title: The title of the topic
+    :type Topic.title: CharField
+    :attr Topic.description: The description of the topic
+    :type Topic.description: TextField
+    :attr Topic.max_participants: The maximum number of participants
+    :type Topic.max_participants: MultiValueField
+    :attr Topic.file: A file containing information about the topic
+    :type Topic.file: FileField
+    :attr Topic.course: The course containing the topic
+    :type Topic.course: ForeignKey - Course
+
+    """
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name=_("course"))
     title = models.CharField(max_length=200, verbose_name=_("title"))
-    max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
-                                           validators=[MaxValueValidator(9999), MinValueValidator(0)])
+
+    max_participants = MultiValueField
+
+    # max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
+    #                                        validators=[MaxValueValidator(9999), MinValueValidator(0)])
+
     description = models.TextField(verbose_name=_("description"))
     file = models.FileField(verbose_name=_("file"), upload_to='course_directory_path', blank=True)
 
@@ -136,6 +160,21 @@ class Topic(models.Model):
 
 
 class Student(models.Model):
+    """Student
+
+    This model represents a student on the platform. A student contains a TUCaN-ID, a first name, a last name,
+    and an email.
+
+    :attr Student.tucan_id: The TUCaN-ID of the student
+    :type Student.tucan_id: CharField
+    :attr Student.firstname: The first name of the student
+    :type Student.firstname: CharField
+    :attr Student.lastname: The last name of the student
+    :type Student.lastname: CharField
+    :attr Student.email: The Email of the student
+    :type Student.email: EmailField
+
+    """
     tucan_id = models.CharField(max_length=8, primary_key=True, verbose_name=_("student ID"))
     firstname = models.CharField(max_length=200, verbose_name=_("first Name"))
     lastname = models.CharField(max_length=200, verbose_name=_("last Name"))
@@ -164,6 +203,19 @@ class Student(models.Model):
 
 
 class Group(models.Model):
+    """Group
+
+    This model represents a group on the platform. Multiple students can be part of a group and multiple topics can be
+    assigned to a group.
+
+    :attr Group.students: The students in a group
+    :type Group.students: ManyToManyField - Student
+    :attr Group.size: The size of a group
+    :type Group.size: IntegerField
+    :attr Group.assignments: The assignments of a group
+    :type Group.assignments: ManyToManyField - Topic
+
+    """
     # adding this as a primary key would require DB reset
     # group_nr = models.IntegerField(primary_key=True, verbose_name=_("group Nr"))
     students = models.ManyToManyField(Student, verbose_name=_("students"))
@@ -186,9 +238,24 @@ class Group(models.Model):
 
 
 class TopicSelection(models.Model):
+    """Topic Selection
+
+    This model represents a topic selection on the platform. A group can select topics. The topic selection can contain
+    a motivational text and contains a priority.
+
+    :attr TopicSelection.group: The group selecting the topic
+    :type TopicSelection.group: ForeignKey - Group
+    :attr TopicSelection.topic: The selected topic
+    :type TopicSelection.topic: ForeignKey - Topic
+    :attr TopicSelection.motivation: The motivational text of the group
+    :type TopicSelection.motivation: TextField
+    :attr TopicSelection.priority: The priority of the selected topic
+    :type TopicSelection.priority: IntegerField
+
+    """
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name=_("group"))
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name=_("topic"))
-    motivation = models.TextField(verbose_name=_("motivation Text"))
+    motivation = models.TextField(verbose_name=_("motivation Text"), blank=True)
     priority = models.IntegerField(verbose_name=_("priority"), default=1,
                                    validators=[MaxValueValidator(99), MinValueValidator(1)])
 
@@ -207,6 +274,18 @@ class TopicSelection(models.Model):
 
 
 class TextSaves(models.Model):
+    """TextSaves
+
+    This model represents a saved text on the platform. A student can save motivational texts.
+
+    :attr TextSaves.student: The student who saved the text
+    :type TextSaves.student: ForeignKey - Student
+    :attr TextSaves.topic: The topic for which the text was used
+    :type TextSaves.topic: CharField
+    :attr TextSaves.motivation: The motivational text of the group
+    :type TextSaves.motivation: TextField
+
+    """
     student = models.ForeignKey(Student, on_delete=models.CASCADE, verbose_name=_("student"))
     topic = models.CharField(max_length=200, verbose_name=_("topic"))
     motivation = models.TextField(verbose_name=_("motivation Text"))
