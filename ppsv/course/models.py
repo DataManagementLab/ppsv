@@ -119,7 +119,7 @@ class Topic(models.Model):
     :attr Topic.description: The description of the topic
     :type Topic.description: TextField
     :attr Topic.max_participants: The maximum number of participants
-    :type Topic.max_participants: MultiValueField
+    :type Topic.max_participants: IntegerField
     :attr Topic.file: A file containing information about the topic
     :type Topic.file: FileField
     :attr Topic.course: The course containing the topic
@@ -129,10 +129,8 @@ class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name=_("course"))
     title = models.CharField(max_length=200, verbose_name=_("title"))
 
-    max_participants = MultiValueField
-
-    # max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
-    #                                        validators=[MaxValueValidator(9999), MinValueValidator(0)])
+    max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
+                                           validators=[MaxValueValidator(9999), MinValueValidator(0)])
 
     description = models.TextField(verbose_name=_("description"))
     file = models.FileField(verbose_name=_("file"), upload_to='course_directory_path', blank=True)
