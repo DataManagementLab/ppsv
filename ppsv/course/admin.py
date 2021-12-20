@@ -76,12 +76,16 @@ class StudentAdmin(admin.ModelAdmin):
 
 admin.site.register(Student, StudentAdmin)
 
-""" For that to work Group needs group_nr as primary key
-class GroupAdmin(admin.ModelAdmin):
-    list_display = ('group_nr', 'size')
-"""
 
-admin.site.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    list_display = ('get_display', 'size')
+    readonly_fields = ('get_display', 'size',)
+    fieldsets = [
+        (None, {'fields': ['students', 'size', 'assignments']}),
+    ]
+
+
+admin.site.register(Group, GroupAdmin)
 admin.site.register(TopicSelection)
 admin.site.register(TextSaves)
 

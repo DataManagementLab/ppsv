@@ -8,7 +8,6 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.forms import MultiValueField
 
 
 class Course(models.Model):
@@ -214,12 +213,46 @@ class Group(models.Model):
     :type Group.assignments: ManyToManyField - Topic
 
     """
-    # adding this as a primary key would require DB reset
-    # group_nr = models.IntegerField(primary_key=True, verbose_name=_("group Nr"))
     students = models.ManyToManyField(Student, verbose_name=_("students"))
-    size = models.IntegerField(verbose_name=_("group Size"), default=1,
-                               validators=[MaxValueValidator(99), MinValueValidator(1)])
+    size = -1
+    #size = models.IntegerField(verbose_name=_("group Size"), default=1,
+    #                           validators=[MaxValueValidator(99), MinValueValidator(1)])
     assignments = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Group, self).__init__(*args, **kwargs)
+        self.size = self.students.count()
+
+    # @property
+    # def size(self):
+    #     if not hasattr(self, 'students'):
+    #         return 0
+    #     stu = self.students
+    #     #qs = stu.all()
+    #     return stu.count()
+    #
+    # size.fget.short_description = _("group Size")
+
+    @property
+    def get_display(self):
+        """String representation
+        Returns a list of all students in this object.
+        :return: the string representation of this object
+        :rtype: str
+        """
+        # stu = self.students
+        # studlist = list(stu.all())
+        # studlist_as_text = str(studlist)
+        # return studlist_as_text
+        if not hasattr(self, 'students'):
+            return 'Empty'
+        studs = self.students.all()
+        return ', '.join(str(stud) for stud in studs)
+
+    get_display.fget.short_description = _("group")
+
+    def __str__(self):
+        return str(self.get_display)
 
     class Meta:
         """Meta options
