@@ -4,7 +4,7 @@
 
 {% block content %}
 
-
+<div class="container-fluid">
     <h2>
         <div class="container-fluid" style="margin: 1em;">
             <input type="search">
@@ -19,12 +19,12 @@
                     <div class="col">Faculty</div>
                 </li>
                 {% for faculty in faculties %}
-                <form method="post" id="{{ forloop.counter0 }}" style="margin 0; padding 0;">
-                {% csrf_token %}
-                    <button class="ppsv-button" type="submit" name="{{ faculty.faculty }}" style="margin 0; padding 0;">
-                        <li class="table-row">
-                            <div class="col">  {{ faculty.faculty }}  </div>
-                        </li>
+                <form method="post" id="{{ forloop.counter0 }}" style="margin: 0; padding: 0;">
+                    {% csrf_token %}
+                    <button class="ppsv-button" type="submit" name="{{ faculty.faculty }}">
+                            <li class="table-row">
+                                <div class="col">   {{ faculty.faculty }} </div>
+                            </li>
                     </button>
                 </form>
                 {% endfor %}
@@ -53,29 +53,54 @@
                 </li>
                 {% for course in courses %}
                 <li class="table-row">
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Title">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_Title">
                         {{ course.title }}
                     </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Type">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_Type">
                         {{ course.type }}
                     </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="RegStart">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_RegStart">
                         {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
                     </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="RegEnd">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_RegEnd">
                         {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
                     </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="MaxPart">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_MaxPart">
                         {{ course.max_participants }}
                     </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="CP">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_CP">
                         {{ course.cp }}
                     </div>
                 </li>
                 {% endfor %}
             </ul>
         </div>
+        <div class="ppsv-item">
+            <ul class="responsive-table">
+                <li class="table-header">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Title
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Max Participants
+                    </div>
+                </li>
+                {% for choiceSet in topicChoices %}
+                    {% for choice in choiceSet %}
+                    <li class="table-row">
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Topic_Title">
+                        {{ choice.title }}
+                        </div>
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Topic_MaxP">
+                        {{ choice.max_participants }}
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
     </div>
-<div class="container"></div>
+
+</div>
 
 {% endblock content %}

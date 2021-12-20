@@ -3,7 +3,6 @@ from django.shortcuts import render
 from course import models
 from django.views.generic import TemplateView
 from frontend.forms.forms import ContactForm
-from frontend.forms.forms import FacultyForm
 
 
 def homepage(request):
@@ -34,22 +33,25 @@ def overview(request):
     template_name = 'frontend/overview.html'
 
     faculties = models.Course.objects.order_by().values('faculty').distinct()
+    topics = models.Topic.objects.all()
+    topic_choices = []
 
     chosen_faculty = ""
 
-    form = FacultyForm()
     if request.method == "POST":
-        form = FacultyForm(request.POST)
 
         for i in range(len(faculties)):
 
             if faculties[i]['faculty'] in request.POST:
                 chosen_faculty = faculties[i]['faculty']
+                print(chosen_faculty)
 
     courses = models.Course.objects.filter(faculty=chosen_faculty)
 
-    topics = models.Topic.objects.all()
-    args = {'courses': courses, "topics": topics, "faculties": faculties}
+    for selected_course in courses:
+        topic_choices.append(models.Topic.objects.filter(course=selected_course))
+
+    args = {'courses': courses, "topicChoices": topic_choices, "faculties": faculties}
     return render(request, template_name, args)
 
 

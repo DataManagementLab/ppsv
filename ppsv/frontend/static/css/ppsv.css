@@ -52,8 +52,6 @@
             box-sizing:border-box;
             background:transparent;
             border:none;
-            padding: 0;
-            margin:0;
         }
 
         .ppsv-button:hover li {
@@ -70,4 +68,3 @@
         .ppsv-button:active:after {
           text-decoration: underline;
         }
-

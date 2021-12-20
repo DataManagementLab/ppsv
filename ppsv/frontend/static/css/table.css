@@ -16,10 +16,11 @@
  .responsive-table li {
      border-radius: 3px;
 	 padding: 25px 30px;
-	 display: flex;
+     display: flex;
 	 justify-content: space-between;
 	 margin-bottom: 25px;
 }
+
  .responsive-table .table-header {
 	 background-color: #0C8FCC;
 	 font-size: 14px;
