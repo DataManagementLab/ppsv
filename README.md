@@ -11,8 +11,6 @@ Maybe a description
 https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 
 <h2>Open Questions</h2>
-Which License should we use?
-
 Should we give some Fields "unique=True"?
 
 <p> django admin show field only if checkbox is false

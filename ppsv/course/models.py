@@ -248,6 +248,11 @@ class Group(models.Model):
     get_display.fget.short_description = _("group")
 
     def __str__(self):
+        """String representation
+        Returns the the string "group" with the number of the group
+        :return: the string representation of this object
+        :rtype: str
+        """
         return _("group") + " " + str(self.pk)
 
     class Meta:
