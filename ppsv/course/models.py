@@ -207,31 +207,31 @@ class Group(models.Model):
 
     :attr Group.students: The students in a group
     :type Group.students: ManyToManyField - Student
-    :attr Group.size: The size of a group
-    :type Group.size: IntegerField
     :attr Group.assignments: The assignments of a group
     :type Group.assignments: ManyToManyField - Topic
-
+    :property Group.size: The size of a group
+    :type Group.size: int
+    :property Group.size: The tucan_id of the students separated with commas
+    :type Group.get_display: str
     """
     students = models.ManyToManyField(Student, verbose_name=_("students"))
-    size = -1
-    #size = models.IntegerField(verbose_name=_("group Size"), default=1,
-    #                           validators=[MaxValueValidator(99), MinValueValidator(1)])
     assignments = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
 
-    def __init__(self, *args, **kwargs):
-        super(Group, self).__init__(*args, **kwargs)
-        self.size = self.students.count()
+    # instead of this model we now us a Property for group size
+    # size = models.IntegerField(verbose_name=_("group Size"), default=1,
+    #                           validators=[MaxValueValidator(99), MinValueValidator(1)])
+    @property
+    def size(self):
+        """size of the group
+        :return: the number of students in the group
+        :rtype: int
+        """
+        if not hasattr(self, 'students'):
+            return 0
+        stu = self.students
+        return stu.count()
 
-    # @property
-    # def size(self):
-    #     if not hasattr(self, 'students'):
-    #         return 0
-    #     stu = self.students
-    #     #qs = stu.all()
-    #     return stu.count()
-    #
-    # size.fget.short_description = _("group Size")
+    size.fget.short_description = _("group Size")
 
     @property
     def get_display(self):
@@ -240,10 +240,6 @@ class Group(models.Model):
         :return: the string representation of this object
         :rtype: str
         """
-        # stu = self.students
-        # studlist = list(stu.all())
-        # studlist_as_text = str(studlist)
-        # return studlist_as_text
         if not hasattr(self, 'students'):
             return 'Empty'
         studs = self.students.all()
@@ -252,7 +248,7 @@ class Group(models.Model):
     get_display.fget.short_description = _("group")
 
     def __str__(self):
-        return str(self.get_display)
+        return _("group") + " " + str(self.pk)
 
     class Meta:
         """Meta options
