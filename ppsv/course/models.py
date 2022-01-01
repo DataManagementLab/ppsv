@@ -33,18 +33,18 @@ class Course(models.Model):
     :type Course.max_participants: IntegerField
     :attr Course.cp: the CP of the Course
     :type Course.cp: IntegerField
-    :attr Course.type: The faculty of the course
-    :type Course.type: CharField
-    :attr Course.type: The organizer of the course
-    :type Course.type: CharField
+    :attr Course.faculty: The faculty of the course
+    :type Course.faculty: CharField
+    :attr Course.organizer: The organizer of the course
+    :type Course.organizer: CharField
 
     """
     title = models.CharField(max_length=200, verbose_name=_("title"))
 
     COURSE_TYPE_CHOICES = [
         ('SE', 'Seminar'),
-        ('PR', _('Internship')),
-        ('SO', _('Miscellaneous')),
+        ('IN', _('Internship')),
+        ('MI', _('Miscellaneous')),
     ]
     type = models.CharField(max_length=2, choices=COURSE_TYPE_CHOICES, default='SE', verbose_name=_("type"))
 
@@ -75,7 +75,6 @@ class Course(models.Model):
     ]
     faculty = models.CharField(max_length=4, choices=COURSE_FACULTY_CHOICES, verbose_name=_("faculty"))
 
-    # organizer or instructors?
     organizer = models.CharField(max_length=200, verbose_name=_("organizer"))
 
     class Meta:
@@ -211,8 +210,9 @@ class Group(models.Model):
     :type Group.assignments: ManyToManyField - Topic
     :property Group.size: The size of a group
     :type Group.size: int
-    :property Group.size: The tucan_id of the students separated with commas
+    :property Group.get_display: The tucan_id of the students separated with commas
     :type Group.get_display: str
+
     """
     students = models.ManyToManyField(Student, verbose_name=_("students"))
     assignments = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
@@ -228,8 +228,8 @@ class Group(models.Model):
         """
         if not hasattr(self, 'students'):
             return 0
-        stu = self.students
-        return stu.count()
+        studs = self.students
+        return studs.count()
 
     size.fget.short_description = _("group Size")
 
