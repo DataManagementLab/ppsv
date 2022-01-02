@@ -3,7 +3,7 @@ console.clear();
 var loginBtn = document.getElementById('login');
 var signupBtn = document.getElementById('signup');
 
-/* When the login button is clicked than the login window opens and the sing up window closes.
+/* When the login button is clicked, the login window opens and the sign up window closes.
    If the login window was already open it closes and the sign up window opens instead. */
 loginBtn.addEventListener('click', (e) => {
 	let parent = e.target.parentNode.parentNode;
@@ -17,7 +17,7 @@ loginBtn.addEventListener('click', (e) => {
 	});
 });
 
-/* When the sign up button is clicked than the sign up window opens and the login window closes
+/* When the sign up button is clicked, the sign up window opens and the login window closes
    If the sign up window was already open it closes and the login window opens instead. */
 signupBtn.addEventListener('click', (e) => {
 	let parent = e.target.parentNode;
