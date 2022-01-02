@@ -4,14 +4,17 @@
 
 {% block content %}
 
-<div class="container-fluid">
+    <!- This page contains some tables and a search function in order to find courses and topics -->
+
+    <!- "search" contains an input of type search which takes any string and later displays all search results in the tables below  -->
     <h2>
-        <div class="container-fluid" style="margin: 1em;">
+        <div name="search" class="container-fluid" style="margin: 1em;">
             <input type="search">
             <i class="fa fa-search fa-1x" aria-hidden="true"></i>
         </div>
     </h2>
 
+    <!- Contains 3 tables which contain the faculties, courses and topics which can be selected -->
     <div class="ppsv-grid-container">
         <div class="ppsv-item">
             <ul class="responsive-table">
@@ -100,7 +103,5 @@
             </ul>
         </div>
     </div>
-
-</div>
 
 {% endblock content %}
