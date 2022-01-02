@@ -25,9 +25,9 @@
 
 <body>
 
-<!- Both "header" and "navbar" will be included in all html pages which extend "base.html" -->
+<!-- Both "header" and "navbar" will be included in all html pages which extend "base.html" -->
 
-<!- "header" contains on the left side the page name and on the right side a logo and the name of the user which is
+<!-- "header" contains on the left side the page name and on the right side a logo and the name of the user which is
 logged in right now -->
 <div name="header" class="container-fluid"
      style="background-color: #0a3d62;padding-top:1em;padding-bottom:1em;color:#ffffff;">
@@ -37,7 +37,7 @@ logged in right now -->
     </div>
 </div>
 
-<!- "navbar" contains all links to important html pages like the homepage,overview etc. -->
+<!-- "navbar" contains all links to important html pages like the homepage,overview etc. -->
 <div name="navbar" class="container-fluid" style="background-color: #0C8FCC">
     <div class="row" style="background-color: #0C8FCC">
         <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px">
@@ -60,7 +60,7 @@ logged in right now -->
 </div>
 
 
-<!- "content" contains everything that is not the header and can be modified by other html pages by using the block
+<!-- "content" contains everything that is not the header and can be modified by other html pages by using the block
 "content" -->
 <div name="content" class="container-fluid" style="padding-top: 2em;min-height:75vh;margin-bottom:50px">
     {% block content %}

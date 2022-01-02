@@ -6,16 +6,17 @@ from django.views.generic import TemplateView
 
 def homepage(request):
     template_name = 'frontend/homepage.html'
-
-    args = {}
-    return render(request, template_name, args)
+    return render(request, template_name)
 
 
 def selection(request):
     template_name = 'frontend/selection.html'
+    # All courses in the database are saved in courses
     courses = models.Course.objects.all()
+    # All topics in the database are saved in topics
     topics = models.Topic.objects.all()
     args = {'courses': courses, "topics": topics}
+    # Returns args which contains all courses and topics in the database
     return render(request, template_name, args)
 
 
@@ -47,13 +48,14 @@ def overview(request):
         topic_choices.append(models.Topic.objects.filter(course=selected_course))
 
     args = {'courses': courses, "topicChoices": topic_choices, "faculties": faculties}
+    """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
+        and faculties(contains all faculties)"""
     return render(request, template_name, args)
 
 
 def groups(request):
     template_name = 'frontend/groups.html'
-    args = {}
-    return render(request, template_name, args)
+    return render(request, template_name)
 
 
 def login(request):
