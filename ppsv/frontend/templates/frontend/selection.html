@@ -2,57 +2,131 @@
 {% load static %}
 
 {% block title %}
-  Selection Page
+Selection Page
 {% endblock title%}
 
 
 {% block content %}
+<!-- This page contains some tables and a search function in order to find courses and topics -->
 
-    <table class="table" id="course_table">
-        <thead>
-            <tr>
-                <th> ID </th>
-                <th> Name </th>
-                <th> Type </th>
-                <th> Max_P </th>
-                <th> CP </th>
-                <th> Selection </th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for course in courses %}
-            <tr>
-                <td> {{ course.id }}</td>
-                <td> {{ course.title }}</td>
-                <td> {{ course.type }}</td>
-                <td> {{ course.max_participants }}</td>
-                <td> {{ course.cp }}</td>
-                <td> <input class="input" type="checkbox" name="{{course.title}}" id="{{course.id}}" onclick="sendCourseInfos(this)"> </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<!-- "search" contains an input of type search which takes any string and later displays all search results in the tables below  -->
+<h2>
+    <div name="search" class="container-fluid" style="margin: 1em;">
+        <input type="search">
+        <i class="fa fa-search fa-1x" aria-hidden="true"></i>
+    </div>
+</h2>
 
+<!-- Contains 3 tables which contain the faculties, courses and topics which can be selected -->
+<div class="ppsv-grid-container">
+    <div class="ppsv-item">
+        <ul class="responsive-table">
+            <li class="table-header">
+                <div class="col">Faculty</div>
+            </li>
+            {% for faculty in faculties %}
+            <form method="post" style="margin: 0; padding: 0;">
+                {% csrf_token %}
+                <button class="ppsv-button" type="submit" name="faculty_button" value="{{ faculty.faculty }}">
+                    <li class="table-row">
+                        <div class="col"> {{ faculty.faculty }}</div>
+                    </li>
+                </button>
+            </form>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="ppsv-item">
+        <ul class="responsive-table">
+            <li class="table-header">
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                    Title
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                    Type
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                    Registration Start
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                    Registration End
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
+                    Participants
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">CP
+                </div>
+            </li>
+            {% for course in courses %}
+            <form method="post" style="margin: 0; padding: 0;">
+                    {% csrf_token %}
+            <button class="ppsv-button" type="submit" name="course_button" value="{{ course.id }}">
+            <li class="table-row">
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                     data-label="Course_Title">
+                    {{ course.title }}
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                     data-label="Course_Type">
+                    {{ course.type }}
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                     data-label="Course_RegStart">
+                    {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                     data-label="Course_RegEnd">
+                    {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                     data-label="Course_MaxPart">
+                    {% if course.max_participants == 9999 %}
+                    unlimited
+                    {% else %}
+                    {{ course.max_participants }}
+                    {% endif %}
 
-    <table class="table" name="topic_table">
-        <thead>
-            <tr>
-                <th> ID </th>
-                <th> Title </th>
-                <th> Max_P </th>
-                <th> Selection </th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for topic in topics %}
-            <tr>
-                <td> {{ topic.id }}</td>
-                <td> {{ topic.title }}</td>
-                <td> {{ topic.max_participants }}</td>
-                <td> <input class="input" type="checkbox">  </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                </div>
+                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                     data-label="Course_CP">
+                    {{ course.cp }}
+                </div>
 
-{% endblock content %}
+            </li>
+                 </button>
+                </form>
+            {% endfor %}
+        </ul>
+        </div>
+        <div class="ppsv-item">
+            <ul class="responsive-table">
+                <li class="table-header">
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Title
+                    </div>
+                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                        Max Participants
+                    </div>
+                </li>
+                {% for choice in choiceSet %}
+                <form method="post" style="margin: 0; padding: 0;">
+                    {% csrf_token %}
+                    <button class="ppsv-button" type="submit" name="topic_button" value="{{ choice.id }}">
+                        <li class="table-row">
+                            <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Topic_Title">
+                                {{ choice.title }}
+                            </div>
+                            <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Topic_MaxP">
+                                {{ choice.max_participants }}
+                            </div>
+                        </li>
+                    </button>
+                </form>
+                {% endfor %}
+            </ul>
+        </div>
+        </div>
+
+        {% endblock content %}
