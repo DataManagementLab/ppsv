@@ -31,16 +31,17 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
+#    'frontend.apps.FrontendConfig',
+#    'course.apps.CourseConfig',
 INSTALLED_APPS = [
-    'frontend.apps.FrontendConfig',
-    'course.apps.CourseConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'course',
+    'frontend',
 ]
 
 MIDDLEWARE = [
