@@ -59,5 +59,9 @@ def groups(request):
 
 
 def login(request):
-    template_name = 'frontend/login.html'
+    template_name = 'registration/login.html'
     return render(request, template_name)
+
+
+def logout(request):
+    return render(request)
