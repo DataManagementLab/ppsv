@@ -1,6 +1,11 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from course import models
+from .forms.forms import NewUserForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm
 from django.views.generic import TemplateView
 
 
@@ -58,10 +63,44 @@ def groups(request):
     return render(request, template_name)
 
 
-def login(request):
-    template_name = 'registration/login.html'
-    return render(request, template_name)
+def login_request(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        print("login_request active")
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}.")
+                return redirect("frontend:homepage")
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    form = AuthenticationForm()
+    return render(request=request, template_name="registration/login.html", context={"login_form": form})
 
 
-def logout(request):
-    return render(request)
+def logout_request(request):
+    print("logout_request active")
+    logout(request)
+    messages.info(request, "You have successfully logged out.")
+    return redirect("frontend:homepage")
+
+
+def register(request):
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        print("register active")
+        if form.is_valid():
+            print("form is valid")
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Registration successful.")
+            return redirect("frontend:homepage")
+        print("form is not valid")
+        messages.error(request, "Unsuccessful registration. Invalid information.")
+    form = NewUserForm()
+    return render(request=request, template_name="registration/register.html", context={"register_form": form})

@@ -7,7 +7,10 @@
   <h2>Login</h2>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ login_form.as_p }}
     <button type="submit">Login</button>
   </form>
+  <button onclick="location.href='{% url 'frontend:register' %}'" type="button">
+         Register</button>
+
 {% endblock %}

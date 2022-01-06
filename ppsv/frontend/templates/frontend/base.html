@@ -60,7 +60,8 @@ logged in right now -->
         <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"> Übersicht</button>
         </form>
-        <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px">
+        <form class="navbar-form" method="post" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px">
+            {% csrf_token %}
             <button type="submit" class="navbar-btn"> Deine Wahl</button>
         </form>
         <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
