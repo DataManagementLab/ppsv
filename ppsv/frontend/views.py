@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from course import models
 from django.views.generic import TemplateView
+from course.models import TopicSelection
 
 
 def homepage(request):
@@ -55,8 +56,13 @@ def selection(request):
             topics = models.Topic.objects.filter(course=course[0].id)
             for topic in topics:
                 topic_choices.append(topic)
+            selection = TopicSelection()
+            selection.group = models.Group.objects.filter(students='abcd')[0]
+            selection.topic = models.Topic.objects.get(id=chosen_topic)
 
             print(topic_choices)
+            print(selection.group + " | " + selection.topic)
+
 
             args = {'courses': course, "choiceSet": topic_choices, "faculties": faculties}
             """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
