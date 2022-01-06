@@ -38,7 +38,6 @@ def selection(request):
             return render(request, template_name, args)
 
         elif 'course_button' in request.POST:
-            print('course')
             chosen_course = request.POST.get('course_button')
             db_course = models.Course.objects.filter(id=chosen_course)
             topic_choice_set = models.Topic.objects.filter(course=chosen_course)
@@ -56,13 +55,22 @@ def selection(request):
             topics = models.Topic.objects.filter(course=course[0].id)
             for topic in topics:
                 topic_choices.append(topic)
-            selection = TopicSelection()
-            selection.group = models.Group.objects.filter(students='abcd')[0]
-            selection.topic = models.Topic.objects.get(id=chosen_topic)
 
-            print(topic_choices)
-            print(selection.group + " | " + selection.topic)
+            # change abcd to logged in student
+            student_group = models.Group.objects.get(students='abcd')
+            selection_group = models.TopicSelection.objects.filter(group=student_group.id)
+            already_selected = False
 
+            for known_selection in selection_group:
+                if int(chosen_topic) == int(known_selection.topic.id):
+                    already_selected = True
+            if already_selected == False:
+                selection = TopicSelection()
+                selection.priority = 0
+                # change abcd to logged in student
+                selection.group = models.Group.objects.get(students='abcd')
+                selection.topic = models.Topic.objects.get(id=chosen_topic)
+                selection.save()
 
             args = {'courses': course, "choiceSet": topic_choices, "faculties": faculties}
             """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
