@@ -11,7 +11,6 @@ Maybe a description
 https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 
 <h2>Open Questions</h2>
-How do we make messages appear on the site?
 
 
 <p> django admin show field only if checkbox is false

@@ -66,7 +66,6 @@ def groups(request):
 def login_request(request):
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
-        print("login_request active")
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
@@ -84,7 +83,6 @@ def login_request(request):
 
 
 def logout_request(request):
-    print("logout_request active")
     logout(request)
     messages.info(request, "You have successfully logged out.")
     return redirect("frontend:homepage")
@@ -93,14 +91,11 @@ def logout_request(request):
 def register(request):
     if request.method == "POST":
         form = NewUserForm(request.POST)
-        print("register active")
         if form.is_valid():
-            print("form is valid")
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful.")
             return redirect("frontend:homepage")
-        print("form is not valid")
         messages.error(request, "Unsuccessful registration. Invalid information.")
     form = NewUserForm()
     return render(request=request, template_name="registration/register.html", context={"register_form": form})

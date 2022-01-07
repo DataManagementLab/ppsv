@@ -12,6 +12,11 @@
     <!-- Defines a block where other html pages can use their own title -->
     <title>{% block title %} {% endblock %}</title>
 
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
     <!-- Imports all important stylesheets and hyper references for all html pages which extend base.html -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
@@ -73,6 +78,16 @@ logged in right now -->
     </div>
 </div>
 
+{% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+         <span aria-hidden="True">&times;</span>
+        </button>
+        {{ message }}
+  </div>
+</div>
+{% endfor %}
 
 <!-- "content" contains everything that is not the header and can be modified by other html pages by using the block
 "content" -->
