@@ -10,7 +10,7 @@ Selection Page
 <!-- This page contains some tables and a search function in order to find courses and topics -->
 
 <!-- "search" contains an input of type search which takes any string and later displays all search results in the tables below  -->
-<h2 xmlns="http://www.w3.org/1999/html">
+<h2>
     <div name="search" class="container-fluid" style="margin: 1em;">
         <input type="search">
         <i class="fa fa-search fa-1x" aria-hidden="true"></i>
@@ -30,6 +30,11 @@ Selection Page
     outline: none;
   }
 
+.dropbtn:focus {
+    outline: none;
+}
+
+
 /* The container <div> - needed to position the dropdown content */
 .dropdown {
   position: relative;
@@ -40,18 +45,13 @@ Selection Page
 
 /* Dropdown Content (Hidden by Default) */
 .dropdown-content {
-  display: none;
+  display: block;
   position: absolute;
   background-color: #ffffff;
   min-width: 160px;
   z-index: 1;
+  width: 100%;
 }
-
-/* Show the dropdown menu on hover */
-.dropdown:hover .dropdown-content {
-    display: block;
-    position: absolute;
-    width: 100%;}
 
 /* Change the background color of the dropdown button when the dropdown content is shown */
 .dropdown:hover .dropbtn li {
@@ -143,110 +143,110 @@ div.scrollmenu button:hover {
 <div class="container-fluid">
     <ul class="responsive-table" style="margin-bottom:5px;">
             <li class="table-header" style="justify-content: center; margin-bottom:0px;">
-                <div> Courses </div>
+                Courses
             </li>
     </ul>
     <ul class="responsive-table">
-            <li class="table-header" style="padding: 3px;">
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+            <li class="table-header" style="padding: 3px;padding-left: 25px;padding-right: 25px;">
+                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
                     Title
                 </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
                     Type
                 </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
                     Registration Start
                 </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
                     Registration End
                 </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
+                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
                     Participants
                 </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">CP
+                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">CP
                 </div>
             </li>
 
             {% for course in courses %}
             <div class="dropdown">
-                <button class="dropbtn" type="submit" name="course_button" value="{{ course.id }}" style="margin: 0; padding: 0; width:100%">
-                    <li class="table-row">
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                             data-label="Course_Title">
-                            {{ course.title }}
+                <form method="post" style="margin: 0px; padding: 0px;">
+                    {% csrf_token %}
+                    <button class="dropbtn" type="submit" name="course_button" {% if chosenCourse == course.id %} value="-1" {% else %} value="{{ course.id }}" {% endif %} style="margin: 0; padding: 0; width:100%">
+                        <input name="hidden_info" type="hidden" value="{{ course.id }}">
+                        <li class="table-row">
+                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Course_Title">
+                                {{ course.title }}
+                            </div>
+                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Course_Type">
+                                {{ course.type }}
+                            </div>
+                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Course_RegStart">
+                                {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                            </div>
+                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Course_RegEnd">
+                                {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                            </div>
+                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Course_MaxPart">
+                                {% if course.max_participants == 9999 %}
+                                unlimited
+                                {% else %}
+                                {{ course.max_participants }}
+                                {% endif %}
+                            </div>
+                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                                 data-label="Course_CP">
+                                {{ course.cp }}
+                            </div>
+                        </li>
+                    </button>
+                </form>
+                {% if course.id == chosenCourse %}
+                    {% if choiceSet %}
+                    <div class="dropdown-content">
+                        <li class="table-header" style="justify-content: space-around;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
+                        Topics
+                    </li>
+                        <li class="table-header" style="justify-content: space-around;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
+                        <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                            Title
                         </div>
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                             data-label="Course_Type">
-                            {{ course.type }}
+                        <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                            Max Participants
                         </div>
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                             data-label="Course_RegStart">
-                            {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
-                        </div>
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                             data-label="Course_RegEnd">
-                            {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
-                        </div>
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                             data-label="Course_MaxPart">
-                            {% if course.max_participants == 9999 %}
-                            unlimited
-                            {% else %}
-                            {{ course.max_participants }}
-                            {% endif %}
-
-                        </div>
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                             data-label="Course_CP">
-                            {{ course.cp }}
-                        </div>
-                        <div class="dropdown-content table-row">
-                            <ul class="responsive-table" style="margin-bottom:5px">
-                                <li class="table-header" style="justify-content: center; margin-bottom:0px; padding:3px;">
-                                    <div> Topics </div>
-                                </li>
-                            </ul>
-                            <ul class="responsive-table">
-                                <li class="table-header" style="padding: 0px;">
-                                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                                        Title
-                                    </div>
-                                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
-                                    Participants
-                                    </div>
-                                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                                    Infobutton
-                                    </div>
-                                </li>
-                            </ul>
+                        <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                            Infobutton
                         </div>
                     </li>
-                </button>
-
-                <!--<div class="dropdown-content">
-
-                    {% for choice in choiceSet %}
-                <form method="post" style="margin: 0; padding: 0;">
-                    {% csrf_token %}
-                    <button class="ppsv-button" type="submit" name="topic_button" value="{{ choice.id }}">
-                        <li class="table-row">
-                            <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Topic_Title">
+                        {% for choice in choiceSet %}
+                        <form method="post" style="margin: 0; padding: 0;">
+                        {% csrf_token %}
+                            <button class="ppsv-button" type="submit" name="topic_button" value="{{ choice.id }}" >
+                                <li class="table-row" style="justify-content: space-around;margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;">
+                            <div data-label="Topic_Title">
                                 {{ choice.title }}
                             </div>
-                            <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Topic_MaxP">
+                            <div data-label="Topic_MaxP">
                                 {% if choice.max_participants == 9999 %}
                                     unlimited
                                 {% else %}
                                 {{ choice.max_participants }}
                                 {% endif %}
                             </div>
+                            <div data-label="Info_Btn">
+                                Info
+                            </div>
                         </li>
-                    </button>
-                </form>
-                {% endfor %}
-                </div> -->
+                            </button>
+                        </form>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endif %}
             </div>
             {% endfor %}
     </ul>

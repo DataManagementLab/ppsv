@@ -50,6 +50,7 @@
             box-sizing:border-box;
             background:transparent;
             border:none;
+            width: 100%;
         }
 
         .ppsv-button:hover li {

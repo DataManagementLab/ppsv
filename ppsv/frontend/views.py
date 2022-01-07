@@ -22,37 +22,47 @@ def selection(request):
         if 'faculty_button' in request.POST:
             # When a form is send by the POST method the chosen faculty will be set to the chosen faculty
             chosen_faculty = request.POST.get('faculty_button')
+            chosen_course = "no_chosen_course"
 
             # Courses which are from the chosen faculty
             courses = models.Course.objects.filter(faculty=chosen_faculty)
 
-            # Topics which are in the chosen courses
-            for selected_course in courses:
-                topic_choice_sets = models.Topic.objects.filter(course=selected_course)
-                for choice_set in topic_choice_sets:
-                    topic_choices.append(choice_set)
-
-            args = {'courses': courses, "choiceSet": topic_choices, "faculties": faculties}
+            args = {'courses': courses, 'chosenCourse': chosen_course, "choiceSet": topic_choices, "faculties": faculties}
             """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
                 and faculties(contains all faculties)"""
             return render(request, template_name, args)
 
         elif 'course_button' in request.POST:
-            chosen_course = request.POST.get('course_button')
-            db_course = models.Course.objects.filter(id=chosen_course)
-            topic_choice_set = models.Topic.objects.filter(course=chosen_course)
-            for choice_set in topic_choice_set:
-                topic_choices.append(choice_set)
 
-            args = {"courses": db_course, "choiceSet": topic_choices, "faculties": faculties}
-            """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
-                and faculties(contains all faculties)"""
-            return render(request, template_name, args)
+            chosen_course = int(request.POST.get('course_button'))
+
+            if chosen_course == -1:
+                hidden_course_id = request.POST.get('hidden_info')
+                courses = models.Course.objects.get(id=hidden_course_id)
+                courses = models.Course.objects.filter(faculty=courses.faculty)
+                chosen_course = "no_chosen_course"
+                args = {'courses': courses, 'chosenCourse': chosen_course, "choiceSet": topic_choices,
+                        "faculties": faculties}
+                """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
+                    and faculties(contains all faculties)"""
+                return render(request, template_name, args)
+            else:
+                courses = models.Course.objects.get(id=chosen_course)
+                courses = models.Course.objects.filter(faculty=courses.faculty)
+                topic_choice_set = models.Topic.objects.filter(course=chosen_course)
+                for choice_set in topic_choice_set:
+                    topic_choices.append(choice_set)
+
+                args = {"courses": courses, 'chosenCourse': chosen_course, "choiceSet": topic_choices,
+                        "faculties": faculties}
+                """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
+                    and faculties(contains all faculties)"""
+                return render(request, template_name, args)
 
         elif 'topic_button' in request.POST:
             chosen_topic = request.POST.get('topic_button')
-            course = models.Course.objects.filter(topic=chosen_topic)
-            topics = models.Topic.objects.filter(course=course[0].id)
+            courses = models.Course.objects.filter(topic=chosen_topic)
+            topics = models.Topic.objects.filter(course=courses[0].id)
             for topic in topics:
                 topic_choices.append(topic)
 
@@ -73,7 +83,7 @@ def selection(request):
                 selection.topic = models.Topic.objects.get(id=chosen_topic)
                 selection.save()
 
-            args = {'courses': course, "choiceSet": topic_choices, "faculties": faculties}
+            args = {'courses': courses, "choiceSet": topic_choices, "faculties": faculties}
             """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
                 and faculties(contains all faculties)"""
             return render(request, template_name, args)
