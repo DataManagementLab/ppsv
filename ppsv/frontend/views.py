@@ -60,33 +60,47 @@ def selection(request):
                 return render(request, template_name, args)
 
         elif 'topic_button' in request.POST:
-            chosen_topic = request.POST.get('topic_button')
-            courses = models.Course.objects.filter(topic=chosen_topic)
-            topics = models.Topic.objects.filter(course=courses[0].id)
-            for topic in topics:
-                topic_choices.append(topic)
+            chosen_topic = int(request.POST.get('topic_button'))
 
-            # change abcd to logged in student
-            student_group = models.Group.objects.get(students='abcd')
-            selection_group = models.TopicSelection.objects.filter(group=student_group.id)
-            already_selected = False
+            if chosen_topic == -1:
+                hidden_info = int(request.POST.get('hidden_info'))
+                courses = models.Course.objects.filter(topic=hidden_info)
+                courses_in_same_faculty = models.Course.objects.filter(faculty=courses[0].faculty)
+                topics = models.Topic.objects.filter(course=courses[0].id)
+                for topic in topics:
+                    topic_choices.append(topic)
+                args = {'courses': courses_in_same_faculty, "choiceSet": topic_choices, "faculties": faculties,
+                        "chosenTopic": chosen_topic, 'chosenCourse': courses[0].id}
+                return render(request, template_name, args)
+            else:
+                courses = models.Course.objects.filter(topic=chosen_topic)
+                courses_in_same_faculty = models.Course.objects.filter(faculty=courses[0].faculty)
+                topics = models.Topic.objects.filter(course=courses[0].id)
+                for topic in topics:
+                    topic_choices.append(topic)
 
-            for known_selection in selection_group:
-                if int(chosen_topic) == int(known_selection.topic.id):
-                    already_selected = True
-
-            if not already_selected:
-                selection = TopicSelection()
-                selection.priority = 0
                 # change abcd to logged in student
-                selection.group = models.Group.objects.get(students='abcd')
-                selection.topic = models.Topic.objects.get(id=chosen_topic)
-                selection.save()
+                student_group = models.Group.objects.get(students='abcd')
+                selection_group = models.TopicSelection.objects.filter(group=student_group.id)
+                already_selected = False
 
-            args = {'courses': courses, "choiceSet": topic_choices, "faculties": faculties}
-            """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
-                and faculties(contains all faculties)"""
-            return render(request, template_name, args)
+                for known_selection in selection_group:
+                    if int(chosen_topic) == int(known_selection.topic.id):
+                        already_selected = True
+
+                #if not already_selected:
+                    # create Group with students in inputtext
+                    #selection = TopicSelection()
+                    #selection.priority = 0
+                    # change abcd to logged in student
+                    #selection.group = models.Group.objects.get(students='abcd')
+                    #selection.topic = models.Topic.objects.get(id=chosen_topic)
+                    #selection.save()
+
+                args = {'courses': courses_in_same_faculty, "choiceSet": topic_choices, "faculties": faculties, "chosenTopic": chosen_topic, 'chosenCourse': courses[0].id}
+                """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
+                    and faculties(contains all faculties)"""
+                return render(request, template_name, args)
 
     args = {"faculties": faculties}
     return render(request, template_name, args)
