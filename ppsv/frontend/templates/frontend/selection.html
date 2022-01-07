@@ -10,7 +10,7 @@ Selection Page
 <!-- This page contains some tables and a search function in order to find courses and topics -->
 
 <!-- "search" contains an input of type search which takes any string and later displays all search results in the tables below  -->
-<h2>
+<h2 xmlns="http://www.w3.org/1999/html">
     <div name="search" class="container-fluid" style="margin: 1em;">
         <input type="search">
         <i class="fa fa-search fa-1x" aria-hidden="true"></i>
@@ -22,20 +22,20 @@ Selection Page
 
 .dropbtn {
     display: inline-block;
-    justify-content: space-between;
-    margin-right: 5px;
     padding: 25px 30px;
     text-align: center;
     color: black;
     background-color: white;
-    border: 3px solid #0C8FCC;
-    border-radius: 20px;
+    border: none;
+    outline: none;
   }
 
 /* The container <div> - needed to position the dropdown content */
 .dropdown {
   position: relative;
   display: inline-block;
+  width: 100%;
+  outline: none;
 }
 
 /* Dropdown Content (Hidden by Default) */
@@ -44,7 +44,6 @@ Selection Page
   position: absolute;
   background-color: #ffffff;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
 }
 
@@ -55,9 +54,11 @@ Selection Page
     width: 100%;}
 
 /* Change the background color of the dropdown button when the dropdown content is shown */
-.dropdown:hover .dropbtn {
-    background-color: rgba(12, 143, 204, 0.5);
-    color: white}
+.dropdown:hover .dropbtn li {
+    background-color: #0a3d62;
+    color: white;}
+
+
 </style>
 
 <!-- Contains 3 tables which contain the faculties, courses and topics which can be selected -->
@@ -199,9 +200,31 @@ div.scrollmenu button:hover {
                              data-label="Course_CP">
                             {{ course.cp }}
                         </div>
+                        <div class="dropdown-content table-row">
+                            <ul class="responsive-table" style="margin-bottom:5px">
+                                <li class="table-header" style="justify-content: center; margin-bottom:0px; padding:3px;">
+                                    <div> Topics </div>
+                                </li>
+                            </ul>
+                            <ul class="responsive-table">
+                                <li class="table-header" style="padding: 0px;">
+                                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                                        Title
+                                    </div>
+                                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
+                                    Participants
+                                    </div>
+                                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                                    Infobutton
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                 </button>
-                <div class="dropdown-content">
+
+                <!--<div class="dropdown-content">
+
                     {% for choice in choiceSet %}
                 <form method="post" style="margin: 0; padding: 0;">
                     {% csrf_token %}
@@ -223,7 +246,7 @@ div.scrollmenu button:hover {
                     </button>
                 </form>
                 {% endfor %}
-                </div>
+                </div> -->
             </div>
             {% endfor %}
     </ul>
