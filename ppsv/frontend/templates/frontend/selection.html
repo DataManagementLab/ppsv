@@ -18,27 +18,92 @@ Selection Page
 </h2>
 
 <!-- Contains 3 tables which contain the faculties, courses and topics which can be selected -->
-<div class="ppsv-grid-container">
-    <div class="ppsv-item">
+<style>
+.scrollmenu {
+  overflow: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+/*.scrollmenu::-webkit-scrollbar { display: none;}*/
+
+.scrollmenu form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+.scrollmenu button {
+    display: inline-block;
+    justify-content: space-between;
+    margin-right: 5px;
+    padding: 25px 30px;
+    text-align: center;
+    color: black;
+    background-color: white;
+    border: 3px solid #0C8FCC;
+    border-radius: 20px;
+}
+
+.scrollmenu button:focus {
+    outline: none;
+    background-color: rgba(12, 143, 204, 0.5);
+    color: white;
+}
+
+div.scrollmenu button:hover {
+  background-color: rgba(12, 143, 204, 0.5);
+  color: white;
+}
+
+</style>
+<div class="container-fluid">
         <ul class="responsive-table">
-            <li class="table-header">
-                <div class="col">Faculty</div>
+            <li class="table-header" style="justify-content: center;">
+                <div>Faculties</div>
             </li>
-            {% for faculty in faculties %}
-            <form method="post" style="margin: 0; padding: 0;">
-                {% csrf_token %}
-                <button class="ppsv-button" type="submit" name="faculty_button" value="{{ faculty.faculty }}">
-                    <li class="table-row">
-                        <div class="col"> {{ faculty.faculty }}</div>
-                    </li>
-                </button>
-            </form>
-            {% endfor %}
+            <div class="scrollmenu" id="scrl">
+                {% for faculty in faculties %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="faculty_button" value="{{ faculty.faculty }}">
+                        {{ faculty.faculty }}
+                    </button>
+                </form>
+                {% endfor %}
+                <button> Ex1 </button>
+                <button> Ex2 </button>
+                <button> Ex3 </button>
+                <button> Ex4 </button>
+                <button> Ex5 </button>
+                <button> Ex6 </button>
+                <button> Ex7 </button>
+                <button> Ex8 </button>
+                <button> Ex9 </button>
+                <button> Ex10 </button>
+                <button> Ex11 </button>
+                <button> Ex12 </button>
+                <button> Ex13 </button>
+                <button> Ex14 </button>
+                <button> Ex15 </button>
+                <button> Ex16 </button>
+                <button> Ex17 </button>
+                <button> Ex18 </button>
+                <button> Ex19 </button>
+                <button> Ex20 </button>
+            </div>
+            <!-- <script src="{% static 'js/horizontal-scroll.js' %}"> </script> -->
         </ul>
-    </div>
-    <div class="ppsv-item">
-        <ul class="responsive-table">
-            <li class="table-header">
+</div>
+
+<div class="container-fluid">
+    <ul class="responsive-table" style="margin-bottom:5px;">
+            <li class="table-header" style="justify-content: center;margin-bottom:0px;">
+                <div> Courses </div>
+            </li>
+    </ul>
+    <ul class="responsive-table">
+            <li class="table-header" style="padding: 3px;">
                 <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
                     Title
                 </div>
@@ -59,44 +124,47 @@ Selection Page
             </li>
             {% for course in courses %}
             <form method="post" style="margin: 0; padding: 0;">
-                    {% csrf_token %}
-            <button class="ppsv-button" type="submit" name="course_button" value="{{ course.id }}">
-            <li class="table-row">
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                     data-label="Course_Title">
-                    {{ course.title }}
-                </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                     data-label="Course_Type">
-                    {{ course.type }}
-                </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                     data-label="Course_RegStart">
-                    {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
-                </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                     data-label="Course_RegEnd">
-                    {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
-                </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                     data-label="Course_MaxPart">
-                    {% if course.max_participants == 9999 %}
-                    unlimited
-                    {% else %}
-                    {{ course.max_participants }}
-                    {% endif %}
+                {% csrf_token %}
+                <button class="ppsv-button" type="submit" name="course_button" value="{{ course.id }}" style="width:100%">
+                    <li class="table-row">
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                             data-label="Course_Title">
+                            {{ course.title }}
+                        </div>
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                             data-label="Course_Type">
+                            {{ course.type }}
+                        </div>
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                             data-label="Course_RegStart">
+                            {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                        </div>
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                             data-label="Course_RegEnd">
+                            {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                        </div>
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                             data-label="Course_MaxPart">
+                            {% if course.max_participants == 9999 %}
+                            unlimited
+                            {% else %}
+                            {{ course.max_participants }}
+                            {% endif %}
 
-                </div>
-                <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                     data-label="Course_CP">
-                    {{ course.cp }}
-                </div>
-
-            </li>
-                 </button>
-                </form>
+                        </div>
+                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
+                             data-label="Course_CP">
+                            {{ course.cp }}
+                        </div>
+                    </li>
+                </button>
+            </form>
             {% endfor %}
-        </ul>
+    </ul>
+</div>
+
+<div class="ppsv-grid-container">
+    <div class="ppsv-item">
         </div>
         <div class="ppsv-item">
             <ul class="responsive-table">
@@ -119,7 +187,11 @@ Selection Page
                             </div>
                             <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
                                  data-label="Topic_MaxP">
+                                {% if choice.max_participants == 9999 %}
+                                    unlimited
+                                {% else %}
                                 {{ choice.max_participants }}
+                                {% endif %}
                             </div>
                         </li>
                     </button>
@@ -129,4 +201,4 @@ Selection Page
         </div>
         </div>
 
-        {% endblock content %}
+{% endblock content %}

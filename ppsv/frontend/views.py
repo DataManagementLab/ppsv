@@ -64,7 +64,8 @@ def selection(request):
             for known_selection in selection_group:
                 if int(chosen_topic) == int(known_selection.topic.id):
                     already_selected = True
-            if already_selected == False:
+
+            if not already_selected:
                 selection = TopicSelection()
                 selection.priority = 0
                 # change abcd to logged in student
