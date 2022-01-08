@@ -57,7 +57,7 @@ Selection Page
 .customized-scrollbar::-webkit-scrollbar-thumb {
     background: #0C8FCC;
     background-clip: content-box;
-    border-radius: 9px;
+    border-radius: 6px;
 }
 
 .scrollmenu {
@@ -75,23 +75,18 @@ Selection Page
 .scrollmenu button {
     display: inline-block;
     justify-content: space-between;
-    margin-right: 5px;
+    margin: 5px;
     padding: 25px 30px;
     text-align: center;
     color: black;
-    background-color: white;
-    border: 3px solid #0C8FCC;
+    background-color: transparent;
+    border: none;
     border-radius: 20px;
-}
-
-.scrollmenu button:focus {
-    outline: none;
-    background-color: rgba(12, 143, 204, 0.5);
-    color: white;
+    box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);
 }
 
 div.scrollmenu button:hover {
-  background-color: rgba(12, 143, 204, 0.5);
+  background-color: #0a3d62;
   color: white;
 }
 
@@ -110,26 +105,6 @@ div.scrollmenu button:hover {
                     </button>
                 </form>
                 {% endfor %}
-                <button> Ex1 </button>
-                <button> Ex2 </button>
-                <button> Ex3 </button>
-                <button> Ex4 </button>
-                <button> Ex5 </button>
-                <button> Ex6 </button>
-                <button> Ex7 </button>
-                <button> Ex8 </button>
-                <button> Ex9 </button>
-                <button> Ex10 </button>
-                <button> Ex11 </button>
-                <button> Ex12 </button>
-                <button> Ex13 </button>
-                <button> Ex14 </button>
-                <button> Ex15 </button>
-                <button> Ex16 </button>
-                <button> Ex17 </button>
-                <button> Ex18 </button>
-                <button> Ex19 </button>
-                <button> Ex20 </button>
             </div>
         </ul>
 </div>
@@ -141,23 +116,24 @@ div.scrollmenu button:hover {
             </li>
     </ul>
     <ul class="responsive-table">
-            <li class="table-header" style="padding: 3px;padding-left: 25px;padding-right: 25px;">
-                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+            <li class="table-header" style="padding: 3px;padding-left: 25px;padding-right: 25px;text-align:center">
+                <div class="col-2">
                     Title
                 </div>
-                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                <div class="col-2">
                     Type
                 </div>
-                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                <div class="col-2">
                     Registration Start
                 </div>
-                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
+                <div class="col-2">
                     Registration End
                 </div>
-                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
-                    Participants
+                <div class="col-2">
+                    Max Participants
                 </div>
-                <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">CP
+                <div class="col-2">
+                    CP
                 </div>
             </li>
             {% for course in courses %}
@@ -166,32 +142,26 @@ div.scrollmenu button:hover {
                     <button class="dropbtn" type="submit" name="course_button" {% if chosenCourse == course.id %} value="-1" {% else %} value="{{ course.id }}" {% endif %} style="margin: 0; padding: 0; width:100%">
                         <input name="hidden_info" type="hidden" value="{{ course.id }}">
                         <li class="table-row" {% if chosenCourse == course.id %} style="background-color:#0a3d62;color:white;" {% endif %}>
-                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Course_Title">
+                            <div class="col-2" data-label="Course_Title">
                                 {{ course.title }}
                             </div>
-                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Course_Type">
+                            <div class="col-2" data-label="Course_Type">
                                 {{ course.type }}
                             </div>
-                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Course_RegStart">
+                            <div class="col-2" data-label="Course_RegStart">
                                 {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
                             </div>
-                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Course_RegEnd">
+                            <div class="col-2" data-label="Course_RegEnd">
                                 {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
                             </div>
-                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Course_MaxPart">
+                            <div class="col-2" data-label="Course_MaxPart">
                                 {% if course.max_participants == 9999 %}
                                 unlimited
                                 {% else %}
                                 {{ course.max_participants }}
                                 {% endif %}
                             </div>
-                            <div style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                                 data-label="Course_CP">
+                            <div class="col-2" data-label="Course_CP">
                                 {{ course.cp }}
                             </div>
                         </li>
@@ -199,19 +169,19 @@ div.scrollmenu button:hover {
                 </form>
                 {% if course.id == chosenCourse %}
                 <div style="margin-bottom: 30px;">
-                        <li class="table-header" style="justify-content: space-around;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
-                        Topics
+                        <li class="table-header" style="justify-content: center;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
+                            Topics
                         </li>
-                        <li class="table-header" style="justify-content: space-around;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
-                        <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                            Title
-                        </div>
-                        <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                            Max Participants
-                        </div>
-                        <div style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                            Infobutton
-                        </div>
+                        <li class="table-header" style="padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;text-align:center">
+                            <div class="col-3">
+                                Title
+                            </div>
+                            <div class="col-3">
+                                Max Participants
+                            </div>
+                            <div class="col-3">
+                                Info Button
+                            </div>
                         </li>
                         {% if choiceSet %}
                             {% for choice in choiceSet %}
@@ -219,18 +189,18 @@ div.scrollmenu button:hover {
                                 {% csrf_token %}
                                     <button class="ppsv-button" type="submit" name="topic_button" {% if choice.id == chosenTopic %} value="-1" {% else %} value="{{ choice.id }}" {% endif %} >
                                         <input name="hidden_info" type="hidden" value="{{ choice.id }}">
-                                        <li class="table-row" style="justify-content: space-around;margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if choice.id == chosenTopic %} background-color:#0a3d62;color:white; {% endif %}">
-                                    <div data-label="Topic_Title">
+                                        <li class="table-row" style="margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if choice.id == chosenTopic %} background-color:#0a3d62;color:white; {% endif %}">
+                                    <div class="col-3"  data-label="Topic_Title" >
                                         {{ choice.title }}
                                     </div>
-                                    <div data-label="Topic_MaxP">
+                                    <div class="col-3" data-label="Topic_MaxP" >
                                         {% if choice.max_participants == 9999 %}
                                             unlimited
                                         {% else %}
                                         {{ choice.max_participants }}
                                         {% endif %}
                                     </div>
-                                    <div data-label="Info_Btn">
+                                    <div class="col-3" data-label="Info_Btn" >
                                         Info
                                     </div>
                                 </li>

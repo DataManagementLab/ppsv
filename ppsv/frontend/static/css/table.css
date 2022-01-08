@@ -35,13 +35,13 @@
 	 box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);
 }
  .responsive-table .col-1 {
-	 flex-basis: 10%;
+	 flex-basis: 100%;
 }
  .responsive-table .col-2 {
-	 flex-basis: 40%;
+	 flex-basis: 50%;
 }
  .responsive-table .col-3 {
-	 flex-basis: 25%;
+	 flex-basis: 33%;
 }
  .responsive-table .col-4 {
 	 flex-basis: 25%;
