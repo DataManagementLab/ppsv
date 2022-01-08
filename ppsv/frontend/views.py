@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from course import models
 from django.views.generic import TemplateView
-from course.models import TopicSelection
+from course.models import TopicSelection, Group
 
 
 def homepage(request):
@@ -79,28 +79,57 @@ def selection(request):
                 for topic in topics:
                     topic_choices.append(topic)
 
-                # change abcd to logged in student
-                student_group = models.Group.objects.get(students='abcd')
-                selection_group = models.TopicSelection.objects.filter(group=student_group.id)
-                already_selected = False
-
-                for known_selection in selection_group:
-                    if int(chosen_topic) == int(known_selection.topic.id):
-                        already_selected = True
-
-                #if not already_selected:
-                    # create Group with students in inputtext
-                    #selection = TopicSelection()
-                    #selection.priority = 0
-                    # change abcd to logged in student
-                    #selection.group = models.Group.objects.get(students='abcd')
-                    #selection.topic = models.Topic.objects.get(id=chosen_topic)
-                    #selection.save()
-
                 args = {'courses': courses_in_same_faculty, "choiceSet": topic_choices, "faculties": faculties, "chosenTopic": chosen_topic, 'chosenCourse': courses[0].id}
                 """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
                     and faculties(contains all faculties)"""
                 return render(request, template_name, args)
+        elif 'select_topic_button' in request.POST:
+
+            # change abcd to logged in student
+            student_group = models.Group.objects.get(students='abcd')
+
+            if not student_group:
+                print("Empty")
+                """
+                # Creating a group for the student
+                created_group = Group()
+                # Change abds to user Tu-ID
+                created_group.students.set(models.Student.objects.get(tucan_id='abcd'))
+                created_group.save()
+                """
+
+            # change abcd to logged in student
+            student_group = models.Group.objects.get(students='abcd')
+            selections_with_group = models.TopicSelection.objects.filter(group=student_group.id)
+            chosen_topic = int(request.POST.get('select_topic_button'))
+
+            already_selected = False
+            for known_selection in selections_with_group:
+                if int(chosen_topic) == int(known_selection.topic.id):
+                        already_selected = True
+
+            if not already_selected:
+                # create Group with students in inputtext
+                selection = TopicSelection()
+                selection.priority = 0
+                # change abcd to logged in student
+                selection.group = models.Group.objects.get(students='abcd')
+                selection.topic = models.Topic.objects.get(id=chosen_topic)
+                selection.priority = int(request.POST.get('priority'))
+                selection.save()
+
+            courses = models.Course.objects.filter(topic=chosen_topic)
+            courses_in_same_faculty = models.Course.objects.filter(faculty=courses[0].faculty)
+            topics = models.Topic.objects.filter(course=courses[0].id)
+            for topic in topics:
+                topic_choices.append(topic)
+
+            chosen_topic = -1;
+            args = {'courses': courses_in_same_faculty, "choiceSet": topic_choices, "faculties": faculties,
+                    "chosenTopic": chosen_topic, 'chosenCourse': courses[0].id}
+            """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
+                and faculties(contains all faculties)"""
+            return render(request, template_name, args)
 
     args = {"faculties": faculties}
     return render(request, template_name, args)

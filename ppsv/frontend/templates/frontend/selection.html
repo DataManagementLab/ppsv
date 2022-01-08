@@ -11,7 +11,7 @@ Selection Page
 
 <!-- "search" contains an input of type search which takes any string and later displays all search results in the tables below  -->
 <h2>
-    <div name="search" class="container-fluid" style="margin: 1em;">
+    <div name="search_bar" class="container-fluid" style="margin: 1em;">
         <input type="search">
         <i class="fa fa-search fa-1x" aria-hidden="true"></i>
     </div>
@@ -217,7 +217,7 @@ div.scrollmenu button:hover {
                             {% for choice in choiceSet %}
                                 <form method="post" style="margin: 0; padding: 0;">
                                 {% csrf_token %}
-                                    <button class="ppsv-button" type="submit" name="topic_button" {% if choice.id == chosenTopic %} value="-1" {% else %} value="{{ choice.id }}" {% endif %}>
+                                    <button class="ppsv-button" type="submit" name="topic_button" {% if choice.id == chosenTopic %} value="-1" {% else %} value="{{ choice.id }}" {% endif %} >
                                         <input name="hidden_info" type="hidden" value="{{ choice.id }}">
                                         <li class="table-row" style="justify-content: space-around;margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if choice.id == chosenTopic %} background-color:#0a3d62;color:white; {% endif %}">
                                     <div data-label="Topic_Title">
@@ -239,16 +239,24 @@ div.scrollmenu button:hover {
                                 {% if choice.id == chosenTopic %}
                                 <form method="post" style="margin: 0; padding: 0;">
                                     {% csrf_token %}
-                                    <div class="table-row" style="margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;">
+                                    <div class="table-row" style="justify-content: center;display: flex;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 13px;">
+                                        <!-- Need to check if a motivational text is even needed-->
+                                        <!-- Priority <= count(already_chosen_topics) -->
+                                        <div>
+                                            <label> Set your priority for this topic: <input type="text" name="priority">  </label> <br>
+                                            <label style="display:flex;"> Submit a file as your motivational text:  <input style="margin-left:5px;display:flex;" type="file" name="myFile" accept=".pdf, .txt" multiple name="file"> </label>
+                                            <button style="display:flex;" type="submit" name="select_topic_button" value="{{ chosenTopic }}" > Choose Topic </button>
+                                        </div>
                                         <!-- <label style="margin-left:30px;"> Enter the TU-IDs of your group members, you want to join {{ choice.title }} with </label> <br>
                                         <input style="margin-left:30px;" type="text"> -->
-                                        <button type="submit" name="choose_topic_button" value="{{ chosenTopic }}" > Choose Topic </button> <br>
-                                        <!-- <label style="margin-left:30px;"> Submit a file with your groups motivational text </label> <br>
-                                        <input style="margin-left:30px;" type="file" name="myFile" multiple> -->
                                     </div>
                                 </form>
                                 {% endif %}
                             {% endfor %}
+                        {% else %}
+                        <div class="table-row" style="justify-content: center;display: flex;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 13px;">
+                            There are no topics for this course right now
+                        </div>
                         {% endif %}
                 </div>
                 {% endif %}
