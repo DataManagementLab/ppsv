@@ -5,6 +5,11 @@
 Selection Page
 {% endblock title%}
 
+{% block selection_page_navbar_container %}
+       <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px;">
+            <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Deine Wahl</button>
+       </form>
+{% endblock selection_page_navbar_container %}
 
 {% block content %}
 <!-- This page contains some tables and a search function in order to find courses and topics -->

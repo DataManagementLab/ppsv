@@ -40,19 +40,27 @@ logged in right now -->
 <!-- "navbar" contains all links to important html pages like the homepage,overview etc. -->
 <div name="navbar" class="container-fluid" style="background-color: #0C8FCC">
     <div class="row" style="background-color: #0C8FCC">
+        {% block homepage_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"><i class="fa fa-home fa-lg" aria-hidden="true"
                                                         style="padding-bottom: 0.2em;padding-top: 0.2em"></i></button>
         </form>
+        {% endblock homepage_navbar_container %}
+        {% block overview_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"> Übersicht</button>
         </form>
+        {% endblock overview_page_navbar_container %}
+        {% block selection_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"> Deine Wahl</button>
         </form>
+        {% endblock selection_page_navbar_container %}
+        {% block groups_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"> Gruppen</button>
         </form>
+        {% endblock groups_page_navbar_container %}
         {# Sprache ändern #}
         <button class="navbar-btn" style="float:right"><i class="fa fa-globe fa-lg" aria-hidden="true"
                                                           style="padding-top:0.2em;padding-bottom:0.2em;"> </i></button>

@@ -1,1 +1,9 @@
 {% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block homepage_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px;">
+            <button type="submit" class="navbar-btn" style="background-color:#0a3d62;"><i class="fa fa-home fa-lg" aria-hidden="true"
+                                                        style="padding-bottom: 0.2em;padding-top: 0.2em;"></i></button>
+        </form>
+{% endblock homepage_navbar_container %}
