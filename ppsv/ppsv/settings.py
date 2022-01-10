@@ -144,5 +144,7 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = '/ppsv/login'
 LOGIN_REDIRECT_URL = '/ppsv/homepage'
 LOGOUT_REDIRECT_URL = '/ppsv/homepage'
+
