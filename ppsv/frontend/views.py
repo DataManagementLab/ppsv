@@ -83,6 +83,7 @@ def selection(request):
                 """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
                     and faculties(contains all faculties)"""
                 return render(request, template_name, args)
+
         elif 'select_topic_button' in request.POST:
 
             # change abcd to logged in student
@@ -102,11 +103,13 @@ def selection(request):
             student_group = models.Group.objects.get(students='abcd')
             selections_with_group = models.TopicSelection.objects.filter(group=student_group.id)
             chosen_topic = int(request.POST.get('select_topic_button'))
+            success = ''
 
             already_selected = False
             for known_selection in selections_with_group:
                 if int(chosen_topic) == int(known_selection.topic.id):
-                        already_selected = True
+                        already_selected = True#
+                        success = 'already_selected'
 
             if not already_selected:
                 # create Group with students in inputtext
@@ -115,8 +118,8 @@ def selection(request):
                 # change abcd to logged in student
                 selection.group = models.Group.objects.get(students='abcd')
                 selection.topic = models.Topic.objects.get(id=chosen_topic)
-                selection.priority = int(request.POST.get('priority'))
                 selection.save()
+                success = 'success'
 
             courses = models.Course.objects.filter(topic=chosen_topic)
             courses_in_same_faculty = models.Course.objects.filter(faculty=courses[0].faculty)
@@ -124,9 +127,10 @@ def selection(request):
             for topic in topics:
                 topic_choices.append(topic)
 
-            chosen_topic = -1;
+            chosen_topic = -1
+
             args = {'courses': courses_in_same_faculty, "choiceSet": topic_choices, "faculties": faculties,
-                    "chosenTopic": chosen_topic, 'chosenCourse': courses[0].id}
+                    "chosenTopic": chosen_topic, 'chosenCourse': courses[0].id, 'success': success}
             """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
                 and faculties(contains all faculties)"""
             return render(request, template_name, args)
