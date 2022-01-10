@@ -15,6 +15,7 @@ from pathlib import Path
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 
+# tags for different types of messages
 MESSAGE_TAGS = {
         messages.DEBUG: 'alert-secondary',
         messages.INFO: 'alert-info',
@@ -144,7 +145,9 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# overwriting the built-in django login path
 LOGIN_URL = '/ppsv/login'
+# Redirect URLs after logging in or out
 LOGIN_REDIRECT_URL = '/ppsv/homepage'
 LOGOUT_REDIRECT_URL = '/ppsv/homepage'
 

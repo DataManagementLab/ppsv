@@ -68,17 +68,19 @@ def groups(request):
 
 
 def login_request(request):
-    """
+    """Login view
 
-    :param request:
-    :return:
+    :param request: The given request
+    :type request: HttpRequest
     """
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
+        # checks if the given login data is valid
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
+            # proceeds to login the authenticated user
             if user is not None:
                 login(request, user)
                 messages.info(request, f"You are now logged in as {username}.")
@@ -92,15 +94,28 @@ def login_request(request):
 
 
 def logout_request(request):
+    """Logout view
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
+    # logs the user out
     logout(request)
     messages.info(request, "You have successfully logged out.")
     return redirect("frontend:homepage")
 
 
 def register(request):
+    """View for user registration
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
     if request.method == "POST":
         form = NewUserForm(request.POST)
+        # checks if the given data is valid
         if form.is_valid():
+            # saves the given data as a new user and the user is logged in
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful.")
@@ -112,10 +127,16 @@ def register(request):
 
 @login_required
 def profile(request):
+    """View for profile/student creation
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
     if request.method == "POST":
         form = NewStudentForm(request.POST)
+        # checks if the given data is valid and the user already has a linked student
         if form.is_valid() and not hasattr(request.user, "student"):
-            print("form valid")
+            # saves given data as the new student linked to the user who is logged in
             student = form.save(commit=False)
             student.user = request.user
             student.email = request.user.email

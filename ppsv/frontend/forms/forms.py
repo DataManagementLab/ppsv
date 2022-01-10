@@ -50,10 +50,10 @@ class NewStudentForm(ModelForm):
 
 	:attr tucan_id: The TUCaN-ID of the student
 	:type tucan_id: CharField
-	:attr first_name: The first name of the student
-	:type first_name: CharField
-	:attr last_name: The last name of the student
-	:type last_name: CharField
+	:attr firstname: The first name of the student
+	:type firstname: CharField
+	:attr lastname: The last name of the student
+	:type lastname: CharField
 	"""
 	tucan_id = forms.CharField(min_length=8, max_length=8, required=True, label=_('student ID'))
 	firstname = forms.CharField(max_length=200, required=True, label=_("first Name"))
