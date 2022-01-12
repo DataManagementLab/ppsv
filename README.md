@@ -11,9 +11,8 @@ Maybe a description
 https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 
 <h2>Run with Docker</h2>
-1. Install docker e.g. `apt-get install docker -y`<br />
-2. Build image of app `docker build -t ppsv .`<br />
-3. Run app `docker run -it --name ppsv --rm -p 8000:8000 ppsv`<br />
+1. Install docker if not installed already
+2. Execute `sh run-with-docker.sh`
 
 <h2>Open Questions</h2>
 Should we give some Fields "unique=True"?
