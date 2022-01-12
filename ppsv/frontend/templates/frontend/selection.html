@@ -1,5 +1,4 @@
 {% extends 'frontend/base.html' %}
-{% load static %}
 
 {% block title %}
 Selection Page
@@ -12,17 +11,8 @@ Selection Page
 {% endblock selection_page_navbar_container %}
 
 {% block content %}
-<!-- This page contains some tables and a search function in order to find courses and topics -->
+<!-- This page contains some tables in order to find courses and topics -->
 
-<!-- "search" contains an input of type search which takes any string and later displays all search results in the tables below  -->
-<!-- <h2>
-    <div name="search_bar" class="container-fluid" style="margin: 1em;">
-        <input type="search">
-        <i class="fa fa-search fa-1x" aria-hidden="true"></i>
-    </div>
-</h2> -->
-
-<!-- /* Dropdown Button */ -->
 <style>
 
 .dropbtn {
@@ -55,32 +45,12 @@ Selection Page
     outline: none;
 }
 
-/* Change the background color of the dropdown button when the dropdown content is shown */
 .dropbtn:hover li {
     background-color: #0a3d62;
     color: white;}
 
-
 </style>
-
-<!-- Contains 3 tables which contain the faculties, courses and topics which can be selected -->
 <style>
-.customized-scrollbar {
-  display: block;
-  overflow: auto;
-}
-
-.customized-scrollbar::-webkit-scrollbar {
-  height: 7px;
-  background-color: white;
-}
-
-.customized-scrollbar::-webkit-scrollbar-thumb {
-    background: #0C8FCC;
-    background-clip: content-box;
-    border-radius: 6px;
-}
-
 .scrollmenu {
   overflow: auto;
   white-space: nowrap;
@@ -111,7 +81,23 @@ div.scrollmenu button:hover {
   color: white;
 }
 
+.customized-scrollbar {
+  display: block;
+  overflow: auto;
+}
+
+.customized-scrollbar::-webkit-scrollbar {
+  height: 7px;
+  background-color: white;
+}
+
+.customized-scrollbar::-webkit-scrollbar-thumb {
+    background: #0C8FCC;
+    background-clip: content-box;
+    border-radius: 6px;
+}
 </style>
+
 <div class="container-fluid">
         {% if success == 'success' %}
             <div class="alert alert-success">
@@ -174,9 +160,9 @@ div.scrollmenu button:hover {
             {% for course in courses %}
                 <form method="post" style="margin: 0px; padding: 0px;">
                     {% csrf_token %}
-                    <button class="dropbtn" type="submit" name="course_button" {% if chosenCourse == course.id %} value="-1" {% else %} value="{{ course.id }}" {% endif %} style="margin: 0; padding: 0; width:100%">
-                        <input name="hidden_info" type="hidden" value="{{ course.id }}">
-                        <li class="table-row" {% if chosenCourse == course.id %} style="background-color:#0a3d62;color:white;" {% endif %}>
+                    <button class="dropbtn" type="submit" name="course_button" {% if chosen_course == course.id %} value="-1" {% else %} value="{{ course.id }}" {% endif %} style="margin: 0; padding: 0; width:100%">
+                        <input name="hidden_course_id" type="hidden" value="{{ course.id }}">
+                        <li class="table-row" {% if chosen_course == course.id %} style="background-color:#0a3d62;color:white;" {% endif %}>
                             <div class="col-2" data-label="Course_Title">
                                 {{ course.title }}
                             </div>
@@ -202,7 +188,7 @@ div.scrollmenu button:hover {
                         </li>
                     </button>
                 </form>
-                {% if course.id == chosenCourse %}
+                {% if course.id == chosen_course %}
                 <div style="margin-bottom: 30px;">
                         <li class="table-header" style="justify-content: center;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
                             Topics
@@ -218,21 +204,21 @@ div.scrollmenu button:hover {
                                 Info Button
                             </div>
                         </li>
-                        {% if choiceSet %}
-                            {% for choice in choiceSet %}
+                        {% if topics_in_chosen_course %}
+                            {% for topic in topics_in_chosen_course %}
                                 <form method="post" style="margin: 0; padding: 0;">
                                 {% csrf_token %}
-                                    <button class="ppsv-button" type="submit" name="topic_button" {% if choice.id == chosenTopic %} value="-1" {% else %} value="{{ choice.id }}" {% endif %} >
-                                        <input name="hidden_info" type="hidden" value="{{ choice.id }}">
-                                        <li class="table-row" style="margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if choice.id == chosenTopic %} background-color:#0a3d62;color:white; {% endif %}">
+                                    <button class="ppsv-button" type="submit" name="topic_button" {% if topic.id == chosen_topic %} value="-1" {% else %} value="{{ topic.id }}" {% endif %} >
+                                        <input name="hidden_topic_id" type="hidden" value="{{ topic.id }}">
+                                        <li class="table-row" style="margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if topic.id == chosen_topic %} background-color:#0a3d62;color:white; {% endif %}">
                                     <div class="col-3"  data-label="Topic_Title" >
-                                        {{ choice.title }}
+                                        {{ topic.title }}
                                     </div>
                                     <div class="col-3" data-label="Topic_MaxP" >
-                                        {% if choice.max_participants == 9999 %}
+                                        {% if topic.max_participants == 9999 %}
                                             unlimited
                                         {% else %}
-                                        {{ choice.max_participants }}
+                                        {{ topic.max_participants }}
                                         {% endif %}
                                     </div>
                                     <div class="col-3" data-label="Info_Btn" >
@@ -241,13 +227,13 @@ div.scrollmenu button:hover {
                                 </li>
                                     </button>
                                 </form>
-                                {% if choice.id == chosenTopic %}
+                                {% if topic.id == chosen_topic %}
                                 <form method="post" style="margin: 0; padding: 0;">
                                     {% csrf_token %}
                                         <div style="margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);">
-                                            <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;" type="submit" name="select_topic_button" value="{{ chosenTopic }}" > Choose Topic </button>
+                                            <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;" type="submit" name="select_topic_button" value="{{ chosen_topic }}" > Choose Topic </button>
                                         </div>
-                                        <!-- <label style="margin-left:30px;"> Enter the TU-IDs of your group members, you want to join {{ choice.title }} with </label> <br>
+                                        <!-- <label style="margin-left:30px;"> Enter the TU-IDs of your group members, you want to join {{ topic.title }} with </label> <br>
                                         <input style="margin-left:30px;" type="text"> -->
                                 </form>
                                 {% endif %}
