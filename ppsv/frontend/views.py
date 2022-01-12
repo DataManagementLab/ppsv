@@ -21,6 +21,12 @@ def homepage(request):
 
 def selection(request):
 
+    """selection view
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
+
     template_name = 'frontend/selection.html'
     all_faculties = models.Course.objects.order_by().values('faculty').distinct()
 
@@ -34,9 +40,9 @@ def selection(request):
             chosen_faculty = str(request.POST.get('faculty_button'))
             # "courses_in_chosen_faculty" is a QuerySet with all courses in the database
             # which are in the "chosen_faculty"
-            courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty)
+            chosen_course = models.Course.objects.filter(faculty=chosen_faculty)
 
-            args = {'courses': courses_in_chosen_faculty, "faculties": all_faculties}
+            args = {'courses': chosen_course, "faculties": all_faculties}
 
             return render(request, template_name, args)
 
@@ -58,10 +64,10 @@ def selection(request):
 
                 # In order to still display all courses in the same faculty after we closed the overview for the
                 # topics, we need to get all courses in the chosen faculty again
-                courses_in_chosen_faculty = models.Course.objects.filter(
+                chosen_course = models.Course.objects.filter(
                     faculty=models.Course.objects.get(id=course_id).faculty)
 
-                args = {'courses': courses_in_chosen_faculty, "faculties": all_faculties}
+                args = {'courses': chosen_course, "faculties": all_faculties}
 
                 return render(request, template_name, args)
 
@@ -69,12 +75,12 @@ def selection(request):
             else:
                 # In order to still display all courses in the same faculty after we closed the overview for the
                 # topics, we need to get all courses in the chosen faculty again
-                courses_in_chosen_faculty = models.Course.objects.filter(
+                courses_in_same_faculty = models.Course.objects.filter(
                     faculty=models.Course.objects.get(id=chosen_course).faculty)
-                # "topic_choice_set" contains all topics in the chosen course
+                # "topics_in_chosen_course" contains all topics in the chosen course
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
 
-                args = {"courses": courses_in_chosen_faculty, 'chosen_course': chosen_course,
+                args = {"courses": courses_in_same_faculty, 'chosen_course': chosen_course,
                         "topics_in_chosen_course": topics_in_chosen_course, "faculties": all_faculties}
 
                 return render(request, template_name, args)
@@ -129,53 +135,61 @@ def selection(request):
 
         elif 'select_topic_button' in request.POST:
 
-            # Hier sind keine Kommentare weil der Code sich nach dem Merg ändern wird
+            # "student_tu_id" contains the tucan_id of the student who is logged in
+            student_tu_id = str(request.user.student)
 
-            # change abcd to logged in student
-            student_group = models.Group.objects.get(students='abcd')
-
-            if not student_group:
-                print("Empty")
-                """
-                # Creating a group for the student
+            # If a group for the student (with him as the only group member) does not exist, it will be created
+            if not models.Group.objects.filter(students=student_tu_id).exists():
                 created_group = Group()
-                # Change abds to user Tu-ID
-                created_group.students.set(models.Student.objects.get(tucan_id='abcd'))
                 created_group.save()
-                """
+                created_group.students.add(models.Student.objects.get(tucan_id=student_tu_id))
+                created_group.save()
 
-            # change abcd to logged in student
-            student_group = models.Group.objects.get(students='abcd')
-            selections_with_group = models.TopicSelection.objects.filter(group=student_group.id)
-            chosen_topic = int(request.POST.get('select_topic_button'))
+            # "group_of_student" contains the group with which the user will select the chosen topic
+            group_of_student = models.Group.objects.get(students=student_tu_id)
+            # "chosen_topic_id" contains the id of the topic which was selected by the user by pressing the
+            # according button on the selection page
+            chosen_topic_id = int(request.POST.get('select_topic_button'))
+            # Initialising "success" which will later indicate the selection page if the selection succeeded
             success = ''
 
+            # "topic_selections_of_group" contains all selections made by the "group_of_student" group
+            topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_student.id)
+
             already_selected = False
-            for known_selection in selections_with_group:
-                if int(chosen_topic) == int(known_selection.topic.id):
+
+            # Iterates through all known selections which the group already made
+            for known_selection in topic_selections_of_group:
+                # If the chosen topic was already selected by the group, the selection "fails"
+                if int(chosen_topic_id) == int(known_selection.topic.id):
                         already_selected = True
+                        # "already_selected" indicates the selection page that the chosen topic
+                        # was already selected
                         success = 'already_selected'
 
+            # If a selection of the chosen topic by the "group_of_student" does not exist, a selection will be created
             if not already_selected:
-                # create Group with students in inputtext
                 user_selection = TopicSelection()
                 user_selection.priority = 0
-                # change abcd to logged in student
-                user_selection.group = models.Group.objects.get(students='abcd')
-                user_selection.topic = models.Topic.objects.get(id=chosen_topic)
+                user_selection.group = group_of_student
+                user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
                 user_selection.save()
+                # "success" indicates the selection page that the selection succeeded
                 success = 'success'
 
-            courses_in_chosen_faculty = models.Course.objects.filter(topic=chosen_topic)
-            courses_in_same_faculty = models.Course.objects.filter(faculty=courses_in_chosen_faculty[0].faculty)
-            topics_in_chosen_course = models.Topic.objects.filter(course=courses_in_chosen_faculty[0].id)
+            # "chosen_course" contains the course which contains the chosen topic
+            chosen_course = models.Course.objects.get(topic=chosen_topic_id)
+            # "courses_in_same_faculty" contains all courses which have the same faculty as the "chosen_course"
+            courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
+            # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
 
-            chosen_topic = -1
+            # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
+            # be interpreted as "no topic chosen"
+            chosen_topic_id = -1
 
-            args = {'courses': courses_in_same_faculty, "topic_in_chosen_course": topics_in_chosen_course, "faculties": all_faculties,
-                    "chosen_topic": chosen_topic, 'chosen_course': courses_in_chosen_faculty[0].id, 'success': success}
-            """ Returns args which contains courses(filtered by a chosen faculty), topic_choices(all topics in courses) 
-                and faculties(contains all faculties)"""
+            args = {'courses': courses_in_same_faculty, "topics_in_chosen_course": topics_in_chosen_course, "faculties": all_faculties,
+                    "chosen_topic": chosen_topic_id, 'chosen_course': chosen_course.id, 'success': success}
             return render(request, template_name, args)
 
     args = {"faculties": all_faculties}

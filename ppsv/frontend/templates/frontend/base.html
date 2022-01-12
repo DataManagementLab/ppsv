@@ -41,12 +41,12 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
         <!-- user_menu -->
         <div class="put-top-right" style="display:flex; flex-direction: row; justify-content: right; align-items: right">
             {% block login %}
-            {% if user.is_authenticated %}
-            Hi {{ user.username }}! (<a href="{% url 'frontend:logout' %}">Log Out</a>)
-            {% else %}
-            You are not logged in
-            (<a href="{% url 'frontend:login' %}">Log In</a>)
-            {% endif %}
+                {% if user.is_authenticated %}
+                    Hi {{ user.username }}! (<a href="{% url 'frontend:logout' %}">Log Out</a>)
+                {% else %}
+                    You are not logged in
+                    (<a href="{% url 'frontend:login' %}">Log In</a>)
+                {% endif %}
             {% endblock %}
 
         </div>
