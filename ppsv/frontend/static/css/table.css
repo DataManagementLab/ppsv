@@ -13,11 +13,12 @@
  h2 small {
 	 font-size: 0.5em;
 }
+
  .responsive-table li {
      border-radius: 3px;
 	 padding: 25px 30px;
      display: flex;
-	 justify-content: space-between;
+	 justify-content: space-around;
 	 margin-bottom: 25px;
 }
 
@@ -27,19 +28,20 @@
 	 color: rgba(255,255,255,1);
 	 text-transform: uppercase;
 	 letter-spacing: 0.03em;
+	 justify-content: space-around;
 }
  .responsive-table .table-row {
 	 background-color: transparent;
 	 box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);
 }
  .responsive-table .col-1 {
-	 flex-basis: 10%;
+	 flex-basis: 100%;
 }
  .responsive-table .col-2 {
-	 flex-basis: 40%;
+	 flex-basis: 50%;
 }
  .responsive-table .col-3 {
-	 flex-basis: 25%;
+	 flex-basis: 33%;
 }
  .responsive-table .col-4 {
 	 flex-basis: 25%;

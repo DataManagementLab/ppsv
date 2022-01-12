@@ -1,5 +1,12 @@
 {% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block groups_page_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;" > Gruppen</button>
+        </form>
+{% endblock groups_page_navbar_container %}
 
 {% block content %}
-<h1> Gruppen </h1>
+
 {% endblock content %}

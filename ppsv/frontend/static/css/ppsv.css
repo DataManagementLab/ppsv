@@ -54,11 +54,9 @@
         }
 
         .ppsv-grid-container {
-            margin 0;
             display: grid;
             grid-template-columns: auto auto auto auto;
-            grid-gap: 10px;
-            padding: 10px;
+            grid-gap: 0px;
         }
 
         .ppsv-item {
@@ -69,6 +67,7 @@
             box-sizing:border-box;
             background:transparent;
             border:none;
+            width: 100%;
         }
 
         .ppsv-button:hover li {

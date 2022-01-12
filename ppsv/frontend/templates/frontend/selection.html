@@ -1,58 +1,278 @@
 {% extends 'frontend/base.html' %}
-{% load static %}
 
 {% block title %}
-  Selection Page
+Selection Page
 {% endblock title%}
 
+{% block selection_page_navbar_container %}
+       <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px;">
+            <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Deine Wahl</button>
+       </form>
+{% endblock selection_page_navbar_container %}
 
 {% block content %}
+<!-- This page contains some tables in order to find courses and topics -->
 
-    <table class="table" id="course_table">
-        <thead>
-            <tr>
-                <th> ID </th>
-                <th> Name </th>
-                <th> Type </th>
-                <th> Max_P </th>
-                <th> CP </th>
-                <th> Selection </th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for course in courses %}
-            <tr>
-                <td> {{ course.id }}</td>
-                <td> {{ course.title }}</td>
-                <td> {{ course.type }}</td>
-                <td> {{ course.max_participants }}</td>
-                <td> {{ course.cp }}</td>
-                <td> <input class="input" type="checkbox" name="{{course.title}}" id="{{course.id}}" onclick="sendCourseInfos(this)"> </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<style>
 
+.dropbtn {
+    display: inline-block;
+    padding: 25px 30px;
+    text-align: center;
+    color: black;
+    background-color: transparent;
+    border: none;
+    outline: none;
+  }
 
-    <table class="table" name="topic_table">
-        <thead>
-            <tr>
-                <th> ID </th>
-                <th> Title </th>
-                <th> Max_P </th>
-                <th> Selection </th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for topic in topics %}
-            <tr>
-                <td> {{ topic.id }}</td>
-                <td> {{ topic.title }}</td>
-                <td> {{ topic.max_participants }}</td>
-                <td> <input class="input" type="checkbox">  </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+.dropbtn-choose-topic {
+    display: inline-block;
+    padding: 25px 30px;
+    text-align: center;
+    color: black;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-radius: 3px;
+ }
+
+ .dropbtn-choose-topic:hover {
+    background-color: rgba(37, 111, 37, 0.8);
+    color: white;
+ }
+
+.dropbtn:focus {
+    outline: none;
+}
+
+.dropbtn:hover li {
+    background-color: #0a3d62;
+    color: white;}
+
+</style>
+<style>
+.scrollmenu {
+  overflow: auto;
+  white-space: nowrap;
+  padding-bottom: 15px;
+}
+
+.scrollmenu form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+.scrollmenu button {
+    display: inline-block;
+    justify-content: space-between;
+    margin: 5px;
+    padding: 25px 30px;
+    text-align: center;
+    color: black;
+    background-color: transparent;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);
+}
+
+div.scrollmenu button:hover {
+  background-color: #0a3d62;
+  color: white;
+}
+
+.customized-scrollbar {
+  display: block;
+  overflow: auto;
+}
+
+.customized-scrollbar::-webkit-scrollbar {
+  height: 7px;
+  background-color: white;
+}
+
+.customized-scrollbar::-webkit-scrollbar-thumb {
+    background: #0C8FCC;
+    background-clip: content-box;
+    border-radius: 6px;
+}
+</style>
+
+<!-- This container contains all alerts which indicate the user id the selection failed or not -->
+<div class="container-fluid">
+        {% if success == 'success' %}
+            <div class="alert alert-success">
+                <strong>Your selection was successful !</strong> You can find and edit your chosen topics on the overview page.
+            </div>
+            <div class="alert alert-warning">
+                <strong>Important !</strong>
+                You need to set the priority and add a motivation text(when needed) to your selection in order to fully complete your selection.
+                You can do this on the overview page.
+            </div>
+        {% endif %}
+
+        {% if success == 'already_selected' %}
+            <div class="alert alert-danger">
+                <strong> Selection Failed!</strong> You have already selected this topic.
+            </div>
+        {% endif %}
+</div>
+
+<!-- This container contains all faculties -->
+<div class="container-fluid">
+        <ul class="responsive-table">
+            <li class="table-header" style="justify-content: center;">
+                <div>Faculties</div>
+            </li>
+            <div class="scrollmenu customized-scrollbar">
+                {% for faculty in faculties %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="faculty_button" value="{{ faculty.faculty }}">
+                        {{ faculty.faculty }}
+                    </button>
+                </form>
+                {% endfor %}
+            </div>
+        </ul>
+</div>
+
+<!-- This container contains all courses and topics -->
+<div class="container-fluid">
+    <ul class="responsive-table" style="margin-bottom:5px;">
+            <li class="table-header" style="justify-content: center; margin-bottom:0px;">
+                Courses
+            </li>
+    </ul>
+    <ul class="responsive-table">
+            <li class="table-header" style="padding: 3px;padding-left: 25px;padding-right: 25px;text-align:center">
+                <div class="col-2">
+                    Title
+                </div>
+                <div class="col-2">
+                    Type
+                </div>
+                <div class="col-2">
+                    Registration Start
+                </div>
+                <div class="col-2">
+                    Registration End
+                </div>
+                <div class="col-2">
+                    Max Participants
+                </div>
+                <div class="col-2">
+                    CP
+                </div>
+            </li>
+            {% for course in courses %}
+                <form method="post" style="margin: 0px; padding: 0px;">
+                    {% csrf_token %}
+                    <button class="dropbtn" type="submit" name="course_button" {% if chosen_course == course.id %} value="-1" {% else %} value="{{ course.id }}" {% endif %} style="margin: 0; padding: 0; width:100%">
+                        <input name="hidden_course_id" type="hidden" value="{{ course.id }}">
+                        <li class="table-row" {% if chosen_course == course.id %} style="background-color:#0a3d62;color:white;" {% endif %}>
+                            <div class="col-2" data-label="Course_Title">
+                                {{ course.title }}
+                            </div>
+                            <div class="col-2" data-label="Course_Type">
+                                {{ course.type }}
+                            </div>
+                            <div class="col-2" data-label="Course_RegStart">
+                                {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                            </div>
+                            <div class="col-2" data-label="Course_RegEnd">
+                                {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
+                            </div>
+                            <div class="col-2" data-label="Course_MaxPart">
+                                {% if course.max_participants == 9999 %}
+                                unlimited
+                                {% else %}
+                                {{ course.max_participants }}
+                                {% endif %}
+                            </div>
+                            <div class="col-2" data-label="Course_CP">
+                                {{ course.cp }}
+                            </div>
+                        </li>
+                    </button>
+                </form>
+                {% if course.id == chosen_course %}
+                <div style="margin-bottom: 30px;">
+                        <li class="table-header" style="justify-content: center;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
+                            Topics
+                        </li>
+                        <li class="table-header" style="padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;text-align:center">
+                            <div class="col-3">
+                                Title
+                            </div>
+                            <div class="col-3">
+                                Max Participants
+                            </div>
+                            <div class="col-3">
+                                Info Button
+                            </div>
+                        </li>
+                        {% if topics_in_chosen_course %}
+                            {% for topic in topics_in_chosen_course %}
+                                <form method="post" style="margin: 0; padding: 0;">
+                                {% csrf_token %}
+                                    <button class="ppsv-button" type="submit" name="topic_button" {% if topic.id == chosen_topic %} value="-1" {% else %} value="{{ topic.id }}" {% endif %} >
+                                        <input name="hidden_topic_id" type="hidden" value="{{ topic.id }}">
+                                        <li class="table-row" style="margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if topic.id == chosen_topic %} background-color:#0a3d62;color:white; {% endif %}">
+                                    <div class="col-3"  data-label="Topic_Title" >
+                                        {{ topic.title }}
+                                    </div>
+                                    <div class="col-3" data-label="Topic_MaxP" >
+                                        {% if topic.max_participants == 9999 %}
+                                            unlimited
+                                        {% else %}
+                                        {{ topic.max_participants }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-3" data-label="Info_Btn" >
+                                        Info Button
+                                    </div>
+                                </li>
+                                    </button>
+                                </form>
+                                {% if topic.id == chosen_topic %}
+                                <form method="post" style="margin: 0; padding: 0;">
+                                    {% csrf_token %}
+                                        <div style="margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);">
+                                            <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;" type="submit" name="select_topic_button" value="{{ chosen_topic }}" > Choose Topic </button>
+                                        </div>
+                                        <!-- <label style="margin-left:30px;"> Enter the TU-IDs of your group members, you want to join {{ topic.title }} with </label> <br>
+                                        <input style="margin-left:30px;" type="text"> -->
+                                </form>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                        <div class="table-row" style="justify-content: center;display: flex;margin-bottom:0px; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 13px;">
+                            There are no topics for this course right now
+                        </div>
+                        {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+    </ul>
+</div>
+
+<!-- If only a topic is selected the scroll position is set to 0.
+     Otherwise, the scroll position is saved and loaded when the page submits a form-->
+{% if not success %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function (event) {
+            var scrollpos = sessionStorage.getItem('scrollpos');
+            if (scrollpos) {
+                window.scrollTo(0, scrollpos);
+                sessionStorage.removeItem('scrollpos');
+            }
+        });
+
+        window.addEventListener("beforeunload", function (e) {
+               sessionStorage.setItem('scrollpos', window.scrollY);
+        });
+    </script>
+{% endif %}
 
 {% endblock content %}

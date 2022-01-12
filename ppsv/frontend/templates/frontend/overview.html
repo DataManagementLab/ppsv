@@ -1,108 +1,15 @@
 {% extends 'frontend/base.html' %}
+{% load static %}
 
 {% block title %} Overview {% endblock %}
 
+{% block overview_page_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Übersicht</button>
+        </form>
+{% endblock overview_page_navbar_container %}
+
 {% block content %}
 
-    <!-- This page contains some tables and a search function in order to find courses and topics -->
-
-    <!-- "search" contains an input of type search which takes any string and later displays all search results in the tables below  -->
-    <h2>
-        <div name="search" class="container-fluid" style="margin: 1em;">
-            <input type="search">
-            <i class="fa fa-search fa-1x" aria-hidden="true"></i>
-        </div>
-    </h2>
-
-    <!-- Contains 3 tables which contain the faculties, courses and topics which can be selected -->
-    <div class="ppsv-grid-container">
-        <div class="ppsv-item">
-            <ul class="responsive-table">
-                <li class="table-header">
-                    <div class="col">Faculty</div>
-                </li>
-                {% for faculty in faculties %}
-                <form method="post" id="{{ forloop.counter0 }}" style="margin: 0; padding: 0;">
-                    {% csrf_token %}
-                    <button class="ppsv-button" type="submit" name="{{ faculty.faculty }}">
-                            <li class="table-row">
-                                <div class="col">   {{ faculty.faculty }} </div>
-                            </li>
-                    </button>
-                </form>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="ppsv-item">
-            <ul class="responsive-table">
-                <li class="table-header">
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                        Title
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                        Type
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                        Registration Start
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                        Registration End
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">Max
-                        Participants
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">CP
-                    </div>
-                </li>
-                {% for course in courses %}
-                <li class="table-row">
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;"
-                         data-label="Course_Title">
-                        {{ course.title }}
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_Type">
-                        {{ course.type }}
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_RegStart">
-                        {{ course.registration_start.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_RegEnd">
-                        {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_MaxPart">
-                        {{ course.max_participants }}
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Course_CP">
-                        {{ course.cp }}
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="ppsv-item">
-            <ul class="responsive-table">
-                <li class="table-header">
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                        Title
-                    </div>
-                    <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;white-space:nowrap;">
-                        Max Participants
-                    </div>
-                </li>
-                {% for choiceSet in topicChoices %}
-                    {% for choice in choiceSet %}
-                    <li class="table-row">
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Topic_Title">
-                        {{ choice.title }}
-                        </div>
-                        <div class="col" style="margin-left: 1em;margin-right: 1em;text-align:left;" data-label="Topic_MaxP">
-                        {{ choice.max_participants }}
-                        </div>
-                    </li>
-                    {% endfor %}
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
 
 {% endblock content %}
