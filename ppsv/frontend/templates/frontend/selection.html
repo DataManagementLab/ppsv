@@ -98,13 +98,16 @@ div.scrollmenu button:hover {
 }
 </style>
 
+<!-- This container contains all alerts which indicate the user id the selection failed or not -->
 <div class="container-fluid">
         {% if success == 'success' %}
             <div class="alert alert-success">
                 <strong>Your selection was successful !</strong> You can find and edit your chosen topics on the overview page.
             </div>
             <div class="alert alert-warning">
-                <strong>Important !</strong> You need to set the priority and add a motivation text(when needed) to your selection in order to fully complete your selection. You can do this on the overview page.
+                <strong>Important !</strong>
+                You need to set the priority and add a motivation text(when needed) to your selection in order to fully complete your selection.
+                You can do this on the overview page.
             </div>
         {% endif %}
 
@@ -113,6 +116,10 @@ div.scrollmenu button:hover {
                 <strong> Selection Failed!</strong> You have already selected this topic.
             </div>
         {% endif %}
+</div>
+
+<!-- This container contains all faculties -->
+<div class="container-fluid">
         <ul class="responsive-table">
             <li class="table-header" style="justify-content: center;">
                 <div>Faculties</div>
@@ -130,6 +137,7 @@ div.scrollmenu button:hover {
         </ul>
 </div>
 
+<!-- This container contains all courses and topics -->
 <div class="container-fluid">
     <ul class="responsive-table" style="margin-bottom:5px;">
             <li class="table-header" style="justify-content: center; margin-bottom:0px;">
@@ -249,7 +257,8 @@ div.scrollmenu button:hover {
     </ul>
 </div>
 
-
+<!-- If only a topic is selected the scroll position is set to 0.
+     Otherwise, the scroll position is saved and loaded when the page submits a form-->
 {% if not success %}
     <script>
         document.addEventListener("DOMContentLoaded", function (event) {
