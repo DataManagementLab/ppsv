@@ -4,13 +4,18 @@
 <html>
 <head>
 
-    <!-- # This page contains all elements which all pages will use#} -->
+    <!-- This page contains all elements which all pages will use -->
 
     <!-- Sets the character set of all html pages which extend base.html -->
     <meta charset="UTF-8">
 
     <!-- Defines a block where other html pages can use their own title -->
     <title>{% block title %} {% endblock %}</title>
+
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
     <!-- Imports all important stylesheets and hyper references for all html pages which extend base.html -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
@@ -28,13 +33,26 @@
 <!-- Both "header" and "navbar" will be included in all html pages which extend "base.html" -->
 
 <!-- "header" contains on the left side the page name and on the right side a logo and the name of the user which is
-logged in right now -->
+logged in right now. If a user is logged in, a logout button is displayed. If not, a login button is displayed. -->
 <div name="header" class="container-fluid"
      style="background-color: #0a3d62;padding-top:1em;padding-bottom:1em;color:#ffffff;">
     <h3 style="font-weight: 500;font-family-sans-serif: 'Roboto'"> Praktikums- & Seminarplatzvergabe </h3>
-    <div class="content">
-        <i class="fa fa-user-circle-o fa-3x" aria-hidden="true"> </i>
+    <div class ="content">
+        <!-- user_menu -->
+        <div class="put-top-right" style="display:flex; flex-direction: row; justify-content: right; align-items: right">
+            {% block login %}
+            {% if user.is_authenticated %}
+            Hi {{ user.username }}! (<a href="{% url 'frontend:logout' %}">Log Out</a>)
+            {% else %}
+            You are not logged in
+            (<a href="{% url 'frontend:login' %}">Log In</a>)
+            {% endif %}
+            {% endblock %}
+
+        </div>
+        <a style="color: white;" href="{% url 'frontend:login' %}"><i class="fa fa-user-circle-o fa-3x" aria-hidden="true"></i></a>
     </div>
+
 </div>
 
 <!-- "navbar" contains all links to important html pages like the homepage,overview etc. -->
@@ -47,7 +65,8 @@ logged in right now -->
         <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"> Übersicht</button>
         </form>
-        <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px">
+        <form class="navbar-form" method="post" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px">
+            {% csrf_token %}
             <button type="submit" class="navbar-btn"> Deine Wahl</button>
         </form>
         <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
@@ -59,12 +78,21 @@ logged in right now -->
     </div>
 </div>
 
+{% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+         <span aria-hidden="True">&times;</span>
+        </button>
+        {{ message }}
+  </div>
+</div>
+{% endfor %}
 
 <!-- "content" contains everything that is not the header and can be modified by other html pages by using the block
 "content" -->
 <div name="content" class="container-fluid" style="padding-top: 2em;min-height:75vh;margin-bottom:50px">
     {% block content %}
-
 
     {% endblock %}
 </div>

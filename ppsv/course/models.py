@@ -8,6 +8,7 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 
 class Course(models.Model):
@@ -161,6 +162,8 @@ class Student(models.Model):
     This model represents a student on the platform. A student contains a TUCaN-ID, a first name, a last name,
     and an email.
 
+    :attr Student.user: The User of the student
+    :type Student.user: User
     :attr Student.tucan_id: The TUCaN-ID of the student
     :type Student.tucan_id: CharField
     :attr Student.firstname: The first name of the student
@@ -171,6 +174,7 @@ class Student(models.Model):
     :type Student.email: EmailField
 
     """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tucan_id = models.CharField(max_length=8, primary_key=True, verbose_name=_("student ID"))
     firstname = models.CharField(max_length=200, verbose_name=_("first Name"))
     lastname = models.CharField(max_length=200, verbose_name=_("last Name"))

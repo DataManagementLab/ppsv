@@ -21,14 +21,31 @@
             background-color: #0a3d62;
         }
 
+
+
         .content {
             position: relative;
+        }
+
+
+        .put-top-right {
+            position: absolute;
+            top: -2em;
+            right: 4em;
         }
 
         .content i {
             position: absolute;
             top: -1em;
             right: 0em;
+        }
+
+        a {
+            color: rgba(150, 175, 255, 1);
+        }
+
+        a:hover {
+            color: rgba(255, 255, 0, 1);
         }
 
         .navbar-form {

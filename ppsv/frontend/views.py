@@ -1,6 +1,15 @@
+"""Purpose of this file
+This file describes the frontend views.
+"""
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from course import models
+from .forms.forms import NewUserForm, NewStudentForm
+from django.contrib.auth import login, authenticate, logout
+from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm
 from django.views.generic import TemplateView
 
 
@@ -58,6 +67,85 @@ def groups(request):
     return render(request, template_name)
 
 
-def login(request):
-    template_name = 'frontend/login.html'
-    return render(request, template_name)
+def login_request(request):
+    """Login view
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        # checks if the given login data is valid
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            # proceeds to login the authenticated user
+            if user is not None:
+                login(request, user)
+                messages.info(request, f"You are now logged in as {username}.")
+                return redirect("frontend:homepage")
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    form = AuthenticationForm()
+    return render(request=request, template_name="registration/login.html", context={"login_form": form})
+
+
+def logout_request(request):
+    """Logout view
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
+    # logs the user out
+    logout(request)
+    messages.info(request, "You have successfully logged out.")
+    return redirect("frontend:homepage")
+
+
+def register(request):
+    """View for user registration
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        # checks if the given data is valid
+        if form.is_valid():
+            # saves the given data as a new user and the user is logged in
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Registration successful.")
+            return redirect("frontend:profile")
+        messages.error(request, "Unsuccessful registration. Invalid information.")
+    form = NewUserForm()
+    return render(request=request, template_name="registration/register.html", context={"register_form": form})
+
+
+@login_required
+def profile(request):
+    """View for profile/student creation
+
+    :param request: The given request
+    :type request: HttpRequest
+    """
+    if request.method == "POST":
+        form = NewStudentForm(request.POST)
+        # checks if the given data is valid and the user already has a linked student
+        if form.is_valid() and not hasattr(request.user, "student"):
+            # saves given data as the new student linked to the user who is logged in
+            student = form.save(commit=False)
+            student.user = request.user
+            student.email = request.user.email
+            student.save()
+            messages.success(request, "Student creation successful.")
+            return redirect("frontend:homepage")
+        if hasattr(request.user, "student"):
+            messages.error(request, "Student creation unsuccessful. A user can only create one student.")
+        else:
+            messages.error(request, "Student creation unsuccessful. Invalid information.")
+    form = NewStudentForm()
+    return render(request=request, template_name="registration/profile.html", context={"profile_form": form})

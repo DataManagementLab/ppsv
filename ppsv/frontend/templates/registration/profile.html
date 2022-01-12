@@ -1,0 +1,15 @@
+<!-- templates/registration/profile.html -->
+{% extends 'frontend/base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+<!-- Student creation -->
+{% block content %}
+  <h2>Student Creation Form</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ profile_form.as_p }}
+    <button type="submit">Create Student</button>
+  </form>
+
+{% endblock %}

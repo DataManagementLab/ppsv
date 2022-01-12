@@ -1,0 +1,17 @@
+<!-- templates/registration/login.html -->
+{% extends 'frontend/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+<!-- Login -->
+{% block content %}
+  <h2>Login</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ login_form.as_p }}
+    <button type="submit">Login</button>
+  </form>
+  <button onclick="location.href='{% url 'frontend:register' %}'" type="button">
+         Register</button>
+
+{% endblock %}

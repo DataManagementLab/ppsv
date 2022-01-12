@@ -10,9 +10,19 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
+from django.contrib.messages import constants as messages
 
+# tags for different types of messages
+MESSAGE_TAGS = {
+        messages.DEBUG: 'alert-secondary',
+        messages.INFO: 'alert-info',
+        messages.SUCCESS: 'alert-success',
+        messages.WARNING: 'alert-warning',
+        messages.ERROR: 'alert-danger',
+ }
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,10 +41,11 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
+#    'frontend.apps.FrontendConfig',
+#    'course.apps.CourseConfig',
 INSTALLED_APPS = [
-    'frontend.apps.FrontendConfig',
-    'course.apps.CourseConfig',
+    'course',
+    'frontend',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -133,3 +144,10 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# overwriting the built-in django login path
+LOGIN_URL = '/ppsv/login'
+# Redirect URLs after logging in or out
+LOGIN_REDIRECT_URL = '/ppsv/homepage'
+LOGOUT_REDIRECT_URL = '/ppsv/homepage'
+
