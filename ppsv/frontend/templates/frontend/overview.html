@@ -47,7 +47,10 @@
                                 <!-- <input type="number" placeholder="Priority"> -->
                             </div>
                             <div class="col-2" >
-                                <button style="white-space:nowrap;"> Remove Topic </button>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <button style="white-space:nowrap;" value="{{selection.topic.id}}" name="remove_topic_button" type="submit"> Remove Topic </button>
+                                </form>
                             </div>
                         </li>
                     {% endfor %}

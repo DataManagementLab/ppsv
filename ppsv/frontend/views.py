@@ -229,7 +229,20 @@ def overview(request):
                             selection.priority = priority
                             selection.save()
 
-            selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+                selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+
+            elif 'remove_topic_button' in request.POST:
+                topic_id = int(request.POST.get('remove_topic_button'))
+                priority = selections_of_group.get(topic=topic_id).priority
+                models.TopicSelection.objects.get(group=group_of_student, topic=topic_id).delete()
+
+                selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+                if not priority == 0:
+                    for selection in selections_of_group:
+                        if int(selection.priority) > priority:
+                            selection.priority = int(selection.priority) - 1
+                            selection.save()
+                    selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
 
         queue = []
         for selection in selections_of_group:
@@ -332,3 +345,5 @@ def profile(request):
             messages.error(request, "Student creation unsuccessful. Invalid information.")
     form = NewStudentForm()
     return render(request=request, template_name="registration/profile.html", context={"profile_form": form})
+
+
