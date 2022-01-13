@@ -5,7 +5,7 @@
 
 {% block overview_page_navbar_container %}
 <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
-    <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Übersicht</button>
+    <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Overview </button>
 </form>
 {% endblock overview_page_navbar_container %}
 
@@ -16,11 +16,16 @@
                 <strong>Priority!</strong> You can't have two topics with the same priority.
             </div>
         {% endif %}
+        {% if success == "motivational_text_saved" %}
+            <div class="alert alert-success">
+                <strong>Successfully Saved!</strong> Your motivation text has been saved.
+            </div>
+        {% endif %}
    {% endif %}
 
     <div style="display:flex;justify-content: flex-start;">
         {% if student_tu_id %}
-            <div style="width: 50%;">
+            <div style="width: 50%;min-width: 900px;">
                 <ul class="responsive-table">
                     <li class="table-header" style="padding: 15px;text-align:center">
                         <div>
@@ -32,11 +37,11 @@
                             <div class="col" style="text-align:start">
                                 {{ selection.topic }}
                             </div>
-                            <div class="col" style="display:flex;justify-content: center;white-space:nowrap">
+                            <div class="col" style="display:flex;justify-content: start;white-space:nowrap">
                                 <form method="post" style="margin:0">
                                     {% csrf_token %}
                                     <select name="priority" style="text-align: center;margin-right: 5px;">
-                                          <option value="0"  selected="selected"> Choice Priority </option>
+                                          <option value="0"  selected="selected"> Choose Priority </option>
                                         {% for selection_for_options in selections_of_group %}
                                            <option value="{{ forloop.counter }}" {% if selection.priority == forloop.counter %} selected="selected" {% endif %}>{{ forloop.counter }}</option>
                                         {% endfor %}
@@ -44,22 +49,67 @@
                                     <input type="hidden" name="topic_id" value="{{ selection.topic }}">
                                     <button class="button" id="set_priority_button" name="set_priority_button" type="submit" style="white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px"> Set Priority </button>
                                 </form>
-                                <!-- <input type="number" placeholder="Priority"> -->
                             </div>
-                            <div class="col" >
+                            <div class="col">
+                                {% for selection_in_needed,needed in motivation_text_needed %}
+                                    {% if selection_in_needed.id == selection.id and needed %}
+                                        <form method="post" style="margin:0">
+                                            {% csrf_token %}
+                                            {% if selection.id == open_motivation_text_for %}
+                                                 <button class="button" id="save_motivation_text_button" form="motivation_text_form" name="save_motivation_text_button" value="{{ selection.id }}"
+                                                    type="submit" style="margin:0px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
+                                                    Save Motivation Text
+                                                 </button>
+                                            {% else %}
+                                                <button class="button" id="open_motivation_text_button" name="open_motivation_text_button" value="{{ selection.id }}"
+                                                        type="submit" style="margin:0px ;white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px;">
+                                                        Open Motivation Text
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-2" >
                                 <form method="post" style="margin:0">
                                     {% csrf_token %}
-                                    <button style="white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}" name="remove_topic_button" type="submit"> Remove Topic </button>
+                                    <button style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}" name="remove_topic_button" type="submit"> Remove Topic </button>
                                 </form>
                             </div>
-                            <div class="col" >
+                            <div class="col-1" >
                                 <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px" aria-hidden="true" ></i>
                                 <style>
                                     .color {color: rgba(232, 222, 44, 0.8)}
                                 </style>
                             </div>
                         </li>
+                        {% if selection.id == open_motivation_text_for %}
+                        <form id="motivation_text_form" method="post" style="margin:0">
+                            {% csrf_token %}
+                            <li class="table-row">
+                                <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
+                            </li>
+                            <script type="text/javascript">
+                                var myInput = document.getElementById("motivation_text");
+                                if(myInput.addEventListener ) {
+                                    myInput.addEventListener('keydown',this.keyHandler,false);
+                                } else if(myInput.attachEvent ) {
+                                    myInput.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
+                                }
 
+                                function keyHandler(e) {
+                                    var TABKEY = 9;
+                                    if(e.keyCode == TABKEY) {
+                                        this.value += "    ";
+                                        if(e.preventDefault) {
+                                            e.preventDefault();
+                                        }
+                                        return false;
+                                    }
+                                }
+                            </script>
+                        </form>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </div>

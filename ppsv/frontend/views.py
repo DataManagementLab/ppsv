@@ -244,14 +244,36 @@ def overview(request):
                             selection.save()
                     selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
 
-        queue = []
-        for selection in selections_of_group:
-            queue.append(selection)
+        selections_of_group = sorted(selections_of_group, key=lambda x: x.priority)
 
-        selections_of_group = sorted(queue, key=lambda x: x.priority)
+        motivation_text_needed = []
+        for selection in selections_of_group:
+            course_of_selected_topic = models.Course.objects.get(topic=selection.topic.id)
+            if course_of_selected_topic.motivation_text:
+                motivation_text_needed.append((selection, True))
+            else:
+                motivation_text_needed.append((selection, False))
 
         args = {"student_tu_id": student_tu_id, "group_of_student": group_of_student,
-                "selections_of_group": selections_of_group, "success": success}
+                "selections_of_group": selections_of_group, "success": success,
+                "motivation_text_needed": motivation_text_needed}
+
+        if 'open_motivation_text_button' in request.POST:
+            open_motivation_text_for = int(request.POST.get('open_motivation_text_button'))
+            print(selections_of_group)
+            motivation_text_of_selection = next(filter(lambda x: x.id == open_motivation_text_for,
+                                                       selections_of_group)).motivation
+            args["open_motivation_text_for"] = open_motivation_text_for
+            args["motivation_text_of_selection"] = motivation_text_of_selection
+
+        elif 'save_motivation_text_button' in request.POST:
+            save_motivation_text_for = int(request.POST.get('save_motivation_text_button'))
+            motivation_text = request.POST.get('motivation_text')
+            selection = next(filter(lambda x: x.id == save_motivation_text_for,
+                                    selections_of_group))
+            selection.motivation = motivation_text
+            selection.save()
+            args["success"] = "motivational_text_saved"
 
         return render(request, template_name, args)
 
@@ -345,5 +367,3 @@ def profile(request):
             messages.error(request, "Student creation unsuccessful. Invalid information.")
     form = NewStudentForm()
     return render(request=request, template_name="registration/profile.html", context={"profile_form": form})
-
-
