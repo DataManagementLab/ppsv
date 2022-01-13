@@ -12,6 +12,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic import TemplateView
 from course.models import TopicSelection, Group
+from django.db.models import Sum
 
 
 def homepage(request):
@@ -20,7 +21,6 @@ def homepage(request):
 
 
 def selection(request):
-
     """selection view
 
     :param request: The given request
@@ -162,10 +162,10 @@ def selection(request):
             for known_selection in topic_selections_of_group:
                 # If the chosen topic was already selected by the group, the selection "fails"
                 if int(chosen_topic_id) == int(known_selection.topic.id):
-                        already_selected = True
-                        # "already_selected" indicates the selection page that the chosen topic
-                        # was already selected
-                        success = 'already_selected'
+                    already_selected = True
+                    # "already_selected" indicates the selection page that the chosen topic
+                    # was already selected
+                    success = 'already_selected'
 
             # If a selection of the chosen topic by the "group_of_student" does not exist, a selection will be created
             if not already_selected:
@@ -188,7 +188,8 @@ def selection(request):
             # be interpreted as "no topic chosen"
             chosen_topic_id = -1
 
-            args = {'courses': courses_in_same_faculty, "topics_in_chosen_course": topics_in_chosen_course, "faculties": all_faculties,
+            args = {'courses': courses_in_same_faculty, "topics_in_chosen_course": topics_in_chosen_course,
+                    "faculties": all_faculties,
                     "chosen_topic": chosen_topic_id, 'chosen_course': chosen_course.id, 'success': success}
             return render(request, template_name, args)
 
@@ -198,6 +199,49 @@ def selection(request):
 
 def overview(request):
     template_name = 'frontend/overview.html'
+
+    if request.user.is_authenticated:
+
+        student_tu_id = str(request.user.student)
+
+        group_of_student = models.Group.objects.get(students=student_tu_id)
+
+        selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+
+        success = "no_same_priority"
+
+        if request.method == "POST":
+
+            if 'set_priority_button' in request.POST:
+                topic_id = str(request.POST.get('topic_id'))
+                priority = int(request.POST.get('priority'))
+
+                for selection in selections_of_group:
+                    if str(selection.topic) != topic_id:
+                        if selection.priority == priority and priority != 0:
+                            success = "same_priority"
+                            break
+
+                if success == "no_same_priority":
+                    for selection in selections_of_group:
+                        if str(selection.topic) == topic_id:
+                            selection = models.TopicSelection.objects.get(id=selection.id)
+                            selection.priority = priority
+                            selection.save()
+
+            selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+
+        queue = []
+        for selection in selections_of_group:
+            queue.append(selection)
+
+        selections_of_group = sorted(queue, key=lambda x: x.priority)
+
+        args = {"student_tu_id": student_tu_id, "group_of_student": group_of_student,
+                "selections_of_group": selections_of_group, "success": success}
+
+        return render(request, template_name, args)
+
     return render(request, template_name)
 
 

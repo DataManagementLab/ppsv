@@ -100,12 +100,19 @@ div.scrollmenu button:hover {
 
 <!-- This container contains all alerts which indicate the user id the selection failed or not -->
 <div class="container-fluid">
+        {% if not user.is_authenticated %}
+            <div class="alert alert-warning">
+                <strong>Important!</strong>
+                You need to be logged in to be able to select a topic.
+            </div>
+        {% endif %}
+
         {% if success == 'success' %}
             <div class="alert alert-success">
-                <strong>Your selection was successful !</strong> You can find and edit your chosen topics on the overview page.
+                <strong>Your Selection Was Successful!</strong> You can find and edit your chosen topics on the overview page.
             </div>
             <div class="alert alert-warning">
-                <strong>Important !</strong>
+                <strong>Important!</strong>
                 You need to set the priority and add a motivation text(when needed) to your selection in order to fully complete your selection.
                 You can do this on the overview page.
             </div>
@@ -113,7 +120,7 @@ div.scrollmenu button:hover {
 
         {% if success == 'already_selected' %}
             <div class="alert alert-danger">
-                <strong> Selection Failed!</strong> You have already selected this topic.
+                <strong>Selection Failed!</strong> You have already selected this topic.
             </div>
         {% endif %}
 </div>
@@ -236,14 +243,18 @@ div.scrollmenu button:hover {
                                     </button>
                                 </form>
                                 {% if topic.id == chosen_topic %}
-                                <form method="post" style="margin: 0; padding: 0;">
-                                    {% csrf_token %}
-                                        <div style="margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);">
-                                            <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;" type="submit" name="select_topic_button" value="{{ chosen_topic }}" > Choose Topic </button>
-                                        </div>
-                                        <!-- <label style="margin-left:30px;"> Enter the TU-IDs of your group members, you want to join {{ topic.title }} with </label> <br>
-                                        <input style="margin-left:30px;" type="text"> -->
-                                </form>
+                                    {% if user.is_authenticated %}
+                                    <form method="post" style="margin: 0; padding: 0;">
+                                        {% csrf_token %}
+                                            <div style="margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);">
+                                                <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;" type="submit" name="select_topic_button" value="{{ chosen_topic }}" > Choose Topic </button>
+                                            </div>
+                                    </form>
+                                    {% else %}
+                                    <div style="margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);text-align:center;color:white;background-color:orange">
+                                        You need to be logged in to be able to select a topic.
+                                    </div>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% else %}

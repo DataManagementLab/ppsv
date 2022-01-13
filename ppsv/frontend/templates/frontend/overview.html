@@ -4,12 +4,70 @@
 {% block title %} Overview {% endblock %}
 
 {% block overview_page_navbar_container %}
-        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Übersicht</button>
-        </form>
+<form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
+    <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Übersicht</button>
+</form>
 {% endblock overview_page_navbar_container %}
 
 {% block content %}
+   {% if success %}
+        {% if success == "same_priority" %}
+            <div class="alert alert-danger">
+                <strong>Priority!</strong> You can't have two topics with the same priority.
+            </div>
+        {% endif %}
+   {% endif %}
 
+    <div style="display:flex;justify-content: flex-start;">
+        {% if student_tu_id %}
+            <div style="width: 50%;">
+                <ul class="responsive-table">
+                    <li class="table-header" style="padding: 15px;text-align:center">
+                        <div>
+                            {{ group_of_student.get_display }}
+                        </div>
+                    </li>
+                    {% for selection in selections_of_group %}
+                        <li class="table-row">
+                            <div class="col-2">
+                                {{ selection.topic }}
+                            </div>
+                            <div class="col-2" style="display:flex;justify-content: center;white-space:nowrap">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <select name="priority" style="text-align: center;margin-right: 5px;">
+                                          <option value="0"  selected="selected"> Choice Priority </option>
+                                        {% for selection_for_options in selections_of_group %}
+                                           <option value="{{ forloop.counter }}" {% if selection.priority == forloop.counter %} selected="selected" {% endif %}>{{ forloop.counter }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="hidden" name="topic_id" value="{{ selection.topic }}">
+                                    <button class="button" id="set_priority_button" name="set_priority_button" type="submit"> Set Priority </button>
+                                </form>
+                                <!-- <input type="number" placeholder="Priority"> -->
+                            </div>
+                            <div class="col-2" >
+                                <button style="white-space:nowrap;"> Remove Topic </button>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
 
+    <!-- The scroll position is saved and loaded when the page submits a form-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function (event) {
+            var scrollpos = sessionStorage.getItem('scrollpos');
+            if (scrollpos) {
+                window.scrollTo(0, scrollpos);
+                sessionStorage.removeItem('scrollpos');
+            }
+        });
+
+        window.addEventListener("beforeunload", function (e) {
+               sessionStorage.setItem('scrollpos', window.scrollY);
+        });
+    </script>
 {% endblock content %}
