@@ -26,7 +26,7 @@ class CourseAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['title', 'type']}),
         (_('Date Information'), {'fields': ['registration_start', 'registration_deadline']}),
-        (_('Course Information'), {'fields': ['description', 'cp', 'faculty', 'organizer']}),
+        (_('Course Information'), {'fields': ['description', 'motivation_text', 'cp', 'faculty', 'organizer']}),
         (_('Participant Number'), {'fields': ['unlimited', 'max_participants']}),
         ]
     list_display = ('title', 'type', 'registration_deadline', 'cp', 'max_participants')

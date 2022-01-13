@@ -36,6 +36,8 @@ class Course(models.Model):
     :type Course.cp: IntegerField
     :attr Course.faculty: The faculty of the course
     :type Course.faculty: CharField
+    :attr Course.motivation_text: if the course demands motivation texts
+    :type Course.motivation_text: BooleanField
     :attr Course.organizer: The organizer of the course
     :type Course.organizer: CharField
 
@@ -75,6 +77,7 @@ class Course(models.Model):
         ('FB20', _('Dept. 20 - Computer Science')),
     ]
     faculty = models.CharField(max_length=4, choices=COURSE_FACULTY_CHOICES, verbose_name=_("faculty"))
+    motivation_text = models.BooleanField('Do you want motivation texts for this course', default=False)
 
     organizer = models.CharField(max_length=200, verbose_name=_("organizer"))
 
