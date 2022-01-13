@@ -29,11 +29,11 @@
                     </li>
                     {% for selection in selections_of_group %}
                         <li class="table-row">
-                            <div class="col-2">
+                            <div class="col" style="text-align:start">
                                 {{ selection.topic }}
                             </div>
-                            <div class="col-2" style="display:flex;justify-content: center;white-space:nowrap">
-                                <form method="post">
+                            <div class="col" style="display:flex;justify-content: center;white-space:nowrap">
+                                <form method="post" style="margin:0">
                                     {% csrf_token %}
                                     <select name="priority" style="text-align: center;margin-right: 5px;">
                                           <option value="0"  selected="selected"> Choice Priority </option>
@@ -42,17 +42,24 @@
                                         {% endfor %}
                                     </select>
                                     <input type="hidden" name="topic_id" value="{{ selection.topic }}">
-                                    <button class="button" id="set_priority_button" name="set_priority_button" type="submit"> Set Priority </button>
+                                    <button class="button" id="set_priority_button" name="set_priority_button" type="submit" style="white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px"> Set Priority </button>
                                 </form>
                                 <!-- <input type="number" placeholder="Priority"> -->
                             </div>
-                            <div class="col-2" >
-                                <form method="post">
+                            <div class="col" >
+                                <form method="post" style="margin:0">
                                     {% csrf_token %}
-                                    <button style="white-space:nowrap;" value="{{selection.topic.id}}" name="remove_topic_button" type="submit"> Remove Topic </button>
+                                    <button style="white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}" name="remove_topic_button" type="submit"> Remove Topic </button>
                                 </form>
                             </div>
+                            <div class="col" >
+                                <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px" aria-hidden="true" ></i>
+                                <style>
+                                    .color {color: rgba(232, 222, 44, 0.8)}
+                                </style>
+                            </div>
                         </li>
+
                     {% endfor %}
                 </ul>
             </div>
