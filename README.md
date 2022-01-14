@@ -15,7 +15,7 @@ https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 2. Execute `sh run-with-docker.sh`
 
 <h2>Open Questions</h2>
-
+chown dajngo:django -R .
 
 <p> django admin show field only if checkbox is false
 https://www.titanwolf.org/Network/q/e686282b-5707-4db0-b095-c615c2a0fed4/y
