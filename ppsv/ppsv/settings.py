@@ -147,8 +147,8 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # overwriting the built-in django login path
-LOGIN_URL = '/ppsv/login'
+LOGIN_URL = '/login'
 # Redirect URLs after logging in or out
-LOGIN_REDIRECT_URL = '/ppsv/homepage'
-LOGOUT_REDIRECT_URL = '/ppsv/homepage'
+LOGIN_REDIRECT_URL = '/homepage'
+LOGOUT_REDIRECT_URL = '/homepage'
 

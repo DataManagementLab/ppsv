@@ -18,7 +18,7 @@ from . import views
 app_name = "frontend"
 
 urlpatterns = [
-    path('homepage/', views.homepage, name='homepage'),
+    path('', views.homepage, name='homepage'),
     path('overview/', views.overview, name='overview'),
     path('selection/', views.selection, name='selection'),
     path('groups/', views.groups, name='groups'),
