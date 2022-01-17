@@ -246,8 +246,37 @@ div.scrollmenu button:hover {
                                     {% if user.is_authenticated %}
                                     <form method="post" style="margin: 0; padding: 0;">
                                         {% csrf_token %}
-                                            <div style="margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);">
-                                                <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;" type="submit" name="select_topic_button" value="{{ chosen_topic }}" > Choose Topic </button>
+                                            <div style="margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2); justify-content:center;">
+                                               <div class="alert alert-info alert-dismissible fade show" style="padding-bottom:3px; padding-top:3px; margin-top:5px;">
+                                                   <strong>Info!</strong> The group size may not be greater than the allowed max participant of the chosen topic.
+                                               </div>
+                                                {{ hallo }}
+                                                <ul style="width:50%;">
+                                                   <label style="font-size:15px; margin-top:5px; text-align:center; width:100%;">
+                                                       Create or choose a group to select the topic with:
+                                                   </label>
+                                                    <li style="display:grid;">
+                                                        <select name="group_selection" style="text-align: center; grid-column:1; grid-row:2;">
+                                                            <option value="-1"> Choose your group </option>
+                                                            {% for group in groups_of_student %}
+                                                            <option value="{{ group.id }}"> {{ group.get_display }} </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        <label style="grid-column:2; grid-row:2; text-align:center; margin-bottom:2px;">
+                                                            or
+                                                        </label>
+                                                        <button class="button" style="grid-column:3; grid-row:2;" type="submit" form="open_text_fields" name="display_text_fields">
+                                                            Create new group
+                                                        </button>
+                                                        <input type="text" style="text-align:center; grid-column:2; grid-row:3" placeholder="Tucan-ID">
+                                                    </li>
+                                                    <li>
+                                                        <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;" type="submit" name="select_topic_button" value="{{ chosen_topic }}" > Choose Topic </button>
+                                                    </li>
+                                                </ul>
+                                                <form method="post" style="display:none" id="open_text_fields">
+                                                    {% csrf_token %}
+                                                </form>
                                             </div>
                                     </form>
                                     {% else %}

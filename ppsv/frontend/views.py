@@ -127,9 +127,18 @@ def selection(request):
                 # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
 
+                # "groups_of_student" contains all groups which contain the logged in student
+                groups_of_student = models.Group.objects.filter(students=str(request.user.student))
+
+                # delete all groups with size=1 in order to get the groups
+                # which do not only contain the logged in student himself
+                for group in groups_of_student:
+                    if group.size == 1:
+                        groups_of_student.get(id=group.id).delete()
+
                 args = {'courses': courses_in_same_faculty, "topics_in_chosen_course": topics_in_chosen_course,
                         "faculties": all_faculties, "chosen_topic": chosen_topic,
-                        'chosen_course': chosen_course.id}
+                        'chosen_course': chosen_course.id, 'groups_of_student': groups_of_student}
 
                 return render(request, template_name, args)
 
@@ -192,6 +201,9 @@ def selection(request):
                     "faculties": all_faculties,
                     "chosen_topic": chosen_topic_id, 'chosen_course': chosen_course.id, 'success': success}
             return render(request, template_name, args)
+
+        elif "display_text_fields" in request.POST:
+            print("hallo")
 
     args = {"faculties": all_faculties}
     return render(request, template_name, args)
