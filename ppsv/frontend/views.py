@@ -203,7 +203,22 @@ def selection(request):
             return render(request, template_name, args)
 
         elif "display_text_fields" in request.POST:
-            print("hallo")
+
+            chosen_topic_id = int(request.POST.get('display_text_fields'))
+            print(chosen_topic_id)
+
+            chosen_course = models.Course.objects.get(topic=chosen_topic_id)
+
+            courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
+
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
+
+            open = True
+
+            args = {"faculties": all_faculties, "courses": courses_in_same_faculty,
+                    "topics_in_chosen_course": topics_in_chosen_course, 'chosen_course': chosen_course.id,
+                    "chosen_topic": chosen_topic_id, "open": open}
+            return render(request, template_name, args)
 
     args = {"faculties": all_faculties}
     return render(request, template_name, args)
