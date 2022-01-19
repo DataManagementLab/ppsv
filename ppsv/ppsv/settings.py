@@ -15,6 +15,7 @@ from pathlib import Path
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 
+
 # tags for different types of messages
 MESSAGE_TAGS = {
         messages.DEBUG: 'alert-secondary',
@@ -149,6 +150,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # overwriting the built-in django login path
 LOGIN_URL = '/login'
 # Redirect URLs after logging in or out
-LOGIN_REDIRECT_URL = '/homepage'
-LOGOUT_REDIRECT_URL = '/homepage'
+LOGIN_REDIRECT_URL = ''
+LOGOUT_REDIRECT_URL = "frontend:homepage"
 
