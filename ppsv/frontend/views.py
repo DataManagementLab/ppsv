@@ -205,7 +205,6 @@ def selection(request):
         elif "display_text_fields" in request.POST:
 
             chosen_topic_id = int(request.POST.get('display_text_fields'))
-            print(chosen_topic_id)
 
             chosen_course = models.Course.objects.get(topic=chosen_topic_id)
 
@@ -220,6 +219,45 @@ def selection(request):
                     "chosen_topic": chosen_topic_id, "open": open}
             return render(request, template_name, args)
 
+        elif "add_student" or "remove_student" in request.POST:
+
+            chosen_topic_id = ""
+            if "add_student" in request.POST:
+                chosen_topic_id = int(request.POST.get('add_student'))
+            else :
+                chosen_topic_id = int(request.POST.get('topic_id'))
+
+            chosen_course = models.Course.objects.get(topic=chosen_topic_id)
+
+            courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
+
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
+
+            open = True
+            already_added_student = False
+
+            student_added = []
+            if request.POST.get("new_student_id") != "":
+                student_added.append(str(request.POST.get("new_student_id")))
+
+            counter = 1;
+            while not (request.POST.get("student_added" + str(counter)) is None):
+                student_added.append(str(request.POST.get("student_added" + str(counter))))
+                counter += 1
+
+            if student_added.count(str(request.POST.get("new_student_id"))) > 1:
+                student_added.remove(str(request.POST.get("new_student_id")))
+                already_added_student = True
+
+            if "remove_student" in request.POST:
+                student_added.remove(str(request.POST.get("remove_student")))
+
+            args = {"faculties": all_faculties, "courses": courses_in_same_faculty,
+                    "topics_in_chosen_course": topics_in_chosen_course, 'chosen_course': chosen_course.id,
+                    "chosen_topic": chosen_topic_id, "open": open, "student_added": student_added,
+                    "already_added_student": already_added_student}
+            return render(request, template_name, args)
+
     args = {"faculties": all_faculties}
     return render(request, template_name, args)
 
@@ -231,9 +269,12 @@ def overview(request):
 
         student_tu_id = str(request.user.student)
 
-        group_of_student = models.Group.objects.get(students=student_tu_id)
+        group_of_student = ""
+        selections_of_group = ""
 
-        selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+        if models.Group.objects.filter(students=student_tu_id).exists():
+            group_of_student = models.Group.objects.get(students=student_tu_id)
+            selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
 
         success = "no_same_priority"
 
