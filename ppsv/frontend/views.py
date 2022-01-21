@@ -144,23 +144,46 @@ def selection(request):
 
         elif 'select_topic_button' in request.POST:
 
+            # Initialising "success" which will later indicate the selection page if the selection succeeded
+            success = ''
+
             # "student_tu_id" contains the tucan_id of the student who is logged in
             student_tu_id = str(request.user.student)
 
-            # If a group for the student (with him as the only group member) does not exist, it will be created
-            if not models.Group.objects.filter(students=student_tu_id).exists():
-                created_group = Group()
-                created_group.save()
-                created_group.students.add(models.Student.objects.get(tucan_id=student_tu_id))
-                created_group.save()
-
-            # "group_of_student" contains the group with which the user will select the chosen topic
-            group_of_student = models.Group.objects.get(students=student_tu_id)
             # "chosen_topic_id" contains the id of the topic which was selected by the user by pressing the
             # according button on the selection page
             chosen_topic_id = int(request.POST.get('select_topic_button'))
-            # Initialising "success" which will later indicate the selection page if the selection succeeded
-            success = ''
+
+            students_in_group = []
+            counter = 1;
+            while not (request.POST.get("student_added" + str(counter)) is None):
+                students_in_group.append(str(request.POST.get("student_added" + str(counter))))
+                counter += 1
+
+            students_in_group.append(student_tu_id)
+
+            for student_id in students_in_group:
+                if not models.Student.objects.filter(tucan_id=student_id).exists():
+                    success = "student_does_not_exist"
+                else:
+                    students_in_group[students_in_group.index(student_id)] = \
+                        models.Student.objects.get(tucan_id=student_id)
+
+            print(students_in_group)
+
+            print(models.Group.objects.filter(students=student_tu_id))
+
+            if success == "":
+                created_group = Group()
+                created_group.save()
+                for student in students_in_group:
+                    created_group.students.add(student)
+                # If a group for the student (with him as the only group member) does not exist, it will be created
+                if not models.Group.objects.filter(students=student_tu_id).exists():
+                    created_group.save()
+
+            # "group_of_student" contains the group with which the user will select the chosen topic
+            group_of_student = models.Group.objects.get(students=student_tu_id)
 
             # "topic_selections_of_group" contains all selections made by the "group_of_student" group
             topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_student.id)
