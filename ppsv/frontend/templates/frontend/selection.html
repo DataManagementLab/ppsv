@@ -248,7 +248,7 @@ div.scrollmenu button:hover {
                                         {% csrf_token %}
                                         <div style="padding:5px; margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2); justify-content:center;margin-top:5px;">
                                             <div class="alert alert-info alert-dismissible fade show" style="padding-bottom:3px; padding-top:3px; margin-top:5px;width:50%">
-                                               <strong>Info!</strong> The group size may not be greater than the allowed max participant of the chosen topic.
+                                               <strong>Info!</strong> The group size may not be greater than the allowed max participants of the chosen topic.
                                             </div>
                                             {% if already_added_student %}
                                             <div class="alert alert-warning alert-dismissible fade show" style="padding-bottom:3px; padding-top:3px;width:50%">
@@ -281,10 +281,12 @@ div.scrollmenu button:hover {
                                                                     {% if student_added %}
                                                                         {% for student in student_added %}
                                                                             <div>
-                                                                                <input name="student_added{{ forloop.counter }}" type="text" style="margin-top:2px;text-align:center;grid-column:1; grid-row:{{ forloop.counter }};" value="{{ student }}" readonly>
-                                                                                <button style="background-color: transparent;background-repeat: no-repeat;border: none;cursor: pointer;overflow: hidden; outline: none;" type="submit" name="remove_student" value="{{ student }}">
-                                                                                    <i class="fa fa-minus" aria-hidden="true" style="color:red"> </i>
-                                                                                </button>
+                                                                                <input name="student_added{{ forloop.counter0 }}" type="text" style="margin-top:2px;text-align:center;grid-column:1; grid-row:{{ forloop.counter }};" value="{{ student }}" readonly>
+                                                                                {% if student_id != student %}
+                                                                                    <button style="background-color: transparent;background-repeat: no-repeat;border: none;cursor: pointer;overflow: hidden; outline: none;" type="submit" name="remove_student" value="{{ student }}">
+                                                                                        <i class="fa fa-minus" aria-hidden="true" style="color:red"> </i>
+                                                                                    </button>
+                                                                                {% endif %}
                                                                                 <input name="topic_id" value="{{ chosen_topic }}" type="hidden">
                                                                             </div>
                                                                         {% endfor %}

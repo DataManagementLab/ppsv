@@ -29,12 +29,13 @@ def selection(request):
 
     template_name = 'frontend/selection.html'
     all_faculties = models.Course.objects.order_by().values('faculty').distinct()
+    args = {}
 
     # If a form with the method "post" is submitted by a button
     if request.method == "POST":
 
         # If a button with the name "faculty_button" is pressed in "selection.html"
-        if 'faculty_button' in request.POST:
+        if "faculty_button" in request.POST:
 
             # "chosen_faculty" contains the faculty id of the pressed "faculty_button"
             chosen_faculty = str(request.POST.get('faculty_button'))
@@ -47,7 +48,7 @@ def selection(request):
             return render(request, template_name, args)
 
         # If a button with the name 'course_button' is pressed in "selection.html"
-        elif 'course_button' in request.POST:
+        elif "course_button" in request.POST:
 
             # "chosen_course" contains the course id of the pressed "course_button"
             chosen_course = int(request.POST.get('course_button'))
@@ -86,7 +87,7 @@ def selection(request):
                 return render(request, template_name, args)
 
         # If a button with the name 'topic_button' is pressed in "selection.html"
-        elif 'topic_button' in request.POST:
+        elif "topic_button" in request.POST:
 
             # "chosen_topic" contains the topic id of the pressed "topic_button"
             chosen_topic = int(request.POST.get('topic_button'))
@@ -142,7 +143,7 @@ def selection(request):
 
                 return render(request, template_name, args)
 
-        elif 'select_topic_button' in request.POST:
+        elif "select_topic_button" in request.POST:
 
             # Initialising "success" which will later indicate the selection page if the selection succeeded
             success = ''
@@ -154,53 +155,41 @@ def selection(request):
             # according button on the selection page
             chosen_topic_id = int(request.POST.get('select_topic_button'))
 
+            # "chosen_course" contains the course which contains the chosen topic
+            chosen_course = models.Course.objects.get(topic=chosen_topic_id)
+            # "courses_in_same_faculty" contains all courses which have the same faculty as the "chosen_course"
+            courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
+            # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
+            # "group_of_student" contains the group with which the user will select the chosen topic
+            group_of_student = "#"
+
             students_in_group = []
-            counter = 1;
+            counter = 0
             while not (request.POST.get("student_added" + str(counter)) is None):
                 students_in_group.append(str(request.POST.get("student_added" + str(counter))))
                 counter += 1
 
-            students_in_group.append(student_tu_id)
+            existing_groups = models.Group.objects.filter(students=student_tu_id)
+            for student in students_in_group:
+                existing_groups = existing_groups.filter(students=student)
 
-            for student_id in students_in_group:
-                if not models.Student.objects.filter(tucan_id=student_id).exists():
-                    success = "student_does_not_exist"
-                else:
+            if len(existing_groups) == 0:
+                print("Does Not Exist")
+
+                for student_id in students_in_group:
                     students_in_group[students_in_group.index(student_id)] = \
                         models.Student.objects.get(tucan_id=student_id)
 
-            print(students_in_group)
-
-            print(models.Group.objects.filter(students=student_tu_id))
-
-            if success == "":
-                created_group = Group()
-                created_group.save()
+                group_of_student = Group()
+                group_of_student.save()
                 for student in students_in_group:
-                    created_group.students.add(student)
-                # If a group for the student (with him as the only group member) does not exist, it will be created
-                if not models.Group.objects.filter(students=student_tu_id).exists():
-                    created_group.save()
+                    group_of_student.students.add(student)
 
-            # "group_of_student" contains the group with which the user will select the chosen topic
-            group_of_student = models.Group.objects.get(students=student_tu_id)
+                # "topic_selections_of_group" contains all selections made by the "group_of_student" group
+                topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_student.id)
+                print(topic_selections_of_group)
 
-            # "topic_selections_of_group" contains all selections made by the "group_of_student" group
-            topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_student.id)
-
-            already_selected = False
-
-            # Iterates through all known selections which the group already made
-            for known_selection in topic_selections_of_group:
-                # If the chosen topic was already selected by the group, the selection "fails"
-                if int(chosen_topic_id) == int(known_selection.topic.id):
-                    already_selected = True
-                    # "already_selected" indicates the selection page that the chosen topic
-                    # was already selected
-                    success = 'already_selected'
-
-            # If a selection of the chosen topic by the "group_of_student" does not exist, a selection will be created
-            if not already_selected:
                 user_selection = TopicSelection()
                 user_selection.priority = 0
                 user_selection.group = group_of_student
@@ -209,21 +198,46 @@ def selection(request):
                 # "success" indicates the selection page that the selection succeeded
                 success = 'success'
 
-            # "chosen_course" contains the course which contains the chosen topic
-            chosen_course = models.Course.objects.get(topic=chosen_topic_id)
-            # "courses_in_same_faculty" contains all courses which have the same faculty as the "chosen_course"
-            courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
-            # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
-            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
+                # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
+                # be interpreted as "no topic chosen"
+                chosen_topic_id = -1
 
-            # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
-            # be interpreted as "no topic chosen"
-            chosen_topic_id = -1
+            else:
+                # "topic_selections_of_group" contains all selections made by the "group_of_student" group
+                topic_selections_of_group = models.TopicSelection.objects.filter(group=existing_groups[0].id)
 
-            args = {'courses': courses_in_same_faculty, "topics_in_chosen_course": topics_in_chosen_course,
-                    "faculties": all_faculties,
-                    "chosen_topic": chosen_topic_id, 'chosen_course': chosen_course.id, 'success': success}
-            return render(request, template_name, args)
+                already_selected = False
+
+                # Iterates through all known selections which the group already made
+                for known_selection in topic_selections_of_group:
+                    # If the chosen topic was already selected by the group, the selection "fails"
+                    if int(chosen_topic_id) == int(known_selection.topic.id):
+                        already_selected = True
+                        # "already_selected" indicates the selection page that the chosen topic
+                        # was already selected
+                        success = 'already_selected'
+                        print("Hallo")
+
+                # If a selection of the chosen topic by the "group_of_student" does not exist,
+                # a selection will be created
+                if not already_selected:
+                    user_selection = TopicSelection()
+                    user_selection.priority = 0
+                    user_selection.group = existing_groups[0]
+                    user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
+                    user_selection.save()
+                    # "success" indicates the selection page that the selection succeeded
+                    success = 'success'
+
+                # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
+                # be interpreted as "no topic chosen"
+                chosen_topic_id = -1
+
+            args["courses"] = courses_in_same_faculty
+            args["topics_in_chosen_course"] = topics_in_chosen_course
+            args["chosen_topic"] = chosen_topic_id
+            args["chosen_course"] = chosen_course.id
+            args["success"] = success
 
         elif "display_text_fields" in request.POST:
 
@@ -237,17 +251,24 @@ def selection(request):
 
             open = True
 
-            args = {"faculties": all_faculties, "courses": courses_in_same_faculty,
-                    "topics_in_chosen_course": topics_in_chosen_course, 'chosen_course': chosen_course.id,
-                    "chosen_topic": chosen_topic_id, "open": open}
-            return render(request, template_name, args)
+            student_added = [str(request.user.student)]
+
+            student_id = str(request.user.student)
+
+            args["courses"] = courses_in_same_faculty
+            args["topics_in_chosen_course"] = topics_in_chosen_course
+            args["chosen_course"] = chosen_course.id
+            args["chosen_topic"] = chosen_topic_id
+            args["open"] = open
+            args["student_added"] = student_added
+            args["student_id"] = student_id
 
         elif "add_student" or "remove_student" in request.POST:
 
             chosen_topic_id = ""
             if "add_student" in request.POST:
                 chosen_topic_id = int(request.POST.get('add_student'))
-            else :
+            else:
                 chosen_topic_id = int(request.POST.get('topic_id'))
 
             chosen_course = models.Course.objects.get(topic=chosen_topic_id)
@@ -256,32 +277,42 @@ def selection(request):
 
             topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
 
+            student_id = str(request.user.student)
+
             open = True
+
             already_added_student = False
 
             student_added = []
-            if request.POST.get("new_student_id") != "":
-                student_added.append(str(request.POST.get("new_student_id")))
 
-            counter = 1;
+            counter = 0
             while not (request.POST.get("student_added" + str(counter)) is None):
                 student_added.append(str(request.POST.get("student_added" + str(counter))))
                 counter += 1
 
-            if student_added.count(str(request.POST.get("new_student_id"))) > 1:
-                student_added.remove(str(request.POST.get("new_student_id")))
-                already_added_student = True
+            if "add_student" in request.POST:
+                if models.Topic.objects.get(id=chosen_topic_id).max_participants > counter:
+                    if "".join(request.POST.get("new_student_id").split()) != "":
+                        if "".join(request.POST.get("new_student_id").split()) != str(request.user.student):
+                            if student_added.count(str(request.POST.get("new_student_id"))) == 0:
+                                if models.Student.objects.filter(tucan_id=request.POST.get("new_student_id")).exists():
+                                    student_added.append(str(request.POST.get("new_student_id")))
+                            else:
+                                already_added_student = True
 
             if "remove_student" in request.POST:
                 student_added.remove(str(request.POST.get("remove_student")))
 
-            args = {"faculties": all_faculties, "courses": courses_in_same_faculty,
-                    "topics_in_chosen_course": topics_in_chosen_course, 'chosen_course': chosen_course.id,
-                    "chosen_topic": chosen_topic_id, "open": open, "student_added": student_added,
-                    "already_added_student": already_added_student}
-            return render(request, template_name, args)
+            args["student_added"] = student_added
+            args["already_added_student"] = already_added_student
+            args["open"] = open
+            args["topics_in_chosen_course"] = topics_in_chosen_course
+            args["courses"] = courses_in_same_faculty
+            args['chosen_course'] = chosen_course.id
+            args["chosen_topic"] = chosen_topic_id
+            args["student_id"] = student_id
 
-    args = {"faculties": all_faculties}
+    args["faculties"] = all_faculties
     return render(request, template_name, args)
 
 
