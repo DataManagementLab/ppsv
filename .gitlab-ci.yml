@@ -6,12 +6,10 @@ custom-tests:
   stage: test
   image: none
   script:
-    - alias python="python3"
-    - alias pip="pip3"
-    - python -m pip install --upgrade pip
-    - pip install -r requirements.txt
-    - python ppsv/manage.py check
-    - python ppsv/manage.py makemigrations --check
+    - python3 -m pip install --upgrade pip
+    - pip3 install -r requirements.txt
+    - python3 ppsv/manage.py check
+    - python3 ppsv/manage.py makemigrations --check
     - chmod +x tests/test.sh
     - ./tests/test.sh -save
 
