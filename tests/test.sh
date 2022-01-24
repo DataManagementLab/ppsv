@@ -1,3 +1,3 @@
 #!/bin/bash
 echo "Starting Tests"
-python3 seminarplatzvergabe/ppsv/manage.py test
+python3 ../ppsv/manage.py test
