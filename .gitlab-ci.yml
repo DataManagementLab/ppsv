@@ -4,10 +4,8 @@ stages:
 
 custom-tests:
   stage: test
-  image: python:3.9-bullseye
+  image: none
   script:
-    - alias python=python3
-    - alias pip=pip3
     - python -m pip install --upgrade pip
     - pip install -r requirements.txt
     - python ppsv/manage.py check
