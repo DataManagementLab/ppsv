@@ -4,8 +4,10 @@ stages:
 
 custom-tests:
   stage: test
-  image: python:3.10
+  image: none
   script:
+    - apt-get update
+    - apt-get install python3.10 python3-pip
     - python -m pip install --upgrade pip
     - pip install -r requirements.txt
     - python ppsv/manage.py check
