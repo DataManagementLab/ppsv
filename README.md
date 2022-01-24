@@ -14,6 +14,9 @@ https://docs.djangoproject.com/en/3.2/intro/tutorial03/
 1. Install docker if not installed already
 2. Execute `sh run-with-docker.sh`
 
+<h2>Run Tests</h2>
+`sh tests/test.sh`
+
 <h2>Open Questions</h2>
 chown django:django -R .
 
