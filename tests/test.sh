@@ -1,2 +1,3 @@
 #!/bin/bash
-echo "Hello World"
+echo "Starting Tests"
+python seminarplatzvergabe/ppsv/manage.py test

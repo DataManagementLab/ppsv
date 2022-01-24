@@ -9,6 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 
 class Course(models.Model):
@@ -55,7 +56,7 @@ class Course(models.Model):
     registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
     description = models.TextField(verbose_name=_("description"))
 
-    unlimited = models.BooleanField('unlimited Number of Participants', blank=True, default=False)
+    unlimited = models.BooleanField('unlimited number of participants', blank=True, default=False)
     max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
                                            validators=[MaxValueValidator(9999), MinValueValidator(0)],)
 
@@ -93,6 +94,14 @@ class Course(models.Model):
         """
         verbose_name = _("course")
         verbose_name_plural = _("courses")
+
+    def clean(self):
+        """
+        Implements base.clean(self)
+        raises an error if registration start is set to be after registration deadline
+        """
+        if self.registration_start >= self.registration_deadline:
+            raise ValidationError(_("The registration deadline cannot be before the registration start."))
 
     def __str__(self):
         """String representation
@@ -135,7 +144,7 @@ class Topic(models.Model):
                                            validators=[MaxValueValidator(9999), MinValueValidator(0)])
 
     description = models.TextField(verbose_name=_("description"))
-    file = models.FileField(verbose_name=_("file"), upload_to='course_directory_path', blank=True)
+    file = models.FileField(verbose_name=_("file"), upload_to=course_directory_path, blank=True)
 
     class Meta:
         """Meta options
