@@ -4,8 +4,13 @@ stages:
 
 custom-tests:
   stage: test
-  image: none
+  image: python:3.10
   script:
+    - apt-get update -q -y
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - python ppsv/manage.py check
+    - python ppsv/manage.py makemigrations --check
     - chmod +x tests/test.sh
     - ./tests/test.sh -save
 
