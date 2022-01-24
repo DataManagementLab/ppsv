@@ -260,11 +260,14 @@ div.scrollmenu button:hover {
                                                    Create or choose a group to select the topic with:
                                                </label>
                                                 <form method="post">
+                                                    {% csrf_token %}
                                                     <li style="display:grid;">
-                                                        <select name="group_selection" style="text-align: center; grid-column:1; grid-row:2;height:25px;">
-                                                            <option value="-1"> Choose your group </option>
+                                                        <select name="group_selection" style="text-align: center; grid-column:1; grid-row:2;height:25px;" onchange="this.form.submit()">
+                                                            <option value="-1|{{ chosen_topic }}"> Choose your group </option>
                                                             {% for group in groups_of_student %}
-                                                            <option value="{{ group.id }}"> {{ group.get_display }} </option>
+                                                                <option value="{{ group.id }}|{{ chosen_topic }}" {% if group.id == chosen_group %} selected {% endif %}>
+                                                                    {{ group.get_display }}
+                                                                </option>
                                                             {% endfor %}
                                                         </select>
                                                         <label style="grid-column:2; grid-row:2; text-align:center; margin-bottom:2px;">
@@ -273,7 +276,7 @@ div.scrollmenu button:hover {
                                                         {% if open %}
                                                             <div style="grid-column:3; grid-row:2;display:grid;">
                                                                     <div>
-                                                                        <input name="new_student_id" type="text" style="text-align:center;grid-column:1; grid-row:1;" placeholder="Tucan-ID" onFocus="this.select()">
+                                                                        <input name="new_student_id" type="text" style="text-align:center;grid-column:1; grid-row:1;" placeholder="Tucan-ID">
                                                                         <button style="background-color: transparent;background-repeat: no-repeat;border: none;cursor: pointer;overflow: hidden; outline: none;" type="submit" name="add_student" value="{{ chosen_topic }}">
                                                                             <i class="fa fa-plus" aria-hidden="true" style="color:green"> </i>
                                                                         </button>
