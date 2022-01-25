@@ -247,22 +247,23 @@ div.scrollmenu button:hover {
                                     <form method="post" style="margin: 0; padding: 0;">
                                         {% csrf_token %}
                                         <div style="padding:5px; margin-left: 30px;margin-right: 30px;font-size: 13px;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2); justify-content:center;margin-top:5px;">
-                                            <div class="alert alert-info alert-dismissible fade show" style="padding-bottom:3px; padding-top:3px; margin-top:5px;width:50%">
-                                               <strong>Info!</strong> The group size may not be greater than the allowed max participants of the chosen topic.
-                                            </div>
                                             {% if already_added_student %}
                                             <div class="alert alert-warning alert-dismissible fade show" style="padding-bottom:3px; padding-top:3px;width:50%">
                                                <strong>Warning!</strong> A group can't contain the same student twice
                                             </div>
                                             {% endif %}
-                                            <ul style="width:50%;">
-                                               <label style="font-size:15px; margin-top:5px; text-align:center; width:100%;">
-                                                   Create or choose a group to select the topic with:
-                                               </label>
-                                                <form method="post">
-                                                    {% csrf_token %}
+                                            <ul style="width:100%;">
                                                     <li style="display:grid;">
-                                                        <select name="group_selection" style="text-align: center; grid-column:1; grid-row:2;height:25px;" onchange="this.form.submit()">
+                                                        <div class="form" method="post" style="padding:0px; margin:0px; grid-column:1; grid-row:2">
+                                                            {% csrf_token %}
+                                                            <button class="button" style="height:25px" type="submit" name="without_group" value="{{ chosen_topic }}">
+                                                                Select without a group
+                                                            </button>
+                                                        </div>
+                                                        <label style="grid-column:2; grid-row:2; text-align:center; margin-bottom:2px;">
+                                                            or
+                                                        </label>
+                                                        <select name="group_selection" style="text-align: center; grid-column:3; grid-row:2;height:25px;" onchange="this.form.submit()">
                                                             <option value="-1|{{ chosen_topic }}"> Choose your group </option>
                                                             {% for group in groups_of_student %}
                                                                 <option value="{{ group.id }}|{{ chosen_topic }}" {% if group.id == chosen_group %} selected {% endif %}>
@@ -270,11 +271,11 @@ div.scrollmenu button:hover {
                                                                 </option>
                                                             {% endfor %}
                                                         </select>
-                                                        <label style="grid-column:2; grid-row:2; text-align:center; margin-bottom:2px;">
+                                                        <label style="grid-column:4; grid-row:2; text-align:center; margin-bottom:2px;">
                                                             or
                                                         </label>
                                                         {% if open %}
-                                                            <div style="grid-column:3; grid-row:2;display:grid;">
+                                                            <div style="grid-column:5; grid-row:2;display:grid;">
                                                                     <div>
                                                                         <input name="new_student_id" type="text" style="text-align:center;grid-column:1; grid-row:1;" placeholder="Tucan-ID">
                                                                         <button style="background-color: transparent;background-repeat: no-repeat;border: none;cursor: pointer;overflow: hidden; outline: none;" type="submit" name="add_student" value="{{ chosen_topic }}">
@@ -297,12 +298,11 @@ div.scrollmenu button:hover {
                                                             </div>
                                                         {% endif %}
                                                         {% if not open %}
-                                                        <button class="button" style="grid-column:3; grid-row:2;" type="submit" name="display_text_fields" value="{{ chosen_topic }}">
+                                                        <button class="button" type="submit" style="grid-column:5; grid-row:2;" name="display_text_fields" value="{{ chosen_topic }}">
                                                             Create a new group
                                                         </button>
                                                         {% endif %}
                                                     </li>
-                                                </form>
                                                 <li>
                                                     <button id="select_topic_button" class="dropbtn-choose-topic" style="padding:3px;margin-top:2px;width:100%;background-color: green;color: white;" type="submit" name="select_topic_button" value="{{ chosen_topic }}" > Choose Topic </button>
                                                 </li>

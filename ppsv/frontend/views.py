@@ -318,18 +318,24 @@ def selection(request):
             args["student_id"] = student_id
             args["groups_of_student"] = groups_of_student
 
-        elif "add_student" or "remove_student" or "group_selection" in request.POST:
+        elif "add_student" or "remove_student" or "group_selection" or "without_group" in request.POST:
 
-            chosen_topic_id = ""
+            chosen_topic_id = None
             chosen_group = None
+
             if "add_student" in request.POST:
                 chosen_topic_id = int(request.POST.get("add_student"))
-            elif "remove_student" in request.POST:
+            if "remove_student" in request.POST:
                 chosen_topic_id = int(request.POST.get("topic_id"))
-            elif "group_selection" in request.POST:
+            if "group_selection" in request.POST:
                 data = str(request.POST.get("group_selection")).split("|")
-                chosen_group = int(data[0])
+                if int(data[0]) != -1:
+                    chosen_group = int(data[0])
+                    args["chosen_group"] = chosen_group
                 chosen_topic_id = int(data[1])
+            if "without_group" in request.POST:
+                args = select(request)
+                return render(request, template_name, args)
 
             # "unfiltered_groups_of_student" contains all groups which contain the logged in student
             unfiltered_groups_of_student = models.Group.objects.filter(students=str(request.user.student))
@@ -372,7 +378,8 @@ def selection(request):
                             if "".join(request.POST.get("new_student_id").split()) != "":
                                 if "".join(request.POST.get("new_student_id").split()) != str(request.user.student):
                                     if student_added.count(str(request.POST.get("new_student_id"))) == 0:
-                                        if models.Student.objects.filter(tucan_id=request.POST.get("new_student_id")).exists():
+                                        if models.Student.objects.filter(
+                                                tucan_id=request.POST.get("new_student_id")).exists():
                                             student_added.append(str(request.POST.get("new_student_id")))
                                     else:
                                         already_added_student = True
@@ -390,10 +397,97 @@ def selection(request):
             args["chosen_topic"] = chosen_topic_id
             args["student_id"] = student_id
             args["groups_of_student"] = groups_of_student
-            args["chosen_group"] = chosen_group
 
     args["faculties"] = all_faculties
     return render(request, template_name, args)
+
+def select(request):
+    template_name = 'frontend/selection.html'
+    all_faculties = models.Course.objects.order_by().values('faculty').distinct()
+    args = {}
+
+    # Initialising "success" which will later indicate the selection page if the selection succeeded
+    success = ''
+
+    # "student_tu_id" contains the tucan_id of the student who is logged in
+    student_tu_id = str(request.user.student)
+
+    # "chosen_topic_id" contains the id of the topic which was selected by the user by pressing the
+    # according button on the selection page
+    chosen_topic_id = int(request.POST.get("without_group"))
+
+    # "chosen_course" contains the course which contains the chosen topic
+    chosen_course = models.Course.objects.get(topic=chosen_topic_id)
+    # "courses_in_same_faculty" contains all courses which have the same faculty as the "chosen_course"
+    courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
+    # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
+    topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
+    # "group_of_student" contains the group with which the user will select the chosen topic
+    group_of_student = ""
+
+    students_in_group = [str(request.user.student)]
+
+    existing_groups = []
+    for group in models.Group.objects.filter(students=student_tu_id):
+        if group.size == 1:
+            existing_groups.append(group)
+
+    if len(existing_groups) == 0:
+
+        group_of_student = Group()
+        group_of_student.save()
+        group_of_student.students.add(student_tu_id)
+
+        user_selection = TopicSelection()
+        user_selection.priority = 0
+        user_selection.group = group_of_student
+        user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
+        user_selection.save()
+        # "success" indicates the selection page that the selection succeeded
+        success = 'success'
+
+        # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
+        # be interpreted as "no topic chosen"
+        chosen_topic_id = -1
+
+    else:
+        # "topic_selections_of_group" contains all selections made by the "group_of_student" group
+        topic_selections_of_group = models.TopicSelection.objects.filter(group=existing_groups[0].id)
+
+        already_selected = False
+
+        # Iterates through all known selections which the group already made
+        for known_selection in topic_selections_of_group:
+            # If the chosen topic was already selected by the group, the selection "fails"
+            if int(chosen_topic_id) == int(known_selection.topic.id):
+                already_selected = True
+                # "already_selected" indicates the selection page that the chosen topic
+                # was already selected
+                success = 'already_selected'
+
+        # If a selection of the chosen topic by the "group_of_student" does not exist,
+        # a selection will be created
+        if not already_selected:
+            user_selection = TopicSelection()
+            user_selection.priority = 0
+            user_selection.group = existing_groups[0]
+            user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
+            user_selection.save()
+            # "success" indicates the selection page that the selection succeeded
+            success = 'success'
+
+        # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
+        # be interpreted as "no topic chosen"
+        chosen_topic_id = -1
+
+    args["courses"] = courses_in_same_faculty
+    args["topics_in_chosen_course"] = topics_in_chosen_course
+    args["chosen_topic"] = chosen_topic_id
+    args["chosen_course"] = chosen_course.id
+    args["success"] = success
+    args["faculties"] = all_faculties
+
+    return args
 
 
 def overview(request):
@@ -403,12 +497,13 @@ def overview(request):
 
         student_tu_id = str(request.user.student)
 
-        group_of_student = ""
-        selections_of_group = ""
+        groups_of_student = []
+        selections_of_groups = []
 
         if models.Group.objects.filter(students=student_tu_id).exists():
-            group_of_student = models.Group.objects.get(students=student_tu_id)
-            selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+            groups_of_student = models.Group.objects.filter(students=student_tu_id)
+            for group in groups_of_student:
+                selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
 
         success = "no_same_priority"
 
@@ -417,47 +512,79 @@ def overview(request):
             if 'set_priority_button' in request.POST:
                 topic_id = str(request.POST.get('topic_id'))
                 priority = int(request.POST.get('priority'))
+                group_id = str(request.POST.get('group_id'))
 
-                for selection in selections_of_group:
-                    if str(selection.topic) != topic_id:
-                        if selection.priority == priority and priority != 0:
-                            success = "same_priority"
-                            break
+                for selections_of_group in selections_of_groups:
+                    for selection_of_group in selections_of_group:
+                        if str(selection_of_group.group.id) == str(group_id):
+                            if str(selection_of_group.topic) != topic_id:
+                                if selection_of_group.priority == priority and priority != 0:
+                                    success = "same_priority"
+                                    break
 
                 if success == "no_same_priority":
-                    for selection in selections_of_group:
-                        if str(selection.topic) == topic_id:
-                            selection = models.TopicSelection.objects.get(id=selection.id)
-                            selection.priority = priority
-                            selection.save()
+                    for selections_of_group in selections_of_groups:
+                        for selection_of_group in selections_of_group:
+                            if str(selection_of_group.group.id) == str(group_id):
+                                if str(selection_of_group.topic) == topic_id:
+                                    priority_selection = models.TopicSelection.objects.get(id=selection_of_group.id)
+                                    priority_selection.priority = priority
+                                    priority_selection.save()
 
-                selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+                selections_of_groups.clear()
+                groups_of_student = models.Group.objects.filter(students=student_tu_id)
+                for group in groups_of_student:
+                    selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
 
             elif 'remove_topic_button' in request.POST:
-                topic_id = int(request.POST.get('remove_topic_button'))
-                priority = selections_of_group.get(topic=topic_id).priority
-                models.TopicSelection.objects.get(group=group_of_student, topic=topic_id).delete()
+                topic_id = str(request.POST.get('remove_topic_button'))
+                group_id = str(request.POST.get('group_id'))
 
-                selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
-                if not priority == 0:
-                    for selection in selections_of_group:
-                        if int(selection.priority) > priority:
-                            selection.priority = int(selection.priority) - 1
-                            selection.save()
-                    selections_of_group = models.TopicSelection.objects.filter(group=group_of_student)
+                priority = 0
+                for selections_of_group in selections_of_groups:
+                    for selection_of_group in selections_of_group:
+                        if str(selection_of_group.group.id) == str(group_id):
+                            if str(selection_of_group.topic.id) == topic_id:
+                                priority = selection_of_group.priority
 
-        selections_of_group = sorted(selections_of_group, key=lambda x: x.priority)
+                models.TopicSelection.objects.get(group=group_id, topic=topic_id).delete()
+
+                selections_of_groups.clear()
+                groups_of_student = models.Group.objects.filter(students=student_tu_id)
+                for group in groups_of_student:
+                    selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
+
+                if priority != 0:
+                    for selections_of_group in selections_of_groups:
+                        for selection_of_group in selections_of_group:
+                            if str(selection_of_group.group.id) == str(group_id):
+                                if int(selection_of_group.priority) > int(priority):
+                                    selection_of_group.priority = int(selection_of_group.priority) - 1
+                                    selection_of_group.save()
+                    selections_of_groups.clear()
+                    groups_of_student = models.Group.objects.filter(students=student_tu_id)
+                    for group in groups_of_student:
+                        selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
+
+        temp_selections_of_groups = []
+        for selections in selections_of_groups:
+            temp_selections_of_groups.append(sorted(selections, key=lambda x: x.priority))
+        selections_of_groups = temp_selections_of_groups
 
         motivation_text_needed = []
-        for selection in selections_of_group:
-            course_of_selected_topic = models.Course.objects.get(topic=selection.topic.id)
-            if course_of_selected_topic.motivation_text:
-                motivation_text_needed.append((selection, True))
-            else:
-                motivation_text_needed.append((selection, False))
+        for selections_of_group in selections_of_groups:
+            for selection_of_group in selections_of_group:
+                course_of_selected_topic = models.Course.objects.get(topic=selection_of_group.topic.id)
+                info = []
+                if course_of_selected_topic.motivation_text:
+                    info.append((selection_of_group, True))
+                    motivation_text_needed.append(info)
+                else:
+                    info.append((selection_of_group, False))
+                    motivation_text_needed.append(info)
 
-        args = {"student_tu_id": student_tu_id, "group_of_student": group_of_student,
-                "selections_of_group": selections_of_group, "success": success,
+        args = {"student_tu_id": student_tu_id, "groups_of_student": groups_of_student,
+                "selections_of_groups": selections_of_groups, "success": success,
                 "motivation_text_needed": motivation_text_needed}
 
         if 'open_motivation_text_button' in request.POST:
