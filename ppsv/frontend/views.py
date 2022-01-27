@@ -128,25 +128,26 @@ def selection(request):
                 # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
 
-                # "unfiltered_groups_of_student" contains all groups which contain the logged in student
-                unfiltered_groups_of_student = models.Group.objects.filter(students=str(request.user.student))
+                if request.user.is_authenticated:
+                    # "unfiltered_groups_of_student" contains all groups which contain the logged in student
+                    unfiltered_groups_of_student = models.Group.objects.filter(students=str(request.user.student))
 
-                # "groups_of_student" contains all groups which contain the logged in student and fulfil all
-                # conditions (1 < group.size <= chosen.topic.max_participants)
-                groups_of_student = []
+                    # "groups_of_student" contains all groups which contain the logged in student and fulfil all
+                    # conditions (1 < group.size <= chosen.topic.max_participants)
+                    groups_of_student = []
 
-                # delete all groups with size=1 and size >= the allowed max participants of the chosen topic
-                # in order to get the groups which do not only contain the logged in student himself and have the
-                # correct group size
-                for group in unfiltered_groups_of_student:
-                    if 1 < group.size <= models.Topic.objects.get(id=chosen_topic).max_participants:
-                        groups_of_student.append(group)
+                    # delete all groups with size=1 and size >= the allowed max participants of the chosen topic
+                    # in order to get the groups which do not only contain the logged in student himself and have the
+                    # correct group size
+                    for group in unfiltered_groups_of_student:
+                        if 1 < group.size <= models.Topic.objects.get(id=chosen_topic).max_participants:
+                            groups_of_student.append(group)
+                    args["groups_of_student"] = groups_of_student
 
-                args = {"courses": courses_in_same_faculty, "topics_in_chosen_course": topics_in_chosen_course,
-                        "faculties": all_faculties, "chosen_topic": chosen_topic,
-                        "chosen_course": chosen_course.id, "groups_of_student": groups_of_student}
-
-                return render(request, template_name, args)
+                args["courses"] = courses_in_same_faculty
+                args["topics_in_chosen_course"] = topics_in_chosen_course
+                args["chosen_topic"] = chosen_topic
+                args["chosen_course"] = chosen_course.id
 
         elif "select_topic_button" in request.POST:
 
@@ -582,6 +583,7 @@ def overview(request):
                 else:
                     info.append((selection_of_group, False))
                     motivation_text_needed.append(info)
+        print(motivation_text_needed)
 
         args = {"student_tu_id": student_tu_id, "groups_of_student": groups_of_student,
                 "selections_of_groups": selections_of_groups, "success": success,
