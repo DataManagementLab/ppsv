@@ -402,6 +402,7 @@ def selection(request):
     args["faculties"] = all_faculties
     return render(request, template_name, args)
 
+
 def select(request):
     template_name = 'frontend/selection.html'
     all_faculties = models.Course.objects.order_by().values('faculty').distinct()
@@ -583,7 +584,6 @@ def overview(request):
                 else:
                     info.append((selection_of_group, False))
                     motivation_text_needed.append(info)
-        print(motivation_text_needed)
 
         args = {"student_tu_id": student_tu_id, "groups_of_student": groups_of_student,
                 "selections_of_groups": selections_of_groups, "success": success,
@@ -591,21 +591,29 @@ def overview(request):
 
         if 'open_motivation_text_button' in request.POST:
             open_motivation_text_for = int(request.POST.get('open_motivation_text_button'))
-            print(selections_of_group)
-            motivation_text_of_selection = next(filter(lambda x: x.id == open_motivation_text_for,
-                                                       selections_of_group)).motivation
+            group_id = int(request.POST.get('group_id'))
+            print(group_id)
+            for selections_of_group in selections_of_groups:
+                for selection_of_group in selections_of_group:
+                    if selection_of_group.id == open_motivation_text_for and selection_of_group.group.id == group_id:
+                        motivation_text_of_selection = selection_of_group.motivation
+                        break
+
             args["open_motivation_text_for"] = open_motivation_text_for
             args["motivation_text_of_selection"] = motivation_text_of_selection
 
         elif 'save_motivation_text_button' in request.POST:
             save_motivation_text_for = int(request.POST.get('save_motivation_text_button'))
-            motivation_text = request.POST.get('motivation_text')
-            selection = next(filter(lambda x: x.id == save_motivation_text_for,
-                                    selections_of_group))
-            selection.motivation = motivation_text
-            selection.save()
-            args["success"] = "motivational_text_saved"
+            group_id = int(request.POST.get('group_id'))
+            motivation_text = str(request.POST.get('motivation_text'))
 
+            for selections_of_group in selections_of_groups:
+                for selection_of_group in selections_of_group:
+                    if selection_of_group.id == save_motivation_text_for and selection_of_group.group.id == group_id:
+                        selection_of_group.motivation = motivation_text
+                        selection_of_group.save()
+                        args["success"] = "motivational_text_saved"
+                        break
         return render(request, template_name, args)
 
     return render(request, template_name)

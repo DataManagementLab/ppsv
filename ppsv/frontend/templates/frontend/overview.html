@@ -65,6 +65,7 @@
                                             {% if selection_in_needed.id == selection.id and needed %}
                                                 <form method="post" style="margin:0">
                                                     {% csrf_token %}
+                                                    <input name="group_id" value="{{selection_in_needed.group.id}}" hidden>
                                                     {% if selection.id == open_motivation_text_for %}
                                                          <button class="button" id="save_motivation_text_button" form="motivation_text_form" name="save_motivation_text_button" value="{{ selection.id }}"
                                                             type="submit" style="margin:0px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
@@ -98,6 +99,7 @@
                             {% if selection.id == open_motivation_text_for %}
                             <form id="motivation_text_form" method="post" style="margin:0">
                                 {% csrf_token %}
+                                <input id="group_id" name="group_id" value="{{selection.group.id}}" hidden>
                                 <li class="table-row">
                                     <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
                                 </li>
