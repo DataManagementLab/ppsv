@@ -359,11 +359,12 @@ def profile(request):
             student.user = request.user
             student.email = request.user.email
             student.save()
-            messages.success(request, "Student creation successful.")
+            messages.success(request, "Student profile saved successfully.")
             return redirect("frontend:homepage")
         if hasattr(request.user, "student"):
-            messages.error(request, "Student creation unsuccessful. A user can only create one student.")
+            # maybe overwriting the current student is possible, but changing the primary key is troublesome
+            messages.error(request, "Student profile could not be saved. A user can only create one student.")
         else:
-            messages.error(request, "Student creation unsuccessful. Invalid information.")
+            messages.error(request, "Saving unsuccessful. Invalid information.")
     form = NewStudentForm()
     return render(request=request, template_name="registration/profile.html", context={"profile_form": form})

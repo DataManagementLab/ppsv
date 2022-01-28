@@ -5,11 +5,12 @@
 
 <!-- Student creation -->
 {% block content %}
-  <h2>Student Creation Form</h2>
+  <h2>Please fill out your student profile</h2>
+  <h3>This information cannot be changed later.</h3>
   <form method="post">
     {% csrf_token %}
     {{ profile_form.as_p }}
-    <button type="submit">Create Student</button>
+    <button type="submit">Save profile permanently</button>
   </form>
 
 {% endblock %}
