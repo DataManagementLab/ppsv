@@ -618,7 +618,6 @@ def overview(request):
 
     return render(request, template_name)
 
-
 def groups(request):
     template_name = 'frontend/groups.html'
     return render(request, template_name)

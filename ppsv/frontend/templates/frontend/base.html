@@ -63,21 +63,25 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
                                                         style="padding-bottom: 0.2em;padding-top: 0.2em"></i></button>
         </form>
         {% endblock homepage_navbar_container %}
-        {% block overview_page_navbar_container %}
-        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn"> Overview </button>
-        </form>
-        {% endblock overview_page_navbar_container %}
         {% block selection_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"> Select Your Topics </button>
         </form>
         {% endblock selection_page_navbar_container %}
+        {% if user.is_authenticated %}
+        {% block overview_page_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" class="navbar-btn"> Overview </button>
+        </form>
+        {% endblock overview_page_navbar_container %}
+        {% endif %}
+        {% if user.is_authenticated %}
         {% block groups_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
             <button type="submit" class="navbar-btn"> Your Groups </button>
         </form>
         {% endblock groups_page_navbar_container %}
+        {% endif %}
         {# Sprache ändern #}
         <button class="navbar-btn" style="float:right"><i class="fa fa-globe fa-lg" aria-hidden="true"
                                                           style="padding-top:0.2em;padding-bottom:0.2em;"> </i></button>
