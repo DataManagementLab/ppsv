@@ -5,24 +5,11 @@
 
 {% block overview_page_navbar_container %}
 <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
-    <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Overview </button>
+    <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Your Selections </button>
 </form>
 {% endblock overview_page_navbar_container %}
 
 {% block content %}
-   {% if success %}
-        {% if success == "same_priority" %}
-            <div class="alert alert-danger">
-                <strong>Priority!</strong> You can't have two topics with the same priority.
-            </div>
-        {% endif %}
-        {% if success == "motivational_text_saved" %}
-            <div class="alert alert-success">
-                <strong>Successfully Saved!</strong> Your motivation text has been saved.
-            </div>
-        {% endif %}
-   {% endif %}
-
     <div style="display:flex;flex-direction: row;">
         <div style="display:grid;max-width:100%;grid-template-columns: repeat(1, 1fr);">
             {% if student_tu_id %}
@@ -54,8 +41,8 @@
                                             {% endfor %}
                                             {% endfor %}
                                         </select>
-                                        <input type="hidden" name="topic_id" value="{{ selection.topic }}">
-                                        <input type="hidden" name="group_id" value="{{ selection.group.id }}">
+                                        <input type="hidden" name="topic_id" value="{{ selection.topic.pk }}">
+                                        <input type="hidden" name="group_id" value="{{ selection.group.pk }}">
                                         <button class="button" id="set_priority_button" name="set_priority_button" type="submit" style="white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px"> Set Priority </button>
                                     </form>
                                 </div>
