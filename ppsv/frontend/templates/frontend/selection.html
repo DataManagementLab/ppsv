@@ -99,16 +99,6 @@ div.scrollmenu button:hover {
 }
 </style>
 
-<!-- This container contains all alerts which indicate the user id the selection failed or not -->
-<div class="container-fluid">
-        {% if not user.is_authenticated %}
-            <div class="alert alert-warning">
-                <strong>Important!</strong>
-                You need to be logged in to be able to select a topic.
-            </div>
-        {% endif %}
-</div>
-
 <!-- This container contains all faculties -->
 <div class="container-fluid">
         <ul class="responsive-table">

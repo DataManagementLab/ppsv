@@ -416,6 +416,9 @@ def topic_selection(request):
             args["student_id"] = student_id
             args["groups_of_student"] = groups_of_student
 
+    if not request.user.is_authenticated:
+        messages.info(request, f"You need to be logged in to be able to select a topic.")
+
     args["faculties"] = all_faculties
     return render(request, template_name, args)
 
