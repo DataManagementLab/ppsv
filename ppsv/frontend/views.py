@@ -23,12 +23,18 @@ def homepage(request):
 def topic_selection(request):
     """selection view
 
+    This version of topic_selection is not final.
+    Some parts of the code are not commented because it is to be changed.
+    The change will alter the code significantly.
+    Therefore the comments will be added after the changes in the week
+    from 31.01.22 to 06.02.22
+
     :param request: The given request
     :type request: HttpRequest
     """
 
     template_name = 'frontend/selection.html'
-    all_faculties = models.Course.objects.order_by().values('faculty').distinct()
+    all_faculties = models.Course.objects.values("faculty").distinct().order_by("faculty")
     args = {}
 
     # If a form with the method "post" is submitted by a button
@@ -38,20 +44,18 @@ def topic_selection(request):
         if "faculty_button" in request.POST:
 
             # "chosen_faculty" contains the faculty id of the pressed "faculty_button"
-            chosen_faculty = str(request.POST.get('faculty_button'))
+            chosen_faculty = str(request.POST.get("faculty_button"))
             # "courses_in_chosen_faculty" is a QuerySet with all courses in the database
             # which are in the "chosen_faculty"
-            chosen_course = models.Course.objects.filter(faculty=chosen_faculty)
+            courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty)
 
-            args = {'courses': chosen_course, "faculties": all_faculties}
-
-            return render(request, template_name, args)
+            args["courses"] = courses_in_chosen_faculty
 
         # If a button with the name 'course_button' is pressed in "selection.html"
         elif "course_button" in request.POST:
 
             # "chosen_course" contains the course id of the pressed "course_button"
-            chosen_course = int(request.POST.get('course_button'))
+            chosen_course = int(request.POST.get("course_button"))
 
             # If the value of "chosen_course" is -1, it means that the same button was already clicked
             # one request before. When the button is clicked the first time it opens an overview of
@@ -68,11 +72,9 @@ def topic_selection(request):
                 chosen_course = models.Course.objects.filter(
                     faculty=models.Course.objects.get(id=course_id).faculty)
 
-                args = {'courses': chosen_course, "faculties": all_faculties}
+                args["courses"] = chosen_course
 
-                return render(request, template_name, args)
-
-            # If the "course_button" is clicked the first time, we need to get all topics in thr chosen course
+            # If the "course_button" is clicked the first time, we need to get all topics in the chosen course
             else:
                 # In order to still display all courses in the same faculty after we closed the overview for the
                 # topics, we need to get all courses in the chosen faculty again
@@ -81,10 +83,9 @@ def topic_selection(request):
                 # "topics_in_chosen_course" contains all topics in the chosen course
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
 
-                args = {"courses": courses_in_same_faculty, 'chosen_course': chosen_course,
-                        "topics_in_chosen_course": topics_in_chosen_course, "faculties": all_faculties}
-
-                return render(request, template_name, args)
+                args["courses"] = courses_in_same_faculty
+                args["chosen_course"] = chosen_course
+                args["topics_in_chosen_course"] = topics_in_chosen_course
 
         # If a button with the name 'topic_button' is pressed in "selection.html"
         elif "topic_button" in request.POST:
@@ -111,10 +112,9 @@ def topic_selection(request):
                 # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
 
-                args = {'courses': courses_in_same_faculty, "topics_in_chosen_course": topics_in_chosen_course,
-                        "faculties": all_faculties, 'chosen_course': chosen_course.id}
-
-                return render(request, template_name, args)
+                args["courses"] = courses_in_same_faculty
+                args["chosen_course"] = chosen_course.id
+                args["topics_in_chosen_course"] = topics_in_chosen_course
 
             # If the "topic_button" is clicked the first time
             else:
@@ -151,9 +151,6 @@ def topic_selection(request):
 
         elif "select_topic_button" in request.POST:
 
-            # Initialising "success" which will later indicate the selection page if the selection succeeded
-            success = ''
-
             # "student_tu_id" contains the tucan_id of the student who is logged in
             student_tu_id = str(request.user.student)
 
@@ -167,8 +164,6 @@ def topic_selection(request):
             courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
             # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
             topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
-            # "group_of_student" contains the group with which the user will select the chosen topic
-            group_of_student = "#"
 
             students_in_group = []
             counter = 0
@@ -178,11 +173,11 @@ def topic_selection(request):
 
             if counter >= 1:
                 existing_groups = models.Group.objects.filter(students=student_tu_id)
+
                 for student in students_in_group:
                     existing_groups = existing_groups.filter(students=student)
 
                 if len(existing_groups) == 0:
-                    print("Does Not Exist")
 
                     for student_id in students_in_group:
                         students_in_group[students_in_group.index(student_id)] = \
@@ -193,17 +188,19 @@ def topic_selection(request):
                     for student in students_in_group:
                         group_of_student.students.add(student)
 
-                    # "topic_selections_of_group" contains all selections made by the "group_of_student" group
-                    topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_student.id)
-                    print(topic_selections_of_group)
-
-                    user_selection = TopicSelection()
-                    user_selection.priority = 0
-                    user_selection.group = group_of_student
-                    user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
-                    user_selection.save()
-                    # "success" indicates the selection page that the selection succeeded
-                    success = 'success'
+                    selection = TopicSelection()
+                    selection.priority = 0
+                    selection.group = group_of_student
+                    selection.topic = models.Topic.objects.get(id=chosen_topic_id)
+                    selection.save()
+                    # Indicates the selection page that the selection succeeded
+                    messages.success(request,
+                                     "Your Selection Was Successful! You can find and edit your chosen topics on the "
+                                     "overview page.")
+                    messages.warning(request,
+                                     "You need to set the priority and add a motivation text(when needed) "
+                                     "to your selection in order to fully complete your selection. "
+                                     "You can do this on the overview page.")
 
                     # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
                     # be interpreted as "no topic chosen"
@@ -222,19 +219,24 @@ def topic_selection(request):
                             already_selected = True
                             # "already_selected" indicates the selection page that the chosen topic
                             # was already selected
-                            success = 'already_selected'
-                            print("Hallo")
+                            messages.error(request, "Selection Failed! You have already selected this topic.")
 
                     # If a selection of the chosen topic by the "group_of_student" does not exist,
                     # a selection will be created
                     if not already_selected:
-                        user_selection = TopicSelection()
-                        user_selection.priority = 0
-                        user_selection.group = existing_groups[0]
-                        user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
-                        user_selection.save()
-                        # "success" indicates the selection page that the selection succeeded
-                        success = 'success'
+                        selection = TopicSelection()
+                        selection.priority = 0
+                        selection.group = existing_groups[0]
+                        selection.topic = models.Topic.objects.get(id=chosen_topic_id)
+                        selection.save()
+                        # Indicates the selection page that the selection succeeded
+                        messages.success(request,
+                                         "Your Selection Was Successful! You can find and "
+                                         "edit your chosen topics on the overview page.")
+                        messages.warning(request,
+                                         "You need to set the priority and add a motivation text(when needed) "
+                                         "to your selection in order to fully complete your selection. "
+                                         "You can do this on the overview page.")
 
                     # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
                     # be interpreted as "no topic chosen"
@@ -259,19 +261,24 @@ def topic_selection(request):
                         already_selected = True
                         # "already_selected" indicates the selection page that the chosen topic
                         # was already selected
-                        success = 'already_selected'
-                        print("Hallo")
+                        messages.error(request, "Selection Failed! You have already selected this topic.")
 
                 # If a selection of the chosen topic by the "group_of_student" does not exist,
                 # a selection will be created
                 if not already_selected:
-                    user_selection = TopicSelection()
-                    user_selection.priority = 0
-                    user_selection.group = models.Group.objects.get(id=chosen_group)
-                    user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
-                    user_selection.save()
+                    selection = TopicSelection()
+                    selection.priority = 0
+                    selection.group = models.Group.objects.get(id=chosen_group)
+                    selection.topic = models.Topic.objects.get(id=chosen_topic_id)
+                    selection.save()
                     # "success" indicates the selection page that the selection succeeded
-                    success = 'success'
+                    messages.success(request,
+                                     "Your Selection Was Successful! You can find and edit your chosen topics on the "
+                                     "overview page.")
+                    messages.warning(request,
+                                     "You need to set the priority and add a motivation text(when needed) "
+                                     "to your selection in order to fully complete your selection. "
+                                     "You can do this on the overview page.")
 
                 # In order to close the button under the chosen topic, the chosen topic need to be "-1" which will
                 # be interpreted as "no topic chosen"
@@ -281,7 +288,6 @@ def topic_selection(request):
             args["topics_in_chosen_course"] = topics_in_chosen_course
             args["chosen_topic"] = chosen_topic_id
             args["chosen_course"] = chosen_course.id
-            args["success"] = success
 
         elif "display_text_fields" in request.POST:
 
@@ -377,13 +383,24 @@ def topic_selection(request):
                     if "add_student" in request.POST:
                         if models.Topic.objects.get(id=chosen_topic_id).max_participants > counter:
                             if "".join(request.POST.get("new_student_id").split()) != "":
-                                if "".join(request.POST.get("new_student_id").split()) != str(request.user.student):
-                                    if student_added.count(str(request.POST.get("new_student_id"))) == 0:
-                                        if models.Student.objects.filter(
-                                                tucan_id=request.POST.get("new_student_id")).exists():
-                                            student_added.append(str(request.POST.get("new_student_id")))
+                                if student_added.count(str(request.POST.get("new_student_id"))) == 0:
+                                    if models.Student.objects.filter(
+                                            tucan_id=request.POST.get("new_student_id")).exists():
+                                        student_added.append(str(request.POST.get("new_student_id")))
                                     else:
-                                        already_added_student = True
+                                        messages.error(request, "A student with the tucan id " +
+                                                                request.POST.get("new_student_id") +
+                                                                " does not exists.")
+                                else:
+                                    messages.error(request, "A student with the tucan id " +
+                                                            request.POST.get("new_student_id") +
+                                                            " is already in the group.")
+                        else:
+                            messages.error(request, "Your group would be too large for " +
+                                                    str(models.Topic.objects.get(id=chosen_topic_id).title)
+                                                    + ". Your group can only have a maximum member count of " +
+                                                    str(models.Topic.objects.get(id=chosen_topic_id).max_participants)
+                                                    + ".")
 
                     if "remove_student" in request.POST:
                         student_added.remove(str(request.POST.get("remove_student")))
@@ -405,7 +422,7 @@ def topic_selection(request):
 
 def select(request):
     template_name = 'frontend/selection.html'
-    all_faculties = models.Course.objects.order_by().values('faculty').distinct()
+    all_faculties = models.Course.objects.values('faculty').distinct().order_by('faculty')
     args = {}
 
     # Initialising "success" which will later indicate the selection page if the selection succeeded
@@ -495,17 +512,24 @@ def select(request):
 def overview(request):
     template_name = 'frontend/overview.html'
 
+    # If the user is logged in and has the attribute "student" the overview page is loaded
     if request.user.is_authenticated:
 
+        # Initialising the argument dictionary
         args = {}
 
         if hasattr(request.user, "student"):
 
+            # "student_tucan_id" contains the tucan id of the logged in user/student
             student_tucan_id = str(request.user.student)
 
+            # "groups_of_student" contains all groups of which the student is a member of
             groups_of_student = []
+            # "selections_of_groups" contains all selections made by the groups in "groups_of_student"
             selections_of_groups = []
 
+            # If a group with the student in it exists, the groups and all their selections will be saved
+            # in "groups_of_student" and "selections_of_groups"
             if models.Group.objects.filter(students=student_tucan_id).exists():
                 groups_of_student = models.Group.objects.filter(students=student_tucan_id)
                 for group in groups_of_student:
@@ -513,10 +537,15 @@ def overview(request):
 
             if request.method == "POST":
 
+                # If the button "set_priority_button" is pressed, the priority of the chosen topic will be changed to
+                # the chosen priority
                 if 'set_priority_button' in request.POST:
 
+                    # "topic_id" contains the topic id of the topic in the chosen selection
                     topic_id = str(request.POST.get('topic_id'))
+                    # "priority" contains the chosen priority which will be the new priority
                     priority = int(request.POST.get('priority'))
+                    # "group_id" contains the group id of the group in the chosen selection
                     group_id = str(request.POST.get('group_id'))
 
                     another_topic_has_same_priority = False
@@ -556,7 +585,7 @@ def overview(request):
                                         selection.priority = int(selection.priority) - 1
                                         selection.save()
 
-                elif 'open_motivation_text_button' in request.POST:
+                elif "open_motivation_text_button" in request.POST:
                     open_motivation_text_for = int(request.POST.get('open_motivation_text_button'))
                     group_id = int(request.POST.get('group_id'))
                     print(group_id)

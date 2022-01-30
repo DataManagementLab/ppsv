@@ -1,4 +1,5 @@
 {% extends 'frontend/base.html' %}
+{% load static %}
 
 {% block title %}
 Selection Page
@@ -104,23 +105,6 @@ div.scrollmenu button:hover {
             <div class="alert alert-warning">
                 <strong>Important!</strong>
                 You need to be logged in to be able to select a topic.
-            </div>
-        {% endif %}
-
-        {% if success == 'success' %}
-            <div class="alert alert-success">
-                <strong>Your Selection Was Successful!</strong> You can find and edit your chosen topics on the overview page.
-            </div>
-            <div class="alert alert-warning">
-                <strong>Important!</strong>
-                You need to set the priority and add a motivation text(when needed) to your selection in order to fully complete your selection.
-                You can do this on the overview page.
-            </div>
-        {% endif %}
-
-        {% if success == 'already_selected' %}
-            <div class="alert alert-danger">
-                <strong>Selection Failed!</strong> You have already selected this topic.
             </div>
         {% endif %}
 </div>
@@ -345,4 +329,4 @@ div.scrollmenu button:hover {
     </script>
 {% endif %}
 
-{% endblock content %}
+{% endblock %}
