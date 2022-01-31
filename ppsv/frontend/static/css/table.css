@@ -23,7 +23,7 @@
 }
 
  .responsive-table .table-header {
-	 background-color: #0C8FCC;
+	 background-color: rgba(10,61,98,1);
 	 font-size: 14px;
 	 color: rgba(255,255,255,1);
 	 text-transform: uppercase;

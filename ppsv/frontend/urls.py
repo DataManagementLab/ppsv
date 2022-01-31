@@ -19,7 +19,7 @@ app_name = "frontend"
 
 urlpatterns = [
     path('', views.homepage, name='homepage'),
-    path('overview/', views.overview, name='overview'),
+    path('your_selection/', views.your_selection, name='your_selection'),
     path('selection/', views.topic_selection, name='selection'),
     path('groups/', views.groups, name='groups'),
     path('login/', views.login_request, name='login'),

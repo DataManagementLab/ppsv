@@ -505,8 +505,8 @@ def select(request):
     return args
 
 
-def overview(request):
-    template_name = 'frontend/overview.html'
+def your_selection(request):
+    template_name = 'frontend/your_selection.html'
 
     # If the user is logged in and has the attribute "student" the overview page is loaded
     if request.user.is_authenticated:

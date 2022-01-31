@@ -10,34 +10,17 @@
             padding-left:1em;
             padding-bottom:0em;
             padding-top:0em;
+            font-style: normal;
+            font-weight: 800;
         }
 
         .navbar-btn:hover {
-            background-color: #0a3d62;
+            color: #0a3d62;
         }
 
         .navbar-btn:focus {
             outline: none;
-            background-color: #0a3d62;
-        }
-
-
-
-        .content {
-            position: relative;
-        }
-
-
-        .put-top-right {
-            position: absolute;
-            top: -2em;
-            right: 4em;
-        }
-
-        .content i {
-            position: absolute;
-            top: -1em;
-            right: 0em;
+            color: #0a3d62;
         }
 
         a {

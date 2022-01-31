@@ -1,30 +1,50 @@
 {% extends 'frontend/base.html' %}
 {% load static %}
 
-{% block title %} Overview {% endblock %}
+{% block title %} Your Selection {% endblock %}
 
-{% block overview_page_navbar_container %}
-<form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
-    <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;"> Your Selections </button>
+{% block your_selection_page_navbar_container %}
+<form class="navbar-form" action="{% url 'frontend:your_selection' %}" style="float:left;padding-bottom: 0px">
+    <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;"> Your Selection </button>
 </form>
-{% endblock overview_page_navbar_container %}
+{% endblock your_selection_page_navbar_container %}
 
 {% block content %}
     <div style="display:flex;flex-direction: row;">
-        <div style="display:grid;max-width:100%;grid-template-columns: repeat(1, 1fr);">
+        <div style="display:grid;width:60%;align-content: start;">
             {% if student_tu_id %}
                 {% for group_of_student in groups_of_student %}
-                <div style="width: 900px;min-width: 900px;">
-                    <ul class="responsive-table">
-                        <li class="table-header" style="padding: 15px;text-align:center">
+                    <ul class="responsive-table" style="margin:0px;">
+                        <li class="table-header" style="padding: 15px;text-align:center;position:relative;">
                             <div>
                                 {{ group_of_student.get_display }}
                             </div>
+                            {% if group_of_student.size > 1 %}
+                            <i class="fa fa-users" aria-hidden="true" title="Group Overview" style="font-size:24px;position:absolute;z-index:2;right:20px;top:15px"></i>
+                            {% endif %}
                         </li>
                         {% for selections in selections_of_groups %}
                             {% for selection in selections %}
                                 {% if selection.group == group_of_student %}
-                                    <li class="table-row">
+                                    <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:15px;">
+                                            {% if not selection.priority or not selection.motivation and selection.topic.course.motivation_text%}
+                                                <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:13px"
+                                                   {% if not selection.priority and not selection.motivation and selection.topic.course.motivation_text %}
+                                                       title="You need to set the priority for this topic and write a motivation text"
+                                                       {% elif not selection.priority %}
+                                                       title="You need to set the priority for this topic"
+                                                       {% elif not selection.motivation and selection.topic.course.motivation_text %}
+                                                       title="You need to write a motivation text"
+                                                   {% endif %} >
+                                                </i>
+                                            {% endif %}
+                                        <div style="background-color:white;padding-left:5px;
+                                                    padding-right:5px;margin-left:20px;
+                                                    white-space: nowrap;border-style: solid;
+                                                    border-width: 1px;border-color:rgba(10,61,98,0.2);
+                                                    position:absolute;z-index:2;top:-13px;left:0px";>
+                                            {{ selection.topic.course }}
+                                        </div>
                                         <div class="col" style="text-align:start">
                                             {{ selection.topic }}
                                         </div>
@@ -61,7 +81,7 @@
                                                             {% else %}
                                                                 <button class="button" id="open_motivation_text_button" name="open_motivation_text_button" value="{{ selection.id }}"
                                                                         type="submit" style="margin:0px ;white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px;">
-                                                                        Open Motivation Text
+                                                                        Edit Motivation Text
                                                                 </button>
                                                             {% endif %}
                                                         </form>
@@ -77,10 +97,12 @@
                                             </form>
                                         </div>
                                         <div class="col-1" >
-                                            <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px" aria-hidden="true" ></i>
-                                            <style>
-                                                .color {color: rgba(232, 222, 44, 0.8)}
-                                            </style>
+                                            <a onclick="">
+                                                <i id="info_button" name="info_button" class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px;color:rgba(94, 94, 94, 1)"
+                                                   aria-hidden="true"
+                                                   title="Show Details">
+                                                </i>
+                                            </a>
                                         </div>
                                     </li>
                                     {% if selection.id == open_motivation_text_for_selection %}
@@ -115,13 +137,32 @@
                             {% endfor %}
                         {% endfor %}
                     </ul>
-                </div>
                 {% endfor %}
             {% endif %}
         </div>
         {% if student_tu_id %}
-        <div style="width: 50%;min-height: 200px;overflow: hidden;margin-left:30px;">
-            Hier werden die Infos zu den Themen stehen
+        <div id="topic_info" style="width: 40%;height: 700px;min-height:200px;
+                    overflow: hidden;margin-left:30px;
+                    border-style:solid;border-color: rgba(0,0,0,0.3);
+                    border-width:0px;padding-right:35px;padding-top:10px;box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.2);">
+            <ul  class="responsive-table" style="">
+                <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px">
+                    <button class="button" style="color:white;background-color:transparent;width:100%;border:none;outline:none;text-transform: capitalize;font-size: 14px;">
+                        Kursname
+                        <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px"></i>
+                    </button>
+                </li>
+                <li class="table-row" style="margin-left:10px;margin-right:10px;">
+                    <textarea></textarea>
+                </li>
+                <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
+                    Topicname
+                    <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
+                </li>
+                <li class="table-row" style="margin-left:10px;margin-right:10px;">
+                    <textarea></textarea>
+                </li>
+            </ul>
         </div>
         {% endif %}
     </div>
@@ -139,5 +180,29 @@
         window.addEventListener("beforeunload", function (e) {
                sessionStorage.setItem('scrollpos', window.scrollY);
         });
+    </script>
+
+    <script>
+    /*
+        let lastKnownScrollPosition = 0;
+        let ticking = false;
+
+        function doSomething(scrollPos) {
+          document.getElementById('topic_info').style.top = scrollPos + 160;
+        }
+
+        document.addEventListener('scroll', function(e) {
+            lastKnownScrollPosition = window.scrollY;
+
+          if (!ticking) {
+            window.requestAnimationFrame(function() {
+              doSomething(lastKnownScrollPosition);
+              ticking = false;
+            });
+
+            ticking = true;
+          }
+        });
+        */
     </script>
 {% endblock content %}
