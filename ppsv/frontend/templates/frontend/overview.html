@@ -21,98 +21,98 @@
                                 {{ group_of_student.get_display }}
                             </div>
                         </li>
-                        {% for selections_of_group in selections_of_groups %}
-                        {% for selection in selections_of_group %}
-                        {% if selection.group == group_of_student %}
-                            <li class="table-row">
-                                <div class="col" style="text-align:start">
-                                    {{ selection.topic }}
-                                </div>
-                                <div class="col" style="display:flex;justify-content: start;white-space:nowrap">
-                                    <form method="post" style="margin:0">
-                                        {% csrf_token %}
-                                        <select name="priority" style="text-align: center;margin-right: 5px;">
-                                              <option value="0"  selected="selected"> Choose Priority </option>
-                                            {% for selections_arrays in selections_of_groups %}
-                                            {% for selections_for_priority in selections_arrays %}
-                                            {% if selections_for_priority.group == group_of_student %}
-                                               <option value="{{ forloop.counter }}" {% if selection.priority == forloop.counter %} selected="selected" {% endif %}>{{ forloop.counter }}</option>
-                                            {% endif %}
-                                            {% endfor %}
-                                            {% endfor %}
-                                        </select>
-                                        <input type="hidden" name="topic_id" value="{{ selection.topic.pk }}">
-                                        <input type="hidden" name="group_id" value="{{ selection.group.pk }}">
-                                        <button class="button" id="set_priority_button" name="set_priority_button" type="submit" style="white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px"> Set Priority </button>
-                                    </form>
-                                </div>
-                                <div class="col">
-                                    {% for info in motivation_text_needed %}
-                                        {% for selection_in_needed,needed in info %}
-                                            {% if selection_in_needed.id == selection.id and needed %}
-                                                <form method="post" style="margin:0">
-                                                    {% csrf_token %}
-                                                    <input name="group_id" value="{{selection_in_needed.group.id}}" hidden>
-                                                    {% if selection.id == open_motivation_text_for %}
-                                                         <button class="button" id="save_motivation_text_button" form="motivation_text_form" name="save_motivation_text_button" value="{{ selection.id }}"
-                                                            type="submit" style="margin:0px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
-                                                            Save Motivation Text
-                                                         </button>
-                                                    {% else %}
-                                                        <button class="button" id="open_motivation_text_button" name="open_motivation_text_button" value="{{ selection.id }}"
-                                                                type="submit" style="margin:0px ;white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px;">
-                                                                Open Motivation Text
-                                                        </button>
+                        {% for selections in selections_of_groups %}
+                            {% for selection in selections %}
+                                {% if selection.group == group_of_student %}
+                                    <li class="table-row">
+                                        <div class="col" style="text-align:start">
+                                            {{ selection.topic }}
+                                        </div>
+                                        <div class="col" style="display:flex;justify-content: start;white-space:nowrap">
+                                            <form method="post" style="margin:0">
+                                                {% csrf_token %}
+                                                <select name="priority" style="text-align: center;margin-right: 5px;">
+                                                      <option value="0"  selected="selected"> Choose Priority </option>
+                                                    {% for inner_selections in selections_of_groups %}
+                                                        {% for selection_for_priority in inner_selections %}
+                                                            {% if selection_for_priority.group == group_of_student %}
+                                                               <option value="{{ forloop.counter }}" {% if selection.priority == forloop.counter %} selected="selected" {% endif %}>{{ forloop.counter }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% endfor %}
+                                                </select>
+                                                <input type="hidden" name="topic_id" value="{{ selection.topic.pk }}">
+                                                <input type="hidden" name="group_id" value="{{ selection.group.pk }}">
+                                                <button class="button" id="set_priority_button" name="set_priority_button" type="submit" style="white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px"> Set Priority </button>
+                                            </form>
+                                        </div>
+                                        <div class="col">
+                                            {% for info in motivation_text_required %}
+                                                {% for selection_in_required,required in info %}
+                                                    {% if selection_in_required.id == selection.id and required %}
+                                                        <form method="post" style="margin:0">
+                                                            {% csrf_token %}
+                                                            <input name="group_id" value="{{selection_in_required.group.id}}" hidden>
+                                                            {% if selection.id == open_motivation_text_for_selection %}
+                                                                 <button class="button" id="save_motivation_text_button" form="motivation_text_form" name="save_motivation_text_button" value="{{ selection.id }}"
+                                                                    type="submit" style="margin:0px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
+                                                                    Save Motivation Text
+                                                                 </button>
+                                                            {% else %}
+                                                                <button class="button" id="open_motivation_text_button" name="open_motivation_text_button" value="{{ selection.id }}"
+                                                                        type="submit" style="margin:0px ;white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px;">
+                                                                        Open Motivation Text
+                                                                </button>
+                                                            {% endif %}
+                                                        </form>
                                                     {% endif %}
-                                                </form>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endfor %}
-                                </div>
-                                <div class="col-2" >
-                                    <form method="post" style="margin:0">
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </div>
+                                        <div class="col-2" >
+                                            <form method="post" style="margin:0">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="group_id" value="{{ selection.group.id }}">
+                                                <button style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}" name="remove_topic_button" type="submit"> Remove Topic </button>
+                                            </form>
+                                        </div>
+                                        <div class="col-1" >
+                                            <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px" aria-hidden="true" ></i>
+                                            <style>
+                                                .color {color: rgba(232, 222, 44, 0.8)}
+                                            </style>
+                                        </div>
+                                    </li>
+                                    {% if selection.id == open_motivation_text_for_selection %}
+                                    <form id="motivation_text_form" method="post" style="margin:0">
                                         {% csrf_token %}
-                                        <input type="hidden" name="group_id" value="{{ selection.group.id }}">
-                                        <button style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}" name="remove_topic_button" type="submit"> Remove Topic </button>
-                                    </form>
-                                </div>
-                                <div class="col-1" >
-                                    <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px" aria-hidden="true" ></i>
-                                    <style>
-                                        .color {color: rgba(232, 222, 44, 0.8)}
-                                    </style>
-                                </div>
-                            </li>
-                            {% if selection.id == open_motivation_text_for %}
-                            <form id="motivation_text_form" method="post" style="margin:0">
-                                {% csrf_token %}
-                                <input id="group_id" name="group_id" value="{{selection.group.id}}" hidden>
-                                <li class="table-row">
-                                    <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
-                                </li>
-                                <script type="text/javascript">
-                                    var myInput = document.getElementById("motivation_text");
-                                    if(myInput.addEventListener ) {
-                                        myInput.addEventListener('keydown',this.keyHandler,false);
-                                    } else if(myInput.attachEvent ) {
-                                        myInput.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
-                                    }
-
-                                    function keyHandler(e) {
-                                        var TABKEY = 9;
-                                        if(e.keyCode == TABKEY) {
-                                            this.value += "    ";
-                                            if(e.preventDefault) {
-                                                e.preventDefault();
+                                        <input id="group_id" name="group_id" value="{{selection.group.id}}" hidden>
+                                        <li class="table-row">
+                                            <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
+                                        </li>
+                                        <script type="text/javascript">
+                                            var myInput = document.getElementById("motivation_text");
+                                            if(myInput.addEventListener ) {
+                                                myInput.addEventListener('keydown',this.keyHandler,false);
+                                            } else if(myInput.attachEvent ) {
+                                                myInput.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
                                             }
-                                            return false;
-                                        }
-                                    }
-                                </script>
-                            </form>
-                            {% endif %}
-                        {% endif %}
-                        {% endfor %}
+
+                                            function keyHandler(e) {
+                                                var TABKEY = 9;
+                                                if(e.keyCode == TABKEY) {
+                                                    this.value += "    ";
+                                                    if(e.preventDefault) {
+                                                        e.preventDefault();
+                                                    }
+                                                    return false;
+                                                }
+                                            }
+                                        </script>
+                                    </form>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     </ul>
                 </div>

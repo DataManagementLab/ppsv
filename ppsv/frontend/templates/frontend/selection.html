@@ -164,7 +164,7 @@ div.scrollmenu button:hover {
                             <div class="col-2" data-label="Course_RegEnd">
                                 {{ course.registration_deadline.day }}.{{ course.registration_start.month }}.{{ course.registration_start.year }}
                             </div>
-                            <div class="col-2" data-label="Course_MaxPart">
+                            <div class="col-2" data-label="Course_MaxParticipants">
                                 {% if course.max_participants == 9999 %}
                                 unlimited
                                 {% else %}
@@ -200,20 +200,20 @@ div.scrollmenu button:hover {
                                     <button class="ppsv-button" type="submit" name="topic_button" {% if topic.id == chosen_topic %} value="-1" {% else %} value="{{ topic.id }}" {% endif %} >
                                         <input name="hidden_topic_id" type="hidden" value="{{ topic.id }}">
                                         <li class="table-row" style="margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if topic.id == chosen_topic %} background-color:#0a3d62;color:white; {% endif %}">
-                                    <div class="col-3"  data-label="Topic_Title" >
-                                        {{ topic.title }}
-                                    </div>
-                                    <div class="col-3" data-label="Topic_MaxP" >
-                                        {% if topic.max_participants == 9999 %}
-                                            unlimited
-                                        {% else %}
-                                        {{ topic.max_participants }}
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-3" data-label="Info_Btn" >
-                                        Info Button
-                                    </div>
-                                </li>
+                                            <div class="col-3"  data-label="Topic_Title" >
+                                                {{ topic.title }}
+                                            </div>
+                                            <div class="col-3" data-label="Topic_MaxParticipants" >
+                                                {% if topic.max_participants == 9999 %}
+                                                    unlimited
+                                                {% else %}
+                                                {{ topic.max_participants }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-3" data-label="Info_Btn" >
+                                                Info Button
+                                            </div>
+                                        </li>
                                     </button>
                                 </form>
                                 {% if topic.id == chosen_topic %}
@@ -248,7 +248,7 @@ div.scrollmenu button:hover {
                                                         <label style="grid-column:4; grid-row:2; text-align:center; margin-bottom:2px;">
                                                             or
                                                         </label>
-                                                        {% if open %}
+                                                        {% if open_group_creation %}
                                                             <div style="grid-column:5; grid-row:2;display:grid;">
                                                                     <div>
                                                                         <input name="new_student_id" type="text" style="text-align:center;grid-column:1; grid-row:1;" placeholder="Tucan-ID">
@@ -271,7 +271,7 @@ div.scrollmenu button:hover {
                                                                     {% endif  %}
                                                             </div>
                                                         {% endif %}
-                                                        {% if not open %}
+                                                        {% if not open_group_creation %}
                                                         <button class="button" type="submit" style="grid-column:5; grid-row:2;" name="display_text_fields" value="{{ chosen_topic }}">
                                                             Create a new group
                                                         </button>

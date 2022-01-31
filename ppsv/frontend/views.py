@@ -2,17 +2,13 @@
 This file describes the frontend views.
 """
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from course import models
 from .forms.forms import NewUserForm, NewStudentForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.forms import UserCreationForm
-from django.views.generic import TemplateView
 from course.models import TopicSelection, Group
-from django.db.models import Sum
 
 
 def homepage(request):
@@ -95,6 +91,7 @@ def topic_selection(request):
 
             # If the value of "chosen_topic" is -1, it means that the same button was already clicked
             # one request before. When the button is clicked the first time it opens a form to select the
+            # chosen topic. So when the button is clicked a second time it will close the form.
             # chosen topic. So when the button is clicked a second time it will close the form.
             # In order to close the form, "chosen_topic" must not be returned with any value.
             if chosen_topic == -1:
@@ -198,7 +195,7 @@ def topic_selection(request):
                                      "Your Selection Was Successful! You can find and edit your chosen topics on the "
                                      "overview page.")
                     messages.warning(request,
-                                     "You need to set the priority and add a motivation text(when needed) "
+                                     "You need to set the priority and add a motivation text(when required) "
                                      "to your selection in order to fully complete your selection. "
                                      "You can do this on the overview page.")
 
@@ -234,7 +231,7 @@ def topic_selection(request):
                                          "Your Selection Was Successful! You can find and "
                                          "edit your chosen topics on the overview page.")
                         messages.warning(request,
-                                         "You need to set the priority and add a motivation text(when needed) "
+                                         "You need to set the priority and add a motivation text(when required) "
                                          "to your selection in order to fully complete your selection. "
                                          "You can do this on the overview page.")
 
@@ -276,7 +273,7 @@ def topic_selection(request):
                                      "Your Selection Was Successful! You can find and edit your chosen topics on the "
                                      "overview page.")
                     messages.warning(request,
-                                     "You need to set the priority and add a motivation text(when needed) "
+                                     "You need to set the priority and add a motivation text(when required) "
                                      "to your selection in order to fully complete your selection. "
                                      "You can do this on the overview page.")
 
@@ -310,7 +307,7 @@ def topic_selection(request):
                 if 1 < group.size <= models.Topic.objects.get(id=chosen_topic_id).max_participants:
                     groups_of_student.append(group)
 
-            open = True
+            open_group_creation = True
 
             student_added = [str(request.user.student)]
 
@@ -320,7 +317,7 @@ def topic_selection(request):
             args["topics_in_chosen_course"] = topics_in_chosen_course
             args["chosen_course"] = chosen_course.id
             args["chosen_topic"] = chosen_topic_id
-            args["open"] = open
+            args["open_group_creation"] = open_group_creation
             args["student_added"] = student_added
             args["student_id"] = student_id
             args["groups_of_student"] = groups_of_student
@@ -363,12 +360,12 @@ def topic_selection(request):
 
             student_id = str(request.user.student)
 
-            open = False
+            open_group_creation = False
 
             if chosen_group is None:
                 if "add_student" or "remove_student" in request.POST:
 
-                    open = True
+                    open_group_creation = True
 
                     already_added_student = False
 
@@ -390,7 +387,7 @@ def topic_selection(request):
                                     else:
                                         messages.error(request, "A student with the tucan id " +
                                                                 request.POST.get("new_student_id") +
-                                                                " does not exists.")
+                                                                " does not exist.")
                                 else:
                                     messages.error(request, "A student with the tucan id " +
                                                             request.POST.get("new_student_id") +
@@ -408,7 +405,7 @@ def topic_selection(request):
                     args["student_added"] = student_added
                     args["already_added_student"] = already_added_student
 
-            args["open"] = open
+            args["open_group_creation"] = open_group_creation
             args["topics_in_chosen_course"] = topics_in_chosen_course
             args["courses"] = courses_in_same_faculty
             args['chosen_course'] = chosen_course.id
@@ -444,10 +441,6 @@ def select(request):
     courses_in_same_faculty = models.Course.objects.filter(faculty=chosen_course.faculty)
     # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
     topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
-    # "group_of_student" contains the group with which the user will select the chosen topic
-    group_of_student = ""
-
-    students_in_group = [str(request.user.student)]
 
     existing_groups = []
     for group in models.Group.objects.filter(students=student_tu_id):
@@ -589,16 +582,16 @@ def overview(request):
                                         selection.save()
 
                 elif "open_motivation_text_button" in request.POST:
-                    open_motivation_text_for = int(request.POST.get('open_motivation_text_button'))
+                    open_motivation_text_for_selection = int(request.POST.get('open_motivation_text_button'))
                     group_id = int(request.POST.get('group_id'))
                     print(group_id)
                     for selections_of_group in selections_of_groups:
                         for selection in selections_of_group:
-                            if selection.id == open_motivation_text_for and selection.group.id == group_id:
+                            if selection.id == open_motivation_text_for_selection and selection.group.id == group_id:
                                 motivation_text_of_selection = selection.motivation
                                 break
 
-                    args["open_motivation_text_for"] = open_motivation_text_for
+                    args["open_motivation_text_for_selection"] = open_motivation_text_for_selection
                     args["motivation_text_of_selection"] = motivation_text_of_selection
 
                 elif 'save_motivation_text_button' in request.POST:
@@ -619,22 +612,22 @@ def overview(request):
                 sorted_selections_of_groups.append(sorted(selections, key=lambda x: x.priority))
             selections_of_groups = sorted_selections_of_groups
 
-            motivation_text_needed = []
+            motivation_text_required = []
             for selections in selections_of_groups:
                 for selection in selections:
                     course_of_selected_topic = models.Course.objects.get(topic=selection.topic.id)
                     info = []
                     if course_of_selected_topic.motivation_text:
                         info.append((selection, True))
-                        motivation_text_needed.append(info)
+                        motivation_text_required.append(info)
                     else:
                         info.append((selection, False))
-                        motivation_text_needed.append(info)
+                        motivation_text_required.append(info)
 
             args["student_tu_id"] = student_tucan_id
             args["groups_of_student"] = groups_of_student
             args["selections_of_groups"] = selections_of_groups
-            args["motivation_text_needed"] = motivation_text_needed
+            args["motivation_text_required"] = motivation_text_required
 
         return render(request, template_name, args)
 
