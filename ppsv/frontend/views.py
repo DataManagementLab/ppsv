@@ -125,7 +125,7 @@ def topic_selection(request):
                 # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
 
-                if request.user.is_authenticated:
+                if request.user.is_authenticated and hasattr(request.user, "student"):
                     # "unfiltered_groups_of_student" contains all groups which contain the logged in student
                     unfiltered_groups_of_student = models.Group.objects.filter(students=str(request.user.student))
 
