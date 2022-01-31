@@ -141,7 +141,7 @@ class Topic(models.Model):
     title = models.CharField(max_length=200, verbose_name=_("title"))
 
     max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
-                                           validators=[MaxValueValidator(9999), MinValueValidator(0)])
+                                           validators=[MaxValueValidator(9999), MinValueValidator(1)])
 
     description = models.TextField(verbose_name=_("description"))
     file = models.FileField(verbose_name=_("file"), upload_to=course_directory_path, blank=True)
