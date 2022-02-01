@@ -10,8 +10,8 @@
 {% endblock your_selection_page_navbar_container %}
 
 {% block content %}
-    <div style="display:flex;flex-direction: row;">
-        <div style="display:grid;width:60%;align-content: start;">
+    <div style="display:flex;{% if info_selection %} flex-direction: row; {% else %} justify-content: center; {% endif %} ">
+        <div style="display:grid; max-width:60%; min-width:40%; width:60% ;align-content: start;">
             {% if student_tu_id %}
                 {% for group_of_student in groups_of_student %}
                     <ul class="responsive-table" style="margin:0px;">
@@ -97,41 +97,45 @@
                                             </form>
                                         </div>
                                         <div class="col-1" >
-                                            <a onclick="">
-                                                <i id="info_button" name="info_button" class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px;color:rgba(94, 94, 94, 1)"
+                                            <button name="info_button" value="{{ selection.id }}" form="info_form" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
+                                                <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px;color:rgba(94, 94, 94, 1)"
                                                    aria-hidden="true"
                                                    title="Show Details">
                                                 </i>
-                                            </a>
+                                            </button>
                                         </div>
                                     </li>
-                                    {% if selection.id == open_motivation_text_for_selection %}
-                                    <form id="motivation_text_form" method="post" style="margin:0">
+                                    <form id="info_form" method="post" style="margin:0px;">
                                         {% csrf_token %}
-                                        <input id="group_id" name="group_id" value="{{selection.group.id}}" hidden>
-                                        <li class="table-row">
-                                            <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
-                                        </li>
-                                        <script type="text/javascript">
-                                            var myInput = document.getElementById("motivation_text");
-                                            if(myInput.addEventListener ) {
-                                                myInput.addEventListener('keydown',this.keyHandler,false);
-                                            } else if(myInput.attachEvent ) {
-                                                myInput.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
-                                            }
-
-                                            function keyHandler(e) {
-                                                var TABKEY = 9;
-                                                if(e.keyCode == TABKEY) {
-                                                    this.value += "    ";
-                                                    if(e.preventDefault) {
-                                                        e.preventDefault();
-                                                    }
-                                                    return false;
-                                                }
-                                            }
-                                        </script>
+                                        <input id="selection_id" value="{{ selection.id }}" hidden>
                                     </form>
+                                    {% if selection.id == open_motivation_text_for_selection %}
+                                        <form id="motivation_text_form" method="post" style="margin:0">
+                                            {% csrf_token %}
+                                            <input id="group_id" name="group_id" value="{{selection.group.id}}" hidden>
+                                            <li class="table-row">
+                                                <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
+                                            </li>
+                                            <script type="text/javascript">
+                                                var myInput = document.getElementById("motivation_text");
+                                                if(myInput.addEventListener ) {
+                                                    myInput.addEventListener('keydown',this.keyHandler,false);
+                                                } else if(myInput.attachEvent ) {
+                                                    myInput.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
+                                                }
+
+                                                function keyHandler(e) {
+                                                    var TABKEY = 9;
+                                                    if(e.keyCode == TABKEY) {
+                                                        this.value += "    ";
+                                                        if(e.preventDefault) {
+                                                            e.preventDefault();
+                                                        }
+                                                        return false;
+                                                    }
+                                                }
+                                            </script>
+                                        </form>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -140,31 +144,52 @@
                 {% endfor %}
             {% endif %}
         </div>
-        {% if student_tu_id %}
-        <div id="topic_info" style="width: 40%;height: 700px;min-height:200px;
-                    overflow: hidden;margin-left:30px;
-                    border-style:solid;border-color: rgba(0,0,0,0.3);
-                    border-width:0px;padding-right:35px;padding-top:10px;box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.2);">
-            <ul  class="responsive-table" style="">
-                <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px">
-                    <button class="button" style="color:white;background-color:transparent;width:100%;border:none;outline:none;text-transform: capitalize;font-size: 14px;">
-                        Kursname
-                        <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px"></i>
-                    </button>
-                </li>
-                <li class="table-row" style="margin-left:10px;margin-right:10px;">
-                    <textarea></textarea>
-                </li>
-                <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
-                    Topicname
-                    <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
-                </li>
-                <li class="table-row" style="margin-left:10px;margin-right:10px;">
-                    <textarea></textarea>
-                </li>
-            </ul>
-        </div>
-        {% endif %}
+            {% if student_tu_id %}
+                {% if info_selection %}
+                    <div id="topic_info" style="max-width: 40%;min-width: 40%;width: 40%;
+                                overflow: hidden;margin-left:30px;
+                                border-style:solid;border-color: rgba(0,0,0,0.3);
+                                border-width:0px;padding-right:35px;padding-top:10px;box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.2);">
+                        <ul class="responsive-table">
+                            <form id="open_course_info" method="post">
+                                {% csrf_token %}
+                                <input id="selection" name="selection" value="{% if open_course_info %} True {% else %} False {% endif %}|{{ info_selection.id }} " hidden>
+                            </form>
+                            <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);{% if open_course_info %} margin-bottom:0px {% else %} margin-bottom:20px {% endif %}">
+                                <button name="course_info_button" class="button"
+                                        form="open_course_info" type="submit"
+                                        style="color:white;background-color:transparent;width:100%;border:none;outline:none;text-transform: capitalize;font-size: 14px;">
+                                    {{ info_selection.topic.course.title }}
+                                    <i class="{% if open_course_info %} fa fa-caret-up {% else %} fa fa-caret-down {% endif %}" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px"></i>
+                                </button>
+                            </li>
+                            {% if open_course_info %}
+                                <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
+                                    <p> <label style="font-weight:500"> Organizer: </label> {{ info_selection.topic.course.organizer }} </p>
+                                    <p> <label style="font-weight:500"> Course Type: </label> {{ info_selection.topic.course.type }} </p>
+                                    <p> <label style="font-weight:500"> Faculty: </label> {{ info_selection.topic.course.faculty }} </p>
+                                    <p> <label style="font-weight:500"> Language: </label> Sprache {{info_selection.topic.course.unlimited }}</p>
+                                    <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.course.max_participants }} {% endif %} </p>
+                                    <p> <label style="font-weight:500"> Registration: </label> {{ info_selection.topic.course.registration_start }} - {{ info_selection.topic.course.registration_deadline }} </p>
+                                    <p> <label style="font-weight:500"> CP: </label> {{ info_selection.topic.course.cp }} </p>
+                                    <p> <label style="font-weight:500"> Motivation Text: </label> {% if info_selection.topic.course.motivation_text %} required {% else %} not required {% endif %}</p>
+                                    <label style="font-weight:500"> Description </label>
+                                    <p> {{ info_selection.topic.course.description }} </p>
+                                </div>
+                            {% endif %}
+                            <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
+                                {{ info_selection.topic.title }}
+                                <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
+                            </li>
+                            <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
+                                <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.max_participants }} {% endif %} </p>
+                                <label style="font-weight:500"> Description {% if info_selection.topic.file%} File {% endif %} </label>
+                                <p> {% if info_selection.topic.file%} File {% else %} {{ info_selection.topic.description }} {% endif %} </p>
+                            </div>
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endif %}
     </div>
 
     <!-- The scroll position is saved and loaded when the page submits a form-->

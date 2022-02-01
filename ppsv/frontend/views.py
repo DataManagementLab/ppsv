@@ -13,6 +13,21 @@ from course.models import TopicSelection, Group
 
 def homepage(request):
     template_name = 'frontend/homepage.html'
+
+    if request.method == "POST":
+        if "1" in request.POST:
+            if "2" in request.POST:
+                print("Both")
+
+        str = "12"
+        if all(s in str for s in ('1', '2')):
+            print("And")
+
+        if "1" in request.POST:
+            print("1")
+        elif "2" in request.POST:
+            print("2")
+
     return render(request, template_name)
 
 
@@ -386,18 +401,18 @@ def topic_selection(request):
                                         student_added.append(str(request.POST.get("new_student_id")))
                                     else:
                                         messages.error(request, "A student with the tucan id " +
-                                                                request.POST.get("new_student_id") +
-                                                                " does not exist.")
+                                                       request.POST.get("new_student_id") +
+                                                       " does not exist.")
                                 else:
                                     messages.error(request, "A student with the tucan id " +
-                                                            request.POST.get("new_student_id") +
-                                                            " is already in the group.")
+                                                   request.POST.get("new_student_id") +
+                                                   " is already in the group.")
                         else:
                             messages.error(request, "Your group would be too large for " +
-                                                    str(models.Topic.objects.get(id=chosen_topic_id).title)
-                                                    + ". Your group can only have a maximum member count of " +
-                                                    str(models.Topic.objects.get(id=chosen_topic_id).max_participants)
-                                                    + ".")
+                                           str(models.Topic.objects.get(id=chosen_topic_id).title)
+                                           + ". Your group can only have a maximum member count of " +
+                                           str(models.Topic.objects.get(id=chosen_topic_id).max_participants)
+                                           + ".")
 
                     if "remove_student" in request.POST:
                         student_added.remove(str(request.POST.get("remove_student")))
@@ -584,7 +599,7 @@ def your_selection(request):
                 elif "open_motivation_text_button" in request.POST:
                     open_motivation_text_for_selection = int(request.POST.get('open_motivation_text_button'))
                     group_id = int(request.POST.get('group_id'))
-                    print(group_id)
+
                     for selections_of_group in selections_of_groups:
                         for selection in selections_of_group:
                             if selection.id == open_motivation_text_for_selection and selection.group.id == group_id:
@@ -628,6 +643,26 @@ def your_selection(request):
             args["groups_of_student"] = groups_of_student
             args["selections_of_groups"] = selections_of_groups
             args["motivation_text_required"] = motivation_text_required
+
+            if "info_button" in request.POST:
+                info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("info_button")))
+                open_course_info = False
+
+                args["info_selection"] = info_selection
+                args["open_course_info"] = open_course_info
+
+            if "course_info_button" in request.POST:
+
+                open = "".join(str(request.POST.get("selection")).split("|")[0].split())
+                if open == "False":
+                    info_selection = models.TopicSelection.objects.get(id=int(str(request.POST.get("selection")).split("|")[1]))
+                    open_course_info = True
+                else:
+                    info_selection = models.TopicSelection.objects.get(id=int(str(request.POST.get("selection")).split("|")[1]))
+                    open_course_info = False
+
+                args["info_selection"] = info_selection
+                args["open_course_info"] = open_course_info
 
         return render(request, template_name, args)
 
