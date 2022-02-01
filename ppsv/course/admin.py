@@ -84,6 +84,16 @@ class GroupAdmin(admin.ModelAdmin):
         (None, {'fields': ['students', 'size', 'assignments']}),
     ]
 
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Returns a ModelForm class for use in the admin add and change views.
+        :return: ModelForm for adding and changing
+        :rtype: ModelForm
+        """
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['students'].widget.can_add_related = False
+        return form
+
 
 admin.site.register(Group, GroupAdmin)
 admin.site.register(TopicSelection)
