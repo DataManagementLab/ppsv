@@ -55,6 +55,18 @@ class TopicAdmin(admin.ModelAdmin):
     """
     list_display = ('title', 'course', 'max_participants')
     search_fields = ['title', 'course']
+    autocomplete_fields = ('course', )
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Returns a ModelForm class for use in the admin add and change views.
+        :return: ModelForm for adding and changing
+        :rtype: ModelForm
+        """
+        form = super().get_form(request, obj, **kwargs)
+        # disable course creation during topic creation and editing
+        form.base_fields['course'].widget.can_add_related = False
+        return form
 
 
 admin.site.register(Topic, TopicAdmin)
@@ -83,6 +95,8 @@ class GroupAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['students', 'size', 'assignments']}),
     ]
+    # searching the students while creating or editing a group
+    filter_horizontal = ('students', )
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -91,7 +105,9 @@ class GroupAdmin(admin.ModelAdmin):
         :rtype: ModelForm
         """
         form = super().get_form(request, obj, **kwargs)
+        # disable student and topic creation during group creation and editing
         form.base_fields['students'].widget.can_add_related = False
+        form.base_fields['assignments'].widget.can_add_related = False
         return form
 
 
