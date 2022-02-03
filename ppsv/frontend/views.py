@@ -38,7 +38,7 @@ def course_topics(request, faculty_id, course_id):
     return render(request, template_name)
 
 
-def topic_selection(request):
+def overview(request):
     """selection view
 
     This version of topic_selection is not final.
@@ -51,9 +51,19 @@ def topic_selection(request):
     :type request: HttpRequest
     """
 
-    template_name = 'frontend/selection.html'
+    template_name = 'frontend/overview.html'
     all_faculties = models.Course.objects.values("faculty").distinct().order_by("faculty")
+
+    full_faculty_names = []
+    for faculty in all_faculties:
+        course = models.Course.objects.filter(faculty=faculty["faculty"])
+        full_faculty_names.append(course[0].get_faculty_display())
+
+    print(all_faculties)
+    print(full_faculty_names)
     args = {}
+
+    args["full_faculty_names"] = full_faculty_names
 
     # If a form with the method "post" is submitted by a button
     if request.method == "POST":
@@ -67,6 +77,7 @@ def topic_selection(request):
             # which are in the "chosen_faculty"
             courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty)
 
+            args["chosen_faculty"] = chosen_faculty
             args["courses"] = courses_in_chosen_faculty
 
         # If a button with the name 'course_button' is pressed in "selection.html"
@@ -101,7 +112,8 @@ def topic_selection(request):
                 # "topics_in_chosen_course" contains all topics in the chosen course
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
 
-                args["courses"] = courses_in_same_faculty
+                #args["courses"] = courses_in_same_faculty
+                args["courses"] = models.Course.objects.filter(id=chosen_course)
                 args["chosen_course"] = chosen_course
                 args["topics_in_chosen_course"] = topics_in_chosen_course
 
@@ -131,7 +143,7 @@ def topic_selection(request):
                 # "topics_in_chosen_course" contains all topics which are in the same course as the chosen topic
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course.id)
 
-                args["courses"] = courses_in_same_faculty
+                args["courses"] = [chosen_course]
                 args["chosen_course"] = chosen_course.id
                 args["topics_in_chosen_course"] = topics_in_chosen_course
 
@@ -163,7 +175,7 @@ def topic_selection(request):
                             groups_of_student.append(group)
                     args["groups_of_student"] = groups_of_student
 
-                args["courses"] = courses_in_same_faculty
+                args["courses"] = [chosen_course]
                 args["topics_in_chosen_course"] = topics_in_chosen_course
                 args["chosen_topic"] = chosen_topic
                 args["chosen_course"] = chosen_course.id
@@ -208,7 +220,7 @@ def topic_selection(request):
                         group_of_student.students.add(student)
 
                     selection = TopicSelection()
-                    selection.priority = 0
+                    selection.priority = 1
                     selection.group = group_of_student
                     selection.topic = models.Topic.objects.get(id=chosen_topic_id)
                     selection.save()
@@ -244,7 +256,7 @@ def topic_selection(request):
                     # a selection will be created
                     if not already_selected:
                         selection = TopicSelection()
-                        selection.priority = 0
+                        selection.priority = len(topic_selections_of_group) + 1
                         selection.group = existing_groups[0]
                         selection.topic = models.Topic.objects.get(id=chosen_topic_id)
                         selection.save()
@@ -286,7 +298,7 @@ def topic_selection(request):
                 # a selection will be created
                 if not already_selected:
                     selection = TopicSelection()
-                    selection.priority = 0
+                    selection.priority = len(topic_selections_of_group) + 1
                     selection.group = models.Group.objects.get(id=chosen_group)
                     selection.topic = models.Topic.objects.get(id=chosen_topic_id)
                     selection.save()
@@ -476,7 +488,7 @@ def select(request):
         group_of_student.students.add(student_tu_id)
 
         user_selection = TopicSelection()
-        user_selection.priority = 0
+        user_selection.priority = 1
         user_selection.group = group_of_student
         user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
         user_selection.save()
@@ -506,7 +518,7 @@ def select(request):
         # a selection will be created
         if not already_selected:
             user_selection = TopicSelection()
-            user_selection.priority = 0
+            user_selection.priority = len(topic_selections_of_group) + 1
             user_selection.group = existing_groups[0]
             user_selection.topic = models.Topic.objects.get(id=chosen_topic_id)
             user_selection.save()

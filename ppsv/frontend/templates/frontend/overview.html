@@ -6,7 +6,7 @@ Selection Page
 {% endblock title%}
 
 {% block selection_page_navbar_container %}
-       <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px;">
+       <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px;">
             <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;"> {% if user.is_authenticated %} Select Your Topics {% else %} View Topics {% endif %} </button>
        </form>
 {% endblock selection_page_navbar_container %}
@@ -110,14 +110,18 @@ div.scrollmenu button:hover {
             </li>
             <div class="scrollmenu customized-scrollbar">
                 {% for faculty in faculties %}
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" name="faculty_button" value="{{ faculty.faculty }}"
-                            {% if chosen_faculty == faculty.faculty %} style="box-shadow: 0px 0px 9px 3px rgba(10,61,98,1);"
-                            {% endif %}>
-                            {{ faculty.faculty }}
-                    </button>
-                </form>
+                    {% for faculty_name in full_faculty_names %}
+                        {% if faculty.faculty in faculty_name %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="faculty_button" value="{{ faculty.faculty }}"
+                                    {% if chosen_faculty == faculty.faculty %} style="box-shadow: 0px 0px 9px 3px rgba(10,61,98,1);"
+                                    {% endif %}>
+                                    {{ faculty_name }}
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
             </div>
         </ul>
@@ -202,9 +206,9 @@ div.scrollmenu button:hover {
                             {% for topic in topics_in_chosen_course %}
                                 <form method="post" style="margin: 0; padding: 0;">
                                 {% csrf_token %}
-                                    <button class="ppsv-button" type="submit" name="topic_button" {% if topic.id == chosen_topic %} value="-1" {% else %} value="{{ topic.id }}" {% endif %} >
+                                    <button class="ppsv-button" type="submit" name="topic_button" {% if topic.id == chosen_topic %} value="-1" {% else %} value="{{ topic.id }}" {% endif %} style="padding:5px">
                                         <input name="hidden_topic_id" type="hidden" value="{{ topic.id }}">
-                                        <li class="table-row" style="margin-bottom:0px; padding:3px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if topic.id == chosen_topic %} background-color:#0a3d62;color:white; {% endif %}">
+                                        <li class="table-row" style="padding:10px;margin-bottom:0px;margin-left: 24px;margin-right: 24px;font-size: 12px;{% if topic.id == chosen_topic %} box-shadow: 0px 0px 9px 3px rgba(10,61,98,1); {% endif %}">
                                             <div class="col-3"  data-label="Topic_Title" >
                                                 {{ topic.title }}
                                             </div>

@@ -28,7 +28,7 @@
                             {% for selection in selections %}
                                 {% if selection.group == group_of_student %}
                                     <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;">
-                                        <div style="display:inline-grid;grid-column-start: 1;grid-column-end: 3;position:absolute;z-index:2;left:1%;{% if selection.priority == 1 %} top:25% {% else %} top:8% {% endif %};font-size:16px;">
+                                        <div style="display:inline-grid;grid-column-start: 1;grid-column-end: 3;position:absolute;z-index:2;left:1%;{% if selection.priority == 1 %} top:30 % {% else %} top:8% {% endif %};font-size:16px;">
                                             {% if selection.priority != 1 %}
                                             <button name="up_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:1;grid-column:1;">
                                                 <i class="fa fa-arrow-up" aria-hidden="true" style="color:rgba(94, 94, 94, 1)"></i>

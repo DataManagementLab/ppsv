@@ -56,8 +56,8 @@
         .ppsv-button:hover li {
             outline: none;
             opacity: 1;
-            background: #0a3d62;
-            color: rgba(255,255,255,1);
+            background:transparent;
+            box-shadow: 0px 0px 9px 3px rgba(10,61,98,1);
         }
 
         .ppsv-button:focus {
