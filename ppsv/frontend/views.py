@@ -67,7 +67,6 @@ def topic_selection(request):
             # which are in the "chosen_faculty"
             courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty)
 
-            args["chosen_faculty"] = chosen_faculty
             args["courses"] = courses_in_chosen_faculty
 
         # If a button with the name 'course_button' is pressed in "selection.html"
@@ -550,32 +549,7 @@ def your_selection(request):
 
             if request.method == "POST":
 
-                if "set_priority_button" in request.POST:
-
-                    selection_id = str(request.POST.get("set_priority_button"))
-                    data = "".join(str(request.POST.get("set_priority" + selection_id)).split()).split("|")
-                    print(data)
-
-                    priority = int(data[0])
-
-                    chosen_selection = models.TopicSelection.objects.get(id=int(data[1]))
-
-                    another_topic_has_same_priority = False
-                    for selections in selections_of_groups:
-                        for selection in selections:
-                            if selection.group.pk == chosen_selection.group.pk:
-                                if selection.topic.pk != chosen_selection.topic.pk:
-                                    if selection.priority == priority and priority != 0:
-                                        messages.error(request, "You can't have two topics with the same priority !")
-                                        another_topic_has_same_priority = True
-                                        break
-
-                    if not another_topic_has_same_priority:
-                        selection = get_selection(selections_of_groups, chosen_selection.id)
-                        selection.priority = priority
-                        selection.save()
-
-                elif "remove_topic_button" in request.POST:
+                if "remove_topic_button" in request.POST:
 
                     selection_id = str(request.POST.get('remove_topic_button'))
                     group_id = get_selection(selections_of_groups, selection_id).group.id
@@ -589,7 +563,6 @@ def your_selection(request):
                         for group in groups_of_student:
                             selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
 
-                    """
                     if priority_of_removed_topic != 0:
                         for selections in selections_of_groups:
                             for selection in selections:
@@ -597,13 +570,6 @@ def your_selection(request):
                                     if int(selection.priority) > int(priority_of_removed_topic):
                                         selection.priority = int(selection.priority) - 1
                                         selection.save()
-                    """
-
-                    for selections in selections_of_groups:
-                        for selection in selections:
-                            if str(selection.group.id) == str(group_id):
-                                selection.priority = 0
-                                selection.save()
 
                 elif "edit_motivation_text_button" in request.POST:
                     open_motivation_text_for_selection = int(request.POST.get("edit_motivation_text_button"))
@@ -617,9 +583,9 @@ def your_selection(request):
                     args["open_motivation_text_for_selection"] = open_motivation_text_for_selection
                     args["motivation_text_of_selection"] = motivation_text_of_selection
 
-                elif 'save_motivation_text_button' in request.POST:
-                    save_motivation_text_for = int(request.POST.get('save_motivation_text_button'))
-                    motivation_text = str(request.POST.get('motivation_text'))
+                elif "save_motivation_text_button" in request.POST:
+                    save_motivation_text_for = int(request.POST.get("save_motivation_text_button"))
+                    motivation_text = str(request.POST.get("motivation_text"))
 
                     for selections_of_group in selections_of_groups:
                         for selection in selections_of_group:
@@ -628,6 +594,34 @@ def your_selection(request):
                                 selection.save()
                                 messages.success(request, "Your motivation text has been saved.")
                                 break
+
+                elif "up_priority" in request.POST:
+                    chosen_selection_id = int(request.POST.get("up_priority"))
+                    chosen_selection = get_selection(selections_of_groups,chosen_selection_id)
+
+                    for selections in selections_of_groups:
+                        for selection in selections:
+                            if selection.group.pk == chosen_selection.group.pk and selection.pk != chosen_selection.pk:
+                                if selection.priority == chosen_selection.priority - 1:
+                                    selection.priority = chosen_selection.priority
+                                    selection.save()
+                                    chosen_selection.priority = chosen_selection.priority - 1
+                                    chosen_selection.save()
+                                    break
+
+                elif "down_priority" in request.POST:
+                    chosen_selection_id = int(request.POST.get("down_priority"))
+                    chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
+
+                    for selections in selections_of_groups:
+                        for selection in selections:
+                            if selection.group.pk == chosen_selection.group.pk and selection.pk != chosen_selection.pk:
+                                if selection.priority == chosen_selection.priority + 1:
+                                    selection.priority = chosen_selection.priority
+                                    selection.save()
+                                    chosen_selection.priority = chosen_selection.priority + 1
+                                    chosen_selection.save()
+                                    break
 
             sorted_selections_of_groups = []
             for selections in selections_of_groups:
@@ -711,7 +705,6 @@ def get_selection(selections_of_groups, chosen_selection_id):
 
 def groups(request):
     template_name = 'frontend/groups.html'
-
     return render(request, template_name)
 
 
