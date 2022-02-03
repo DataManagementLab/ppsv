@@ -105,15 +105,17 @@ div.scrollmenu button:hover {
 <!-- This container contains all faculties -->
 <div class="container-fluid">
         <ul class="responsive-table">
-            <li class="table-header" style="justify-content: center;">
-                <div>Faculties</div>
+            <li class="table-header" style="padding: 16px; justify-content: center;">
+                <div>Choose a Faculty to select your courses from</div>
             </li>
             <div class="scrollmenu customized-scrollbar">
                 {% for faculty in faculties %}
                 <form method="post">
                     {% csrf_token %}
-                    <button type="submit" name="faculty_button" value="{{ faculty.faculty }}">
-                        {{ faculty.faculty }}
+                    <button type="submit" name="faculty_button" value="{{ faculty.faculty }}"
+                            {% if chosen_faculty == faculty.faculty %} style="box-shadow: 0px 0px 9px 3px rgba(10,61,98,1);"
+                            {% endif %}>
+                            {{ faculty.faculty }}
                     </button>
                 </form>
                 {% endfor %}
@@ -124,8 +126,8 @@ div.scrollmenu button:hover {
 <!-- This container contains all courses and topics -->
 <div class="container-fluid">
     <ul class="responsive-table" style="margin-bottom:5px;">
-            <li class="table-header" style="justify-content: center; margin-bottom:0px;">
-                Courses
+            <li class="table-header" style="padding: 16px; justify-content: center; margin-bottom:0px;">
+                Choose a Course to select your topics from
             </li>
     </ul>
     <ul class="responsive-table">
@@ -182,7 +184,7 @@ div.scrollmenu button:hover {
                 </form>
                 {% if course.id == chosen_course %}
                 <div style="margin-bottom: 30px; margin-top: -20px">
-                        <li class="table-header" style="justify-content: center; padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
+                        <li class="table-header" style="justify-content: center; padding: 16px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;">
                             Topics
                         </li>
                         <li class="table-header" style="background-color: #0C8FCC;padding:3px;margin-left: 30px;margin-right: 30px;font-size: 12px;margin-bottom: 5px;text-align:center">

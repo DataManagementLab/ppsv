@@ -32,6 +32,12 @@ def homepage(request):
     return render(request, template_name)
 
 
+def course_topics(request, faculty_id, course_id):
+    template_name = 'frontend/homepage.html'
+
+    return render(request, template_name)
+
+
 def topic_selection(request):
     """selection view
 
@@ -61,6 +67,7 @@ def topic_selection(request):
             # which are in the "chosen_faculty"
             courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty)
 
+            args["chosen_faculty"] = chosen_faculty
             args["courses"] = courses_in_chosen_faculty
 
         # If a button with the name 'course_button' is pressed in "selection.html"
@@ -704,6 +711,7 @@ def get_selection(selections_of_groups, chosen_selection_id):
 
 def groups(request):
     template_name = 'frontend/groups.html'
+
     return render(request, template_name)
 
 
