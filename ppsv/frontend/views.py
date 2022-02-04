@@ -39,9 +39,9 @@ def course_topics(request, faculty_id, course_id):
 
 
 def overview(request):
-    """selection view
+    """overview view
 
-    This version of topic_selection is not final.
+    This version of overview is not final.
     Some parts of the code are not commented because it is to be changed.
     The change will alter the code significantly.
     Therefore the comments will be added after the changes in the week
@@ -59,8 +59,6 @@ def overview(request):
         course = models.Course.objects.filter(faculty=faculty["faculty"])
         full_faculty_names.append(course[0].get_faculty_display())
 
-    print(all_faculties)
-    print(full_faculty_names)
     args = {}
 
     args["full_faculty_names"] = full_faculty_names
@@ -716,8 +714,65 @@ def get_selection(selections_of_groups, chosen_selection_id):
 # Help functions of overview
 
 def groups(request):
+
     template_name = 'frontend/groups.html'
-    return render(request, template_name)
+
+    args = {}
+
+    if request.method == "POST":
+
+        if "faculty_view" in request.POST:
+
+            all_faculties = models.Course.objects.values("faculty").distinct().order_by("faculty")
+
+            faculties = {}
+            for faculty in all_faculties:
+                course = models.Course.objects.filter(faculty=faculty["faculty"])
+                faculties[faculty.get("faculty")] = course[0].get_faculty_display()
+
+            args["faculties"] = faculties
+
+        elif "choose_faculty" in request.POST:
+
+            chosen_faculty = str(request.POST.get("choose_faculty"))
+            courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty)
+
+            args["chosen_faculty"] = chosen_faculty
+            if len(courses_in_chosen_faculty) != 0:
+                args["courses"] = courses_in_chosen_faculty
+            else:
+                args["courses"] = "No_Courses"
+
+        elif "choose_course" in request.POST:
+
+            data = str(request.POST.get("choose_course")).split("|")
+            chosen_course = data[0]
+            chosen_faculty = data[1]
+
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
+
+            args["chosen_faculty"] = chosen_faculty
+            args["chosen_course"] = models.Course.objects.get(id=chosen_course)
+            if len(topics_in_chosen_course) != 0:
+                args["topics"] = topics_in_chosen_course
+            else:
+                args["topics"] = "No_Topics"
+
+        elif "choose_topic" in request.POST:
+            print("Hey")
+
+    else:
+
+        all_faculties = models.Course.objects.values("faculty").distinct().order_by("faculty")
+
+        faculties = {}
+        for faculty in all_faculties:
+            course = models.Course.objects.filter(faculty=faculty["faculty"])
+            faculties[faculty.get("faculty")] = course[0].get_faculty_display()
+
+        args["faculties"] = faculties
+
+    return render(request, template_name, args)
 
 
 def login_request(request):

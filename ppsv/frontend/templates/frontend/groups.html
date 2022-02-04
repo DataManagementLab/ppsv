@@ -3,10 +3,155 @@
 
 {% block groups_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;" > Your Groups </button>
+            <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;" >
+                Your Groups
+            </button>
         </form>
 {% endblock groups_page_navbar_container %}
 
 {% block content %}
+<form method="post" style="margin:0px;padding:0px">
+    {% csrf_token %}
+    <div class="container-fluid" style="display:flex;justify-content:center;font-size:17px">
+        <ul class="responsive-table" style="width:60%;padding:0px;margin:0px">
+            <li class="table-header" style="padding: 16px;position:relative;font-size:17px;margin-bottom:5px">
+                {% if courses or topics %}
+                <button name="{% if courses %}faculty_view{% elif topics %}choose_faculty{% endif %}"
+                        value="{% if topics %}{{ chosen_faculty }}{% endif %}"
+                        class="undecorated-btn" type="submit" style="position:absolute;left:16px;top:16px">
+                    <i class="fa fa-caret-square-o-left" aria-hidden="true" style="font-size:25px;color:white;"></i>
+                </button>
+                {% endif %}
+                <div> {% if courses %}  Choose a Course {% elif topics %} Choose a Topic {% else %} Choose a Faculty {% endif %} </div>
+                <div style="display:grid;grid-gap:5px;position:absolute;right:10px;align-self: center;grid-auto-flow: column;">
+                    {% if courses or topics %}
+                    <div>
+                        {{ chosen_faculty }}
+                        <button name="faculty_view" class="undecorated-btn"> <i class="fa fa-minus-square" aria-hidden="true" style="color:red"></i> </button>
+                    </div>
+                    {% endif %}
+                    {% if topics %}
+                    <div>
+                        {{ chosen_course.title }}
+                        <button name="choose_faculty" value="{{ chosen_faculty }}" class="undecorated-btn"> <i class="fa fa-minus-square" aria-hidden="true" style="color:red"></i> </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </li>
 
+            {% if topics %}
+            {% if topics != "No_Topics" %}
+            <div class="table-info" style="display:block">
+                <div style="display:flex;justify-content: space-around;">
+                    <div style="flex-basis:100%"> Title </div>
+                    <div style="flex-basis:100%"> Max Participants </div>
+                </div>
+            </div>
+            {% for topic in topics %}
+            <button class="table-btn" name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}">
+                <div style="display:flex;justify-content: space-around;">
+                    <div style="flex-basis:100%"> {{ topic.title }} </div>
+                    <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
+                </div>
+            </button>
+            {% endfor %}
+            {% else %}
+            <div class="table-info" style="background-color:orange;font-size:14px">
+                    There are no topics in this course
+            </div>
+            {% endif %}
+            {% endif %}
+
+            {% if courses %}
+            {% if courses != "No_Courses" %}
+            <div class="table-info" style="display:block">
+                <div style="display:flex;justify-content: space-around;">
+                    <div style="flex-basis:100%"> Title </div>
+                    <div style="flex-basis:100%"> Type </div>
+                    <div style="flex-basis:100%"> Registration Start </div>
+                    <div style="flex-basis:100%"> Registration End </div>
+                    <div style="flex-basis:100%"> Max Participants </div>
+                    <div style="flex-basis:100%"> CP </div>
+                </div>
+            </div>
+            {% for course in courses %}
+            <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}">
+                <div style="display:flex;justify-content: space-around;">
+                    <div style="flex-basis:100%"> {{ course.title }} </div>
+                    <div style="flex-basis:100%"> {{ course.get_type_display }} </div>
+                    <div style="flex-basis:100%"> {{ course.registration_start|date }} </div>
+                    <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
+                    <div style="flex-basis:100%"> {% if course.max_participants == 9999 %} &#8734 {% else %} {{ course.max_participants }} {% endif %} </div>
+                    <div style="flex-basis:100%"> {{ course.cp }} </div>
+                </div>
+            </button>
+            {% endfor %}
+            {% else %}
+            <div class="table-info" style="background-color:orange;font-size:14px">
+                    There are no courses in this faculty
+            </div>
+            {% endif %}
+            {% endif %}
+
+            {% for faculty_short, faculty_long in faculties.items %}
+            <button class="table-btn" name="choose_faculty" type="submit" value="{{ faculty_short }}" style="padding:15px;">
+                {{ faculty_long }}
+            </button>
+            {% endfor %}
+        </ul>
+    </div>
+</form>
+
+<style>
+.table-btn {
+    border-radius: 3px;
+    padding: 25px 10px;
+    margin-bottom:10px;
+    background-color: transparent;
+    box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);
+
+    color: black;
+
+    border: none;
+    outline: none;
+
+    width: 100%;
+}
+
+.table-btn:focus {
+    outline: none;
+}
+
+.table-btn:hover {
+    box-shadow: 0px 0px 9px 3px rgba(10,61,98,1);
+}
+
+.undecorated-btn {
+    background-color:transparent;
+    outline:none;
+    border:none;
+    padding:0px;
+    margin:0px;
+}
+
+.undecorated-btn:focus {
+    outline: none;
+}
+
+.table-info {
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    background-color: rgba(12,143,204,1);
+    white-space: nowrap;
+
+    display: inline-block;
+    text-align: center;
+    align-items: flex-start;
+
+    color: white;
+
+    width: 100%;
+    font-size: 12px;
+}
+</style>
 {% endblock content %}

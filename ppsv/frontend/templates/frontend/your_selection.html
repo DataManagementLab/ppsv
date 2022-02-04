@@ -12,11 +12,11 @@
 {% block content %}
 <form method="post" style="margin:0px;padding:0px;">
     {% csrf_token %}
-   <div style="{% if info_selection %} display:grid; grid-template-columns: 60% 40%; {% else %} display:flex; justify-content: center; {% endif %} ">
+   <div style="{% if info_selection %} display:grid; grid-template-columns: 800px 400px%;column-gap: 5px; {% else %} display:flex; justify-content: center; {% endif %} ">
         <div style="display:grid;align-content: start; {% if info_selection %} grid-column:1; {% else %} width:60%; {% endif %}">
                 {% for group_of_student in groups_of_student %}
-                    <ul class="responsive-table" style="margin:0px;min-width: 600px;">
-                        <li class="table-header" style="padding: 15px;text-align:center;position:relative;">
+                    <ul class="responsive-table" style="margin:0px;min-width: 650px;">
+                        <li class="table-header" style="padding: 15px;text-align:center;position:relative;min-width: 650px;">
                             <div>
                                 {{ group_of_student.get_display }}
                             </div>
@@ -27,7 +27,7 @@
                         {% for selections in selections_of_groups %}
                             {% for selection in selections %}
                                 {% if selection.group == group_of_student %}
-                                    <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;">
+                                    <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;min-width: 650px;">
                                         <div style="display:inline-grid;grid-column-start: 1;grid-column-end: 3;position:absolute;z-index:2;left:1%;{% if selection.priority == 1 %} top:30 % {% else %} top:8% {% endif %};font-size:16px;">
                                             {% if selection.priority != 1 %}
                                             <button name="up_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:1;grid-column:1;">
@@ -42,7 +42,7 @@
                                             {% endif %}
                                         </div>
                                         {% if not selection.priority or not selection.motivation and selection.topic.course.motivation_text %}
-                                            <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:-3% "
+                                            <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:-30px "
                                                {% if not selection.priority and not selection.motivation and selection.topic.course.motivation_text %}
                                                    title="You need to set the priority for this topic and write a motivation text"
                                                    {% elif not selection.priority %}
@@ -56,13 +56,13 @@
                                                     padding-right:5px;margin-left:20px;
                                                     white-space: nowrap;border-style: solid;
                                                     border-width: 1px;border-color:rgba(10,61,98,0.2);
-                                                    position:absolute;z-index:2;top:-13px;left:2%";>
+                                                    position:absolute;z-index:2;top:-13px;left:15px";>
                                             {{ selection.topic.course.title }}
                                         </div>
-                                        <div class="col" style="flex-basis:30%;">
+                                        <div class="col-3" style="overflow:hidden;text-overflow: ellipsis;">
                                             {{ selection.topic.title }}
                                         </div>
-                                        <div class="col">
+                                        <div class="col-2" style="margin-right:10px">
                                             {% for info in motivation_text_required %}
                                                 {% for selection_in_required,required in info %}
                                                     {% if selection_in_required.id == selection.id and required %}
@@ -127,21 +127,21 @@
         {% if info_selection %}
             <input name="open_selection_info" value="{{ info_selection.id }}" hidden>
             <input name="open_course_info" value="{{ open_course_info }}" hidden>
-            <div id="topic_info" style="
+            <div id="topic_info" style="min-width:300px;
                         overflow: hidden;margin-left:30px;
                         border-style:solid;border-color: rgba(0,0,0,0.3);
                         border-width:0px;padding-right:35px;padding-top:10px;box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.2);{% if info_selection %} grid-column:2; {% endif %}">
-                <ul class="responsive-table">
+                <ul class="responsive-table" style="min-width:300px">
                     <input name="selection" value="{% if open_course_info %} True {% else %} False {% endif %}|{{ info_selection.id }} " hidden>
                     <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);{% if open_course_info %} margin-bottom:0px {% else %} margin-bottom:20px {% endif %}">
                         <button name="course_info_button" class="button" type="submit"
-                                style="color:white;background-color:transparent;width:100%;border:none;outline:none;text-transform: capitalize;font-size: 14px;">
+                                style="color:white;background-color:transparent;width:100%;border:none;outline:none;text-transform: capitalize;font-size: 14px;overflow:hidden;text-overflow: ellipsis;margin-left:30px">
                             {{ info_selection.topic.course.title }}
                             <i class="{% if open_course_info %} fa fa-caret-up {% else %} fa fa-caret-down {% endif %}" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px"></i>
                         </button>
                     </li>
                     {% if open_course_info %}
-                        <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
+                        <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
                             <p> <label style="font-weight:500"> Organizer: </label> {{ info_selection.topic.course.organizer }} </p>
                             <p> <label style="font-weight:500"> Course Type: </label> {{ info_selection.topic.course.get_type_display }} </p>
                             <p> <label style="font-weight:500"> Faculty: </label> {{ info_selection.topic.course.get_faculty_display }} </p>
@@ -155,7 +155,7 @@
                         </div>
                     {% endif %}
                     <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
-                        {{ info_selection.topic.title }}
+                        <div style="overflow:hidden;text-overflow: ellipsis;margin-left:30px"> {{ info_selection.topic.title }} </div>
                         <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
                     </li>
                     <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
