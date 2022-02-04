@@ -12,17 +12,6 @@
 
 {% block content %}
 
-<form method="post">
-    {% csrf_token %}
-     <button type="submit" name="1"> Value 1 </button>
-    <button type="submit" name="2"> Value 2 </button>
-</form>
-
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" name="2"> Value 2 </button>
-</form>
-
 {% if user.is_authenticated %}
   Hi {{ user.username }}!
 {% else %}

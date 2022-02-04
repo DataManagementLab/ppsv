@@ -13,22 +13,6 @@ from course.models import TopicSelection, Group
 
 def homepage(request):
     template_name = 'frontend/homepage.html'
-
-    if request.method == "POST":
-
-        if "1" in request.POST:
-            if "2" in request.POST:
-                print("Both")
-
-        str = "12"
-        if all(s in str for s in ('1', '2')):
-            print("And")
-
-        if "1" in request.POST:
-            print(request.POST.get("set_priority"))
-        elif "2" in request.POST:
-            print(request.POST.get("set_priority"))
-
     return render(request, template_name)
 
 
@@ -748,6 +732,8 @@ def groups(request):
             data = str(request.POST.get("choose_course")).split("|")
             chosen_course = data[0]
             chosen_faculty = data[1]
+            open_course_info = data[2]
+            print(data)
 
             topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
 
@@ -758,8 +744,31 @@ def groups(request):
             else:
                 args["topics"] = "No_Topics"
 
+            if open_course_info == "True":
+                args["open_course_info"] = True
+            else:
+                args["open_course_info"] = False
+
         elif "choose_topic" in request.POST:
-            print("Hey")
+
+            data = str(request.POST.get("choose_topic")).split("|")
+
+            chosen_topic = data[0]
+            chosen_course = data[1]
+            chosen_faculty = data[2]
+            open_course_info = data[3]
+
+            args["topics"] = [models.Topic.objects.get(id=chosen_topic)]
+            args["chosen_faculty"] = chosen_faculty
+            args["chosen_course"] = models.Course.objects.get(id=chosen_course)
+            args["chosen_topic"] = models.Topic.objects.get(id=chosen_topic)
+            if open_course_info == "True":
+                args["open_course_info"] = True
+            else:
+                args["open_course_info"] = False
+
+        elif "select_topic" in request.POST:
+            print("Hier kommt noch was")
 
     else:
 

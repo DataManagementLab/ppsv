@@ -15,56 +15,100 @@
     <div class="container-fluid" style="display:flex;justify-content:center;font-size:17px">
         <ul class="responsive-table" style="width:60%;padding:0px;margin:0px">
             <li class="table-header" style="padding: 16px;position:relative;font-size:17px;margin-bottom:5px">
-                {% if courses or topics %}
-                <button name="{% if courses %}faculty_view{% elif topics %}choose_faculty{% endif %}"
-                        value="{% if topics %}{{ chosen_faculty }}{% endif %}"
+                {% if courses or topics or chosen_topic %}
+                <button name="{% if chosen_topic %}choose_course{% elif topics %}choose_faculty{% elif courses %}faculty_view{% endif %}"
+                        value="{% if chosen_topic %}{{ chosen_course.id }}|{{ chosen_faculty }}|{{ open_course_info }}{% elif topics %}{{ chosen_faculty }}{% endif %}"
                         class="undecorated-btn" type="submit" style="position:absolute;left:16px;top:16px">
                     <i class="fa fa-caret-square-o-left" aria-hidden="true" style="font-size:25px;color:white;"></i>
                 </button>
                 {% endif %}
-                <div> {% if courses %}  Choose a Course {% elif topics %} Choose a Topic {% else %} Choose a Faculty {% endif %} </div>
-                <div style="display:grid;grid-gap:5px;position:absolute;right:10px;align-self: center;grid-auto-flow: column;">
-                    {% if courses or topics %}
-                    <div>
-                        {{ chosen_faculty }}
-                        <button name="faculty_view" class="undecorated-btn"> <i class="fa fa-minus-square" aria-hidden="true" style="color:red"></i> </button>
-                    </div>
-                    {% endif %}
-                    {% if topics %}
-                    <div>
-                        {{ chosen_course.title }}
-                        <button name="choose_faculty" value="{{ chosen_faculty }}" class="undecorated-btn"> <i class="fa fa-minus-square" aria-hidden="true" style="color:red"></i> </button>
-                    </div>
-                    {% endif %}
-                </div>
+                <div>{% if chosen_topic %} Select Your Topic {% elif courses %}  Choose a Course {% elif topics %} Choose a Topic {% else %} Choose a Faculty {% endif %} </div>
             </li>
 
             {% if topics %}
+            <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);{% if open_course_info %} margin-bottom:0px {% else %} margin-bottom:10px {% endif %}">
+                <button name="{% if chosen_topic %}choose_topic{% else %}choose_course{% endif %}" value="{% if chosen_topic %}{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|{% if open_course_info %}False{% else %}True{% endif %}{% else %}{{ chosen_course.id }}|{{ chosen_faculty }}|{% if open_course_info %}False{% else %}True{% endif %}{% endif %}" class="button" type="submit"
+                        style="color:white;background-color:transparent;width:100%;border:none;outline:none;text-transform: capitalize;font-size: 14px;overflow:hidden;text-overflow: ellipsis;margin-left:30px">
+                    <span style="font-weight:500"> Information for Course {{ chosen_course.title }} </span>
+                    <i class="{% if open_course_info %} fa fa-caret-up {% else %} fa fa-caret-down {% endif %}" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px"></i>
+                </button>
+            </li>
+            {% if open_course_info %}
+            <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
+                <p> <label style="font-weight:500"> Organizer: </label> {{ chosen_course.organizer }} </p>
+                <p> <label style="font-weight:500"> Course Type: </label> {{ chosen_course.get_type_display }} </p>
+                <p> <label style="font-weight:500"> Faculty: </label> {{ chosen_course.get_faculty_display }} </p>
+                <p> <label style="font-weight:500"> Language: </label> Sprache </p>
+                <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.course.max_participants }} {% endif %} </p>
+                <p> <label style="font-weight:500"> Registration: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
+                <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
+                <p> <label style="font-weight:500"> Motivation Text: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
+                <label style="font-weight:500"> Description </label>
+                <p> {{ chosen_course.description }} </p>
+            </div>
+            {% endif %}
             {% if topics != "No_Topics" %}
-            <div class="table-info" style="display:block">
+            {% if not chosen_topic %}
+            <div class="table-info" style="{% if chosen_topic %} width:60%; {% endif %}">
                 <div style="display:flex;justify-content: space-around;">
                     <div style="flex-basis:100%"> Title </div>
                     <div style="flex-basis:100%"> Max Participants </div>
                 </div>
             </div>
+            {% endif %}
             {% for topic in topics %}
-            <button class="table-btn" name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}">
+            {% if not chosen_topic %}
+            <button class="table-btn"  name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False">
                 <div style="display:flex;justify-content: space-around;">
-                    <div style="flex-basis:100%"> {{ topic.title }} </div>
+                    <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
                     <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
                 </div>
             </button>
+            {% else %}
+            <div style="display:flex;flex-direction:row;width:100%">
+                <div style="width:60%">
+                <div class="table-info">
+                <div style="display:flex;justify-content: space-around;">
+                    <div style="flex-basis:100%"> Title </div>
+                    <div style="flex-basis:100%"> Max Participants </div>
+                </div>
+                </div>
+                <div class="table-btn">
+                    <div style="display:flex;justify-content: space-around;">
+                        <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
+                        <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
+                    </div>
+                </div>
+                </div>
+                <div style="display:grid;padding:15px;width:40%;margin-bottom:10px">
+                    <button class="undecorated-btn" style="background-color:rgba(190, 229, 81, 1);color:white;border-radius:3px;margin:5px"> Select this topic with a group</button>
+                    <button name="select_topic" value="{{ chosen_topic.id }}" class="undecorated-btn" style="background-color:rgba(72, 202, 82, 1);color:white;border-radius:3px;margin:5px"> Select this topic alone </button>
+                </div>
+            </div>
+            {% endif %}
             {% endfor %}
             {% else %}
             <div class="table-info" style="background-color:orange;font-size:14px">
                     There are no topics in this course
             </div>
             {% endif %}
+            {% if chosen_topic %}
+            <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
+                <div style="overflow:hidden;text-overflow: ellipsis;margin-left:30px">
+                    <span style="font-weight:500"> Information for Topic {{ chosen_topic.title }} </span>
+                </div>
+                <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
+            </li>
+            <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
+                    <label style="font-weight:500"> Description {% if chosen_topic.file%} File {% endif %} </label>
+                    <p> {% if chosen_topic.file%} File {% else %} {{ chosen_topic.description }} {% endif %} </p>
+                </div>
+            {% endif %}
             {% endif %}
 
             {% if courses %}
             {% if courses != "No_Courses" %}
-            <div class="table-info" style="display:block">
+            <div class="table-info">
                 <div style="display:flex;justify-content: space-around;">
                     <div style="flex-basis:100%"> Title </div>
                     <div style="flex-basis:100%"> Type </div>
@@ -75,9 +119,9 @@
                 </div>
             </div>
             {% for course in courses %}
-            <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}">
+            <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}|True">
                 <div style="display:flex;justify-content: space-around;">
-                    <div style="flex-basis:100%"> {{ course.title }} </div>
+                    <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ course.title }} </div>
                     <div style="flex-basis:100%"> {{ course.get_type_display }} </div>
                     <div style="flex-basis:100%"> {{ course.registration_start|date }} </div>
                     <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
@@ -110,6 +154,10 @@
     background-color: transparent;
     box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);
 
+    display: inline-block;
+    text-align: center;
+    align-items: flex-start;
+
     color: black;
 
     border: none;
@@ -118,11 +166,11 @@
     width: 100%;
 }
 
-.table-btn:focus {
+button.table-btn:focus {
     outline: none;
 }
 
-.table-btn:hover {
+button.table-btn:hover {
     box-shadow: 0px 0px 9px 3px rgba(10,61,98,1);
 }
 
@@ -151,7 +199,22 @@
     color: white;
 
     width: 100%;
-    font-size: 12px;
+    font-size: 16px;
 }
 </style>
+
+<!-- The scroll position is saved and loaded when the page submits a form-->
+<script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+        var scrollpos = sessionStorage.getItem('scrollpos');
+        if (scrollpos) {
+            window.scrollTo(0, scrollpos);
+            sessionStorage.removeItem('scrollpos');
+        }
+    });
+
+    window.addEventListener("beforeunload", function (e) {
+           sessionStorage.setItem('scrollpos', window.scrollY);
+    });
+</script>
 {% endblock content %}
