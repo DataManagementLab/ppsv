@@ -13,7 +13,7 @@
 <form method="post" style="margin:0px;padding:0px">
     {% csrf_token %}
     <div class="container-fluid" style="display:flex;justify-content:center;font-size:17px">
-        <ul class="responsive-table" style="width:60%;padding:0px;margin:0px">
+        <ul class="responsive-table" style="width:80%;padding:0px;margin:0px">
             <li class="table-header" style="padding: 16px;position:relative;font-size:17px;margin-bottom:5px">
                 {% if courses or topics or chosen_topic %}
                 <button name="{% if chosen_topic %}choose_course{% elif topics %}choose_faculty{% elif courses %}faculty_view{% endif %}"
@@ -58,7 +58,7 @@
             {% endif %}
             {% for topic in topics %}
             {% if not chosen_topic %}
-            <button class="table-btn"  name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False">
+            <button class="table-btn" name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False">
                 <div style="display:flex;justify-content: space-around;">
                     <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
                     <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
@@ -80,10 +80,28 @@
                     </div>
                 </div>
                 </div>
-                <div style="display:grid;padding:15px;width:40%;margin-bottom:10px">
-                    <button class="undecorated-btn" style="background-color:rgba(190, 229, 81, 1);color:white;border-radius:3px;margin:5px"> Select this topic with a group</button>
-                    <button name="select_topic" value="{{ chosen_topic.id }}" class="undecorated-btn" style="background-color:rgba(72, 202, 82, 1);color:white;border-radius:3px;margin:5px"> Select this topic alone </button>
+                {% if open_group_select %}
+                <div style="display:grid;width:40%;padding-bottom:10px;padding-left:5px;padding-right:5px;position:relative;">
+                    <button class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;"> Create new group </button>
+                    <label style="text-align:center;position:relative;margin:0px;margin-top:1px">
+                        <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;left:15px;"></div>
+                        or
+                        <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;right:15px;"></div>
+                    </label>
+                    <select name="group_options" style="text-align: center; height:25px;margin-left:5px;margin-right:5px;">
+                        <option value="-1"> Choose your group </option>
+                        {% for group in groups %}
+                         <option value="{{ group.id }}"> {{ group.get_display }} </option>
+                        {% endfor %}
+                    </select>
+                    <button name="select_with_chosen_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;"> Select topic with chosen group  </button>
                 </div>
+                {% else %}
+                <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+                    {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;margin:5px"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
+                    <button name="select_topic" value="{{ chosen_topic.id }}" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                </div>
+                {% endif %}
             </div>
             {% endif %}
             {% endfor %}
@@ -100,8 +118,9 @@
                 <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
             </li>
             <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
-                    <label style="font-weight:500"> Description {% if chosen_topic.file%} File {% endif %} </label>
-                    <p> {% if chosen_topic.file%} File {% else %} {{ chosen_topic.description }} {% endif %} </p>
+                    <label style="font-weight:500"> Description </label>
+                    <p> {{ chosen_topic.description }} </p>
+                    <p> {{ chosen_topic.file }} </p>
                 </div>
             {% endif %}
             {% endif %}

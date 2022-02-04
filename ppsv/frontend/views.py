@@ -94,7 +94,7 @@ def overview(request):
                 # "topics_in_chosen_course" contains all topics in the chosen course
                 topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
 
-                #args["courses"] = courses_in_same_faculty
+                # args["courses"] = courses_in_same_faculty
                 args["courses"] = models.Course.objects.filter(id=chosen_course)
                 args["chosen_course"] = chosen_course
                 args["topics_in_chosen_course"] = topics_in_chosen_course
@@ -591,7 +591,7 @@ def your_selection(request):
 
                 elif "up_priority" in request.POST:
                     chosen_selection_id = int(request.POST.get("up_priority"))
-                    chosen_selection = get_selection(selections_of_groups,chosen_selection_id)
+                    chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
 
                     for selections in selections_of_groups:
                         for selection in selections:
@@ -698,7 +698,6 @@ def get_selection(selections_of_groups, chosen_selection_id):
 # Help functions of overview
 
 def groups(request):
-
     template_name = 'frontend/groups.html'
 
     args = {}
@@ -733,7 +732,6 @@ def groups(request):
             chosen_course = data[0]
             chosen_faculty = data[1]
             open_course_info = data[2]
-            print(data)
 
             topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
 
@@ -749,9 +747,15 @@ def groups(request):
             else:
                 args["open_course_info"] = False
 
-        elif "choose_topic" in request.POST:
+        elif any(["choose_topic" in request.POST, "open_group_select" in request.POST]):
 
-            data = str(request.POST.get("choose_topic")).split("|")
+            if "choose_topic" in request.POST:
+                data = str(request.POST.get("choose_topic")).split("|")
+            elif "open_group_select" in request.POST:
+                data = str(request.POST.get("open_group_select")).split("|")
+                args["open_group_select"] = True
+                args["groups"] = filter(lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                                        models.Group.objects.filter(students=request.user.student))
 
             chosen_topic = data[0]
             chosen_course = data[1]
@@ -768,7 +772,119 @@ def groups(request):
                 args["open_course_info"] = False
 
         elif "select_topic" in request.POST:
-            print("Hier kommt noch was")
+
+            student_tu_id = str(request.user.student)
+
+            selected_topic_id = int(request.POST.get("select_topic"))
+
+            existing_groups = []
+            for group in models.Group.objects.filter(students=student_tu_id):
+                if group.size == 1:
+                    existing_groups.append(group)
+
+            if len(existing_groups) == 0:
+
+                group_of_student = Group()
+                group_of_student.save()
+                group_of_student.students.add(student_tu_id)
+
+                user_selection = TopicSelection()
+                user_selection.priority = 1
+                user_selection.group = group_of_student
+                user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                user_selection.save()
+
+                messages.success(request,
+                                 "Your Selection Was Successful! You can find and edit your chosen topics on the "
+                                 "\"Your Selection\" page.")
+
+                messages.warning(request,
+                                 "You need to add a motivation text(when required) to your selection in order to fully "
+                                 "complete your selection. You can do this on the \"Your Selection\" page.")
+
+            else:
+
+                topic_selections_of_group = models.TopicSelection.objects.filter(group=existing_groups[0].id)
+
+                already_selected = False
+
+                for known_selection in topic_selections_of_group:
+                    if int(selected_topic_id) == int(known_selection.topic.id):
+                        already_selected = True
+                        messages.error(request, "Selection Failed! You have already selected this topic.")
+
+                if not already_selected:
+                    user_selection = TopicSelection()
+                    user_selection.priority = len(topic_selections_of_group) + 1
+                    user_selection.group = existing_groups[0]
+                    user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                    user_selection.save()
+                    messages.success(request,
+                                     "Your Selection Was Successful! You can find and edit your chosen topics on the "
+                                     "\"Your Selection\" page.")
+
+                    messages.warning(request,
+                                     "You need to add a motivation text(when required) "
+                                     "to your selection in order to fully "
+                                     "complete your selection. You can do this on the \"Your Selection\" page.")
+
+            chosen_course = models.Course.objects.get(topic=selected_topic_id)
+
+            chosen_topic = selected_topic_id
+            open_course_info = False
+
+            args["topics"] = [models.Topic.objects.get(id=chosen_topic)]
+            args["chosen_faculty"] = chosen_course.faculty
+            args["chosen_course"] = models.Course.objects.get(id=chosen_course.id)
+            args["chosen_topic"] = models.Topic.objects.get(id=chosen_topic)
+            if open_course_info == "True":
+                args["open_course_info"] = True
+            else:
+                args["open_course_info"] = False
+
+        elif "select_with_chosen_group" in request.POST:
+            data = str(request.POST.get("select_with_chosen_group")).split("|")
+            selected_topic_id = data[0]
+            chosen_group_id = str(request.POST.get("group_options"))
+            topic_selections_of_group = models.TopicSelection.objects.filter(group=chosen_group_id)
+            already_selected = False
+            for known_selection in topic_selections_of_group:
+                if int(selected_topic_id) == int(known_selection.topic.id):
+                    already_selected = True
+                    messages.error(request, "Selection Failed! You have already selected this topic.")
+
+            if not already_selected:
+                selection = TopicSelection()
+                selection.priority = len(topic_selections_of_group) + 1
+                selection.group = models.Group.objects.get(id=chosen_group_id)
+                selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                selection.save()
+
+                messages.success(request,
+                                 "Your Selection Was Successful! You can find and edit your chosen topics on the "
+                                 "overview page.")
+                messages.warning(request,
+                                 "You need to set the priority and add a motivation text(when required) "
+                                 "to your selection in order to fully complete your selection. "
+                                 "You can do this on the overview page.")
+
+                chosen_topic = data[0]
+                chosen_course = data[1]
+                chosen_faculty = data[2]
+                open_course_info = data[3]
+
+                args["open_group_select"] = True
+                args["groups"] = filter(lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                                        models.Group.objects.filter(students=request.user.student))
+
+                args["topics"] = [models.Topic.objects.get(id=chosen_topic)]
+                args["chosen_faculty"] = chosen_faculty
+                args["chosen_course"] = models.Course.objects.get(id=chosen_course)
+                args["chosen_topic"] = models.Topic.objects.get(id=chosen_topic)
+                if open_course_info == "True":
+                    args["open_course_info"] = True
+                else:
+                    args["open_course_info"] = False
 
     else:
 
