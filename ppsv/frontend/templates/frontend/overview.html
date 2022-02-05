@@ -127,19 +127,27 @@ Selection Page
                     </div>
                 </div>
                 {% else %}
-                {% if not topic.id in selected_topics %}
-                    <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
-                        {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
-                        <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
-                    </div>
+                    {% if request.user.is_authenticated and request.user.student %}
+                            {% if not topic.id in selected_topics %}
+                                <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+                                    {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
+                                    <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                </div>
+                            {% else %}
+                                <div style="display:grid;width:40%;position:relative">
+                                    <label style="position:absolute;top:20%;left:35%;text-align:center">
+                                        <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
+                                        <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> to your selections  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                    </label>
+                                </div>
+                            {% endif %}
                     {% else %}
-                    <div style="display:grid;width:40%;position:relative">
-                        <label style="position:absolute;top:20%;left:35%;text-align:center">
-                            <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
-                            <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> to your selections  <i class="fa fa-link" aria-hidden="true"></i></a>
-                        </label>
-                    </div>
-                {% endif %}
+                        <div style="display:grid;width:40%;position:relative">
+                            <label style="position:absolute;top:20%;left:13%;text-align:center">
+                                <label style="color:red;margin:0px;font-size:25px;"> {% if not request.user.is_authenticated %} You need to be logged in to select a topic {% else %} You need to be a student to select a topic {% endif %} </label>
+                            </label>
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
             {% endif %}
