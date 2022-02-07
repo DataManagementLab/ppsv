@@ -155,11 +155,11 @@ def overview(request):
 
                         messages.success(request,
                                          "Your Selection Was Successful! You can find and edit your chosen topics on the "
-                                         "overview page.")
+                                         "your selection page.")
                         messages.warning(request,
-                                         "You need to set the priority and add a motivation text(when required) "
+                                         "You need to add a motivation text(when required) "
                                          "to your selection in order to fully complete your selection. "
-                                         "You can do this on the overview page.")
+                                         "You can do this on the your selection page.")
                 elif "open_group_create" in request.POST:
                     data = str(request.POST.get("open_group_create")).split("|")
                     args["members_in_new_group"] = [request.user.student.tucan_id]
@@ -303,7 +303,7 @@ def overview(request):
 def your_selection(request):
     template_name = 'frontend/your_selection.html'
 
-    # If the user is logged in and has the attribute "student" the overview page is loaded
+    # If the user is logged in and has the attribute "student" the your selection page is loaded
     if request.user.is_authenticated:
 
         args = {}
