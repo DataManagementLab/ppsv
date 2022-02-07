@@ -107,7 +107,6 @@ class GroupAdmin(admin.ModelAdmin):
         form = super().get_form(request, obj, **kwargs)
         # disable student and topic creation during group creation and editing
         form.base_fields['students'].widget.can_add_related = False
-        form.base_fields['assignments'].widget.can_add_related = False
         return form
 
 
