@@ -35,3 +35,15 @@
             padding:0;
             margin:0;
         }
+
+        .undecorated-btn {
+            background-color:transparent;
+            outline:none;
+            border:none;
+            padding:0px;
+            margin:0px;
+        }
+
+        .undecorated-btn:focus {
+            outline: none;
+        }

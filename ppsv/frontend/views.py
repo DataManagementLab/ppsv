@@ -103,11 +103,13 @@ def overview(request):
                         user_selection.save()
 
                         messages.success(request,
-                                         "Your Selection Was Successful! You can find and edit your chosen topics on the "
+                                         "Your Selection Was Successful! "
+                                         "You can find and edit your chosen topics on the "
                                          "\"Your Selection\" page.")
 
                         messages.warning(request,
-                                         "You need to add a motivation text(when required) to your selection in order to fully "
+                                         "You need to add a motivation text(when required) "
+                                         "to your selection in order to fully "
                                          "complete your selection. You can do this on the \"Your Selection\" page.")
 
                     else:
@@ -154,8 +156,8 @@ def overview(request):
                         selection.save()
 
                         messages.success(request,
-                                         "Your Selection Was Successful! You can find and edit your chosen topics on the "
-                                         "your selection page.")
+                                         "Your Selection Was Successful!"
+                                         " You can find and edit your chosen topics on the your selection page.")
                         messages.warning(request,
                                          "You need to add a motivation text(when required) "
                                          "to your selection in order to fully complete your selection. "
@@ -477,18 +479,30 @@ def get_selection(selections_of_groups, chosen_selection_id):
 def groups(request):
     template_name = 'frontend/groups.html'
 
-    args = {}
+    if request.user.is_authenticated:
 
-    groups_of_student = models.Group.objects.filter(students=request.user.student.tucan_id)
-    members_of_groups = {}
-    for group in groups_of_student:
-        members = []
-        for tucan_id in "".join(group.get_display.split(",")).split():
-            members.append(User.objects.get(student=tucan_id))
-        members_of_groups[group.id] = members
+        args = {}
 
-    args["groups_of_student"] = groups_of_student
-    args["members_of_groups"] = members_of_groups
+        if hasattr(request.user, "student"):
+
+            groups_of_student = models.Group.objects.filter(students=request.user.student.tucan_id)
+            members_of_groups = {}
+            for group in groups_of_student:
+                members = []
+                for tucan_id in "".join(group.get_display.split(",")).split():
+                    members.append(User.objects.get(student=tucan_id))
+                members_of_groups[group.id] = members
+
+            args["groups_of_student"] = groups_of_student
+            args["members_of_groups"] = members_of_groups
+
+            if request.method == "POST":
+
+                if "ask_delete_group" in request.POST:
+                    chosen_group = int(request.POST.get("ask_delete_group"))
+                    args["chosen_group"] = chosen_group
+                elif "delete_group" in request.POST:
+                    models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
 
     return render(request, template_name, args)
 

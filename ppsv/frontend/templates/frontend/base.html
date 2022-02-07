@@ -21,7 +21,6 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
     <link rel="stylesheet" href="{% static 'css/ppsv.css' %}">
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css?family=Arvo&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/table.css' %}">
@@ -96,9 +95,9 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
 {% for message in messages %}
   <div class="alert {{ message.tags }} alert-dismissible" role="alert" style="margin-top: 5px;margin-bottom:0px;margin-left:5px;margin-right:5px">
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-         <span aria-hidden="True">&times;</span>
+            <span aria-hidden="True">&times;</span>
         </button>
-      <label style="font-weight:800;margin-bottom:0px;" > {{ message }} </label>
+        <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;" > {{ message }} </label>
   </div>
 {% endfor %}
 
