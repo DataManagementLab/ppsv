@@ -21,7 +21,6 @@ urlpatterns = [
     path('', views.homepage, name='homepage'),
     path('your_selection/', views.your_selection, name='your_selection'),
     path('overview/', views.overview, name='overview'),
-    path('selection/<str:faculty_id>/<int:course_id>/', views.course_topics, name='course_topics'),
     path('groups/', views.groups, name='groups'),
     path('login/', views.login_request, name='login'),
     path('logout/', views.logout_request, name='logout'),

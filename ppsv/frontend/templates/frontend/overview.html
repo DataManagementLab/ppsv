@@ -35,176 +35,176 @@ Selection Page
                     <i class="{% if open_course_info %} fa fa-caret-up {% else %} fa fa-caret-down {% endif %}" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px"></i>
                 </button>
             </li>
-            {% if open_course_info %}
-            <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
-                <p> <label style="font-weight:500"> Organizer: </label> {{ chosen_course.organizer }} </p>
-                <p> <label style="font-weight:500"> Course Type: </label> {{ chosen_course.get_type_display }} </p>
-                <p> <label style="font-weight:500"> Faculty: </label> {{ chosen_course.get_faculty_display }} </p>
-                <p> <label style="font-weight:500"> Language: </label> Sprache </p>
-                <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.course.max_participants }} {% endif %} </p>
-                <p> <label style="font-weight:500"> Registration: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
-                <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
-                <p> <label style="font-weight:500"> Motivation Text: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
-                <label style="font-weight:500"> Description </label>
-                <p> {{ chosen_course.description }} </p>
-            </div>
-            {% endif %}
-            {% if topics != "No_Topics" %}
-            {% if not chosen_topic %}
-            <div class="table-info" style="{% if chosen_topic %} width:60%; {% endif %}">
-                <div style="display:flex;justify-content: space-around;">
-                    <div style="flex-basis:100%"> Title </div>
-                    <div style="flex-basis:100%"> Max Participants </div>
-                </div>
-            </div>
-            {% endif %}
-            {% for topic in topics %}
-            {% if not chosen_topic %}
-            <button class="table-btn" name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False">
-                <div style="display:flex;justify-content: space-around;">
-                    <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
-                    <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
-                </div>
-            </button>
-            {% else %}
-            <div style="display:flex;flex-direction:row;width:100%">
-                <div style="width:60%">
-                <div class="table-info">
-                <div style="display:flex;justify-content: space-around;">
-                    <div style="flex-basis:100%"> Title </div>
-                    <div style="flex-basis:100%"> Max Participants </div>
-                </div>
-                </div>
-                <div class="table-btn">
-                    <div style="display:flex;justify-content: space-around;">
-                        <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
-                        <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
-                    </div>
-                </div>
-                </div>
-                {% if open_group_select %}
-                <div style="display:grid;width:40%;padding-bottom:10px;padding-left:5px;padding-right:5px;position:relative;">
-                    <button name="open_group_create" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False" class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;"> Create new group </button>
-                    <label style="text-align:center;position:relative;margin:0px;margin-top:1px">
-                        <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;left:15px;"></div>
-                        or
-                        <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;right:15px;"></div>
-                    </label>
-                    <select name="group_options" style="text-align: center; height:25px;margin-left:5px;margin-right:5px;">
-                        <option value="-1"> Choose your group </option>
-                        {% for group in groups %}
-                         <option value="{{ group.id }}"> {{ group.get_display }} </option>
-                        {% endfor %}
-                    </select>
-                    <button name="select_with_chosen_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;"> Select topic with chosen group  </button>
-                </div>
-                {% elif open_group_create %}
-                <div style="display:flex;flex-direction:row;width:40%;padding-left:5px;position:relative;margin-right:0px;">
-                    <input name="new_student_id" type="text" style="text-align:center;height:25px;width:40%;margin-top:10px;" placeholder="Tucan-ID">
-                    <div>
-                        <button type="submit" name="select_with_new_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info"
-                                style="text-align:center;position:absolute;bottom:10px;left:5px;width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background-color:green;color:white;padding-bottom:2px;border:none;outline:none;border-radius:3px">
-                            Select with group
-                        </button>
-                    </div>
-                    <div>
-                        <button class="undecorated-btn" type="submit" name="add_student" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" style="margin-left:3px;margin-right:5px;font-size:25px;margin-top:10px">
-                            <i class="fa fa-arrow-circle-right" aria-hidden="true" style="color:green"></i>
-                        </button>
-                    </div>
-                    <div class="table-btn" style="overflow:auto;overflow-x: hidden;height:120px;width:50%;box-sizing: border-box;padding: 1% 5%;margin:0px;">
-                            <label class="group-member" style="border-style: dotted"> <div style="visibility: hidden"> New Student </div> </label> <br>
-                            {% for member in members_in_new_group%}
-                            <div style="position:relative;">
-                            {% if member != request.user.student.tucan_id %}
-                                <button class="undecorated-btn" type="submit" name="remove_student" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info|{{ member }}" style="position:absolute;top:6px;left:8px" >
-                                      <i class="fa fa-minus" aria-hidden="true" style="color:red;font-size:20px"> </i>
-                                </button>
-                                {% endif %}
-                                <input name="member{{forloop.counter0}}" class="group-member" value="{{ member }}" style="padding-left:24px" readonly> <br>
-                            </div>
-                            {% endfor %}
-                    </div>
-                </div>
-                {% else %}
-                    {% if request.user.is_authenticated and request.user.student %}
-                            {% if not topic.id in selected_topics %}
-                                <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
-                                    {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
-                                    <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
-                                </div>
-                            {% else %}
-                                <div style="display:grid;width:40%;position:relative">
-                                    <label style="position:absolute;top:20%;left:35%;text-align:center">
-                                        <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
-                                        <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> to your selections  <i class="fa fa-link" aria-hidden="true"></i></a>
-                                    </label>
-                                </div>
-                            {% endif %}
-                    {% else %}
-                        <div style="display:grid;width:40%;position:relative">
-                            <label style="position:absolute;top:20%;left:13%;text-align:center">
-                                <label style="color:red;margin:0px;font-size:25px;"> {% if not request.user.is_authenticated %} You need to be logged in to select a topic {% else %} You need to be a student to select a topic {% endif %} </label>
-                            </label>
-                        </div>
-                    {% endif %}
-                {% endif %}
-            </div>
-            {% endif %}
-            {% endfor %}
-            {% else %}
-            <div class="table-info" style="background-color:orange;font-size:14px">
-                    There are no topics in this course
-            </div>
-            {% endif %}
-            {% if chosen_topic %}
-            <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
-                <div style="overflow:hidden;text-overflow: ellipsis;margin-left:30px">
-                    <span style="font-weight:500"> Information for Topic {{ chosen_topic.title }} </span>
-                </div>
-                <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
-            </li>
-            <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
+                {% if open_course_info %}
+                <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
+                    <p> <label style="font-weight:500"> Organizer: </label> {{ chosen_course.organizer }} </p>
+                    <p> <label style="font-weight:500"> Course Type: </label> {{ chosen_course.get_type_display }} </p>
+                    <p> <label style="font-weight:500"> Faculty: </label> {{ chosen_course.get_faculty_display }} </p>
+                    <p> <label style="font-weight:500"> Language: </label> Sprache </p>
+                    <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.course.max_participants }} {% endif %} </p>
+                    <p> <label style="font-weight:500"> Registration: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
+                    <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
+                    <p> <label style="font-weight:500"> Motivation Text: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
                     <label style="font-weight:500"> Description </label>
-                    <p> {{ chosen_topic.description }} </p>
-                    <p> {{ chosen_topic.file }} </p>
+                    <p> {{ chosen_course.description }} </p>
                 </div>
-            {% endif %}
+                {% endif %}
+                {% if topics != "No_Topics" %}
+                    {% if not chosen_topic %}
+                    <div class="table-info" style="{% if chosen_topic %} width:60%; {% endif %}">
+                        <div style="display:flex;justify-content: space-around;">
+                            <div style="flex-basis:100%"> Title </div>
+                            <div style="flex-basis:100%"> Max Participants </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% for topic in topics %}
+                        {% if not chosen_topic %}
+                        <button class="table-btn" name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False">
+                            <div style="display:flex;justify-content: space-around;">
+                                <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
+                                <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
+                            </div>
+                        </button>
+                        {% else %}
+                        <div style="display:flex;flex-direction:row;width:100%">
+                            <div style="width:60%">
+                            <div class="table-info">
+                            <div style="display:flex;justify-content: space-around;">
+                                <div style="flex-basis:100%"> Title </div>
+                                <div style="flex-basis:100%"> Max Participants </div>
+                            </div>
+                            </div>
+                            <div class="table-btn">
+                                <div style="display:flex;justify-content: space-around;">
+                                    <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
+                                    <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
+                                </div>
+                            </div>
+                            </div>
+                            {% if open_group_select %}
+                            <div style="display:grid;width:40%;padding-bottom:10px;padding-left:5px;padding-right:5px;position:relative;">
+                                <button name="open_group_create" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False" class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;"> Create new group </button>
+                                <label style="text-align:center;position:relative;margin:0px;margin-top:1px">
+                                    <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;left:15px;"></div>
+                                    or
+                                    <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;right:15px;"></div>
+                                </label>
+                                <select name="group_options" style="text-align: center; height:25px;margin-left:5px;margin-right:5px;">
+                                    <option value="-1"> Choose your group </option>
+                                    {% for group in groups %}
+                                     <option value="{{ group.id }}"> {{ group.get_display }} </option>
+                                    {% endfor %}
+                                </select>
+                                <button name="select_with_chosen_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;"> Select topic with chosen group  </button>
+                            </div>
+                            {% elif open_group_create %}
+                            <div style="display:flex;flex-direction:row;width:40%;padding-left:5px;position:relative;margin-right:0px;">
+                                <input name="new_student_id" type="text" style="text-align:center;height:25px;width:40%;margin-top:10px;" placeholder="Tucan-ID">
+                                <div>
+                                    <button type="submit" name="select_with_new_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info"
+                                            style="text-align:center;position:absolute;bottom:10px;left:5px;width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background-color:green;color:white;padding-bottom:2px;border:none;outline:none;border-radius:3px">
+                                        Select with group
+                                    </button>
+                                </div>
+                                <div>
+                                    <button class="undecorated-btn" type="submit" name="add_student" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" style="margin-left:3px;margin-right:5px;font-size:25px;margin-top:10px">
+                                        <i class="fa fa-arrow-circle-right" aria-hidden="true" style="color:green"></i>
+                                    </button>
+                                </div>
+                                <div class="table-btn" style="overflow:auto;overflow-x: hidden;height:120px;width:50%;box-sizing: border-box;padding: 1% 5%;margin:0px;">
+                                        <label class="group-member" style="border-style: dotted"> <div style="visibility: hidden"> New Student </div> </label> <br>
+                                        {% for member in members_in_new_group%}
+                                        <div style="position:relative;">
+                                        {% if member != request.user.student.tucan_id %}
+                                            <button class="undecorated-btn" type="submit" name="remove_student" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info|{{ member }}" style="position:absolute;top:6px;left:8px" >
+                                                  <i class="fa fa-minus" aria-hidden="true" style="color:red;font-size:20px"> </i>
+                                            </button>
+                                            {% endif %}
+                                            <input name="member{{forloop.counter0}}" class="group-member" value="{{ member }}" style="padding-left:24px" readonly> <br>
+                                        </div>
+                                        {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                                {% if request.user.is_authenticated and request.user.student %}
+                                        {% if not topic.id in selected_topics %}
+                                            <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+                                                {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#b71540;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
+                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:rgba(183,21,64,1);color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                            </div>
+                                        {% else %}
+                                            <div style="display:grid;width:40%;position:relative">
+                                                <label style="position:absolute;top:20%;left:35%;text-align:center">
+                                                    <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
+                                                    <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> to your selections  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                                </label>
+                                            </div>
+                                        {% endif %}
+                                {% else %}
+                                    <div style="display:grid;width:40%;position:relative">
+                                        <label style="position:absolute;top:20%;left:13%;text-align:center">
+                                            <label style="color:red;margin:0px;font-size:25px;"> {% if not request.user.is_authenticated %} You need to be logged in to select a topic {% else %} You need to be a student to select a topic {% endif %} </label>
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="table-info" style="background-color:orange;font-size:14px">
+                        There are no topics in this course
+                </div>
+                {% endif %}
+                {% if chosen_topic %}
+                <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
+                    <div style="overflow:hidden;text-overflow: ellipsis;margin-left:30px">
+                        <span style="font-weight:500"> Information for Topic {{ chosen_topic.title }} </span>
+                    </div>
+                    <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
+                </li>
+                <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
+                        <label style="font-weight:500"> Description </label>
+                        <p> {{ chosen_topic.description }} </p>
+                        <p> {{ chosen_topic.file }} </p>
+                    </div>
+                {% endif %}
             {% endif %}
 
             {% if courses %}
-            {% if courses != "No_Courses" %}
-            <div class="table-info">
-                <div style="display:flex;justify-content: space-around;">
-                    <div style="flex-basis:100%"> Title </div>
-                    <div style="flex-basis:100%"> Type </div>
-                    <div style="flex-basis:100%"> Registration Start </div>
-                    <div style="flex-basis:100%"> Registration End </div>
-                    <div style="flex-basis:100%"> Max Participants </div>
-                    <div style="flex-basis:100%"> CP </div>
+                {% if courses != "No_Courses" %}
+                    <div class="table-info">
+                    <div style="display:flex;justify-content: space-around;">
+                        <div style="flex-basis:100%"> Title </div>
+                        <div style="flex-basis:100%"> Type </div>
+                        <div style="flex-basis:100%"> Registration Start </div>
+                        <div style="flex-basis:100%"> Registration End </div>
+                        <div style="flex-basis:100%"> Max Participants </div>
+                        <div style="flex-basis:100%"> CP </div>
+                    </div>
                 </div>
-            </div>
-            {% for course in courses %}
-            <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}|True">
-                <div style="display:flex;justify-content: space-around;">
-                    <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ course.title }} </div>
-                    <div style="flex-basis:100%"> {{ course.get_type_display }} </div>
-                    <div style="flex-basis:100%"> {{ course.registration_start|date }} </div>
-                    <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
-                    <div style="flex-basis:100%"> {% if course.max_participants == 9999 %} &#8734 {% else %} {{ course.max_participants }} {% endif %} </div>
-                    <div style="flex-basis:100%"> {{ course.cp }} </div>
+                    {% for course in courses %}
+                    <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}|True">
+                        <div style="display:flex;justify-content: space-around;">
+                            <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ course.title }} </div>
+                            <div style="flex-basis:100%"> {{ course.get_type_display }} </div>
+                            <div style="flex-basis:100%"> {{ course.registration_start|date }} </div>
+                            <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
+                            <div style="flex-basis:100%"> {% if course.max_participants == 9999 %} &#8734 {% else %} {{ course.max_participants }} {% endif %} </div>
+                            <div style="flex-basis:100%"> {{ course.cp }} </div>
+                        </div>
+                    </button>
+                    {% endfor %}
+                {% else %}
+                    <div class="table-info" style="background-color:orange;font-size:14px">
+                        There are no courses in this faculty
                 </div>
-            </button>
-            {% endfor %}
-            {% else %}
-            <div class="table-info" style="background-color:orange;font-size:14px">
-                    There are no courses in this faculty
-            </div>
-            {% endif %}
+                {% endif %}
             {% endif %}
 
             {% for faculty_short, faculty_long in faculties.items %}
-            <button class="table-btn" name="choose_faculty" type="submit" value="{{ faculty_short }}" style="padding:15px;">
+                <button class="table-btn" name="choose_faculty" type="submit" value="{{ faculty_short }}" style="padding:15px;">
                 {{ faculty_long }}
             </button>
             {% endfor %}

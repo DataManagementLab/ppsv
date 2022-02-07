@@ -12,117 +12,117 @@
 {% block content %}
 <form method="post" style="margin:0px;padding:0px;">
     {% csrf_token %}
-   <div style="{% if info_selection %} display:grid; grid-template-columns: 800px 400px%;column-gap: 5px; {% else %} display:flex; justify-content: center; {% endif %} ">
+    <div style="{% if info_selection %} display:grid; grid-template-columns: 800px 400px%;column-gap: 5px; {% else %} display:flex; justify-content: center; {% endif %} ">
         <div style="display:grid;align-content: start; {% if info_selection %} grid-column:1; {% else %} width:60%; {% endif %}">
-                {% for group_of_student in groups_of_student %}
-                    <ul class="responsive-table" style="margin:0px;min-width: 650px;">
-                        <li class="table-header" style="padding: 15px;text-align:center;position:relative;min-width: 650px;">
-                            <div>
-                                {{ group_of_student.get_display }}
-                            </div>
-                            {% if group_of_student.size > 1 %}
-                            <i class="fa fa-users" aria-hidden="true" title="Group Overview" style="font-size:24px;position:absolute;z-index:2;right:20px;top:15px"></i>
-                            {% endif %}
-                        </li>
-                        {% for selections in selections_of_groups %}
-                            {% for selection in selections %}
-                                {% if selection.group == group_of_student %}
-                                    <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;min-width: 650px;">
-                                        <div style="display:inline-grid;grid-column-start: 1;grid-column-end: 3;position:absolute;z-index:2;left:1%;{% if selection.priority == 1 %} top:30 % {% else %} top:8% {% endif %};font-size:16px;">
-                                            {% if selection.priority != 1 %}
-                                            <button name="up_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:1;grid-column:1;">
-                                                <i class="fa fa-arrow-up" aria-hidden="true" style="color:rgba(94, 94, 94, 1)"></i>
-                                            </button>
-                                            {% endif %}
-                                            <div style="grid-row:2;grid-column:1;margin-left:3px;color:rgba(10,61,98,1);"> {{ selection.priority }} </div>
-                                            {% if selection.priority != selections|length%}
-                                            <button name="down_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:3;grid-column:1;">
-                                                <i class="fa fa-arrow-down" aria-hidden="true" style="color:rgba(94, 94, 94, 1)"></i>
-                                            </button>
-                                            {% endif %}
-                                        </div>
-                                        {% if not selection.priority or not selection.motivation and selection.topic.course.motivation_text %}
-                                            <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:-30px "
-                                               {% if not selection.priority and not selection.motivation and selection.topic.course.motivation_text %}
-                                                   title="You need to set the priority for this topic and write a motivation text"
-                                                   {% elif not selection.priority %}
-                                                   title="You need to set the priority for this topic"
-                                                   {% elif not selection.motivation and selection.topic.course.motivation_text %}
-                                                   title="You need to write a motivation text"
-                                               {% endif %} >
-                                            </i>
+            {% for group_of_student in groups_of_student %}
+                <ul class="responsive-table" style="margin:0px;min-width: 650px;">
+                    <li class="table-header" style="padding: 15px;text-align:center;position:relative;min-width: 650px;">
+                        <div>
+                            {{ group_of_student.get_display }}
+                        </div>
+                        {% if group_of_student.size > 1 %}
+                        <i class="fa fa-users" aria-hidden="true" title="Group Overview" style="font-size:24px;position:absolute;z-index:2;right:20px;top:15px"></i>
+                        {% endif %}
+                    </li>
+                    {% for selections in selections_of_groups %}
+                        {% for selection in selections %}
+                            {% if selection.group == group_of_student %}
+                                <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;min-width: 650px;">
+                                    <div style="display:inline-grid;grid-column-start: 1;grid-column-end: 3;position:absolute;z-index:2;left:1%;{% if selection.priority == 1 %} top:30 % {% else %} top:8% {% endif %};font-size:16px;">
+                                        {% if selection.priority != 1 %}
+                                        <button name="up_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:1;grid-column:1;">
+                                            <i class="fa fa-arrow-up" aria-hidden="true" style="color:rgba(94, 94, 94, 1)"></i>
+                                        </button>
                                         {% endif %}
-                                        <div style="background-color:white;padding-left:5px;
-                                                    padding-right:5px;margin-left:20px;
-                                                    white-space: nowrap;border-style: solid;
-                                                    border-width: 1px;border-color:rgba(10,61,98,0.2);
-                                                    position:absolute;z-index:2;top:-13px;left:15px";>
-                                            {{ selection.topic.course.title }}
-                                        </div>
-                                        <div class="col-3" style="overflow:hidden;text-overflow: ellipsis;">
-                                            {{ selection.topic.title }}
-                                        </div>
-                                        <div class="col-2" style="margin-right:10px">
-                                            {% for info in motivation_text_required %}
-                                                {% for selection_in_required,required in info %}
-                                                    {% if selection_in_required.id == selection.id and required %}
-                                                            {% if selection.id == open_motivation_text_for_selection %}
-                                                                 <button class="button" id="save_motivation_text_button" name="save_motivation_text_button" value="{{ selection.id }}"
-                                                                    type="submit" style="margin:0px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
-                                                                    Save Motivation Text
-                                                                 </button>
-                                                            {% else %}
-                                                                <button class="button" id="edit_motivation_text_button" name="edit_motivation_text_button" value="{{ selection.id }}"
-                                                                        type="submit" style="margin:0px ;white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px;">
-                                                                        Edit Motivation Text
-                                                                </button>
-                                                            {% endif %}
-                                                    {% endif %}
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </div>
-                                        <div class="col-2">
-                                                <button name="remove_topic_button" value="{{ selection.id }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}"  type="submit"> Remove Topic </button>
-                                        </div>
-                                        <div class="col-1" >
-                                            <button name="info_button" value="{{ selection.id }}" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
-                                                <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px;color:rgba(94, 94, 94, 1)"
-                                                   aria-hidden="true"
-                                                   title="Show Details">
-                                                </i>
-                                            </button>
-                                        </div>
-                                    </li>
-                                    {% if selection.id == open_motivation_text_for_selection %}
-                                    <input name="open_motivation_text_for_selection" value="{{ open_motivation_text_for_selection }}" hidden>
-                                    <li class="table-row">
-                                        <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
-                                    </li>
-                                    <script type="text/javascript">
-                                        var myInput = document.getElementById("motivation_text");
-                                        if(myInput.addEventListener ) {
-                                            myInput.addEventListener('keydown',this.keyHandler,false);
-                                        } else if(myInput.attachEvent ) {
-                                            myInput.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
-                                        }
-
-                                        function keyHandler(e) {
-                                            var TABKEY = 9;
-                                            if(e.keyCode == TABKEY) {
-                                                this.value += "    ";
-                                                if(e.preventDefault) {
-                                                    e.preventDefault();
-                                                }
-                                                return false;
-                                            }
-                                        }
-                                    </script>
+                                        <div style="grid-row:2;grid-column:1;margin-left:3px;color:rgba(10,61,98,1);"> {{ selection.priority }} </div>
+                                        {% if selection.priority != selections|length%}
+                                        <button name="down_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:3;grid-column:1;">
+                                            <i class="fa fa-arrow-down" aria-hidden="true" style="color:rgba(94, 94, 94, 1)"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    {% if not selection.priority or not selection.motivation and selection.topic.course.motivation_text %}
+                                        <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:-30px "
+                                           {% if not selection.priority and not selection.motivation and selection.topic.course.motivation_text %}
+                                               title="You need to set the priority for this topic and write a motivation text"
+                                               {% elif not selection.priority %}
+                                               title="You need to set the priority for this topic"
+                                               {% elif not selection.motivation and selection.topic.course.motivation_text %}
+                                               title="You need to write a motivation text"
+                                           {% endif %} >
+                                        </i>
                                     {% endif %}
+                                    <div style="background-color:white;padding-left:5px;
+                                                padding-right:5px;margin-left:20px;
+                                                white-space: nowrap;border-style: solid;
+                                                border-width: 1px;border-color:rgba(10,61,98,0.2);
+                                                position:absolute;z-index:2;top:-13px;left:15px";>
+                                        {{ selection.topic.course.title }}
+                                    </div>
+                                    <div class="col-3" style="overflow:hidden;text-overflow: ellipsis;">
+                                        {{ selection.topic.title }}
+                                    </div>
+                                    <div class="col-2" style="margin-right:10px">
+                                        {% for info in motivation_text_required %}
+                                            {% for selection_in_required,required in info %}
+                                                {% if selection_in_required.id == selection.id and required %}
+                                                        {% if selection.id == open_motivation_text_for_selection %}
+                                                             <button class="button" id="save_motivation_text_button" name="save_motivation_text_button" value="{{ selection.id }}"
+                                                                type="submit" style="margin:0px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
+                                                                Save Motivation Text
+                                                             </button>
+                                                        {% else %}
+                                                            <button class="button" id="edit_motivation_text_button" name="edit_motivation_text_button" value="{{ selection.id }}"
+                                                                    type="submit" style="margin:0px ;white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px;">
+                                                                    Edit Motivation Text
+                                                            </button>
+                                                        {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-2">
+                                            <button name="remove_topic_button" value="{{ selection.id }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}"  type="submit"> Remove Topic </button>
+                                    </div>
+                                    <div class="col-1" >
+                                        <button name="info_button" value="{{ selection.id }}" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
+                                            <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px;color:rgba(94, 94, 94, 1)"
+                                               aria-hidden="true"
+                                               title="Show Details">
+                                            </i>
+                                        </button>
+                                    </div>
+                                </li>
+                                {% if selection.id == open_motivation_text_for_selection %}
+                                <input name="open_motivation_text_for_selection" value="{{ open_motivation_text_for_selection }}" hidden>
+                                <li class="table-row">
+                                    <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
+                                </li>
+                                <script type="text/javascript">
+                                    var myInput = document.getElementById("motivation_text");
+                                    if(myInput.addEventListener ) {
+                                        myInput.addEventListener('keydown',this.keyHandler,false);
+                                    } else if(myInput.attachEvent ) {
+                                        myInput.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
+                                    }
+
+                                    function keyHandler(e) {
+                                        var TABKEY = 9;
+                                        if(e.keyCode == TABKEY) {
+                                            this.value += "    ";
+                                            if(e.preventDefault) {
+                                                e.preventDefault();
+                                            }
+                                            return false;
+                                        }
+                                    }
+                                </script>
                                 {% endif %}
-                            {% endfor %}
+                            {% endif %}
                         {% endfor %}
-                    </ul>
-                {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endfor %}
         </div>
         {% if info_selection %}
             <input name="open_selection_info" value="{{ info_selection.id }}" hidden>
@@ -166,7 +166,7 @@
                 </ul>
             </div>
         {% endif %}
-   </div>
+    </div>
 </form>
 
     <!-- The scroll position is saved and loaded when the page submits a form-->

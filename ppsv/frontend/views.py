@@ -9,16 +9,11 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from course.models import TopicSelection, Group
+from django.contrib.auth.models import User
 
 
 def homepage(request):
     template_name = 'frontend/homepage.html'
-    return render(request, template_name)
-
-
-def course_topics(request, faculty_id, course_id):
-    template_name = 'frontend/homepage.html'
-
     return render(request, template_name)
 
 
@@ -482,7 +477,20 @@ def get_selection(selections_of_groups, chosen_selection_id):
 def groups(request):
     template_name = 'frontend/groups.html'
 
-    return render(request, template_name)
+    args = {}
+
+    groups_of_student = models.Group.objects.filter(students=request.user.student.tucan_id)
+    members_of_groups = {}
+    for group in groups_of_student:
+        members = []
+        for tucan_id in "".join(group.get_display.split(",")).split():
+            members.append(User.objects.get(student=tucan_id))
+        members_of_groups[group.id] = members
+
+    args["groups_of_student"] = groups_of_student
+    args["members_of_groups"] = members_of_groups
+
+    return render(request, template_name, args)
 
 
 def login_request(request):

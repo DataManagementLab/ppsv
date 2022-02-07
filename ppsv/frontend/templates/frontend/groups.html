@@ -10,4 +10,48 @@
 {% endblock groups_page_navbar_container %}
 
 {% block content %}
+<form method="post" style="margin:0px;padding:0px;">
+    {% csrf_token %}
+   <div style="{% if info_selection %} display:grid; grid-template-columns: 800px 400px%;column-gap: 5px; {% else %} display:flex; justify-content: center; {% endif %} ">
+        <div style="display:grid;align-content: start; {% if info_selection %} grid-column:1; {% else %} width:60%; {% endif %}">
+                {% for group_of_student in groups_of_student %}
+                    {% if group_of_student.size > 1 %}
+                        <ul class="responsive-table" style="margin:0px;min-width: 650px;">
+                            <li class="table-header" style="padding: 15px;text-align:center;position:relative;min-width: 650px;">
+                                <div>
+                                    {{ group_of_student.get_display }}
+                                </div>
+                            </li>
+                            {% for members_group, members in members_of_groups.items %}
+                                {% if group_of_student.id == members_group %}
+                                    {% for member in members %}
+                                        <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;">
+                                            <div style="flex-basis:10%">{{ member.student.tucan_id }}</div>
+                                            <div style="flex-basis:10%">{{ member.student.firstname }} {{ member.student.lastname }}</div>
+                                            <div style="flex-basis:10%">{{ member.email }}</div>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+        </div>
+   </div>
+</form>
+
+<!-- The scroll position is saved and loaded when the page submits a form-->
+<script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+        var scrollpos = sessionStorage.getItem('scrollpos');
+        if (scrollpos) {
+            window.scrollTo(0, scrollpos);
+            sessionStorage.removeItem('scrollpos');
+        }
+    });
+
+    window.addEventListener("beforeunload", function (e) {
+           sessionStorage.setItem('scrollpos', window.scrollY);
+    });
+</script>
 {% endblock content %}
