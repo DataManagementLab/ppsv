@@ -485,6 +485,43 @@ def groups(request):
 
         if hasattr(request.user, "student"):
 
+            if request.method == "POST":
+
+                if "ask_delete_group" in request.POST:
+                    chosen_group_for_deletion = int(request.POST.get("ask_delete_group"))
+                    args["chosen_group_for_deletion"] = chosen_group_for_deletion
+                elif "delete_group" in request.POST:
+                    models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
+                elif "open_edit" in request.POST:
+                    chosen_group_for_edit = int(request.POST.get("open_edit"))
+                    args["chosen_group_for_edit"] = chosen_group_for_edit
+                elif "add_student" in request.POST:
+                    student = models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
+                    group = models.Group.objects.get(id=int(request.POST.get("add_student")))
+
+                    group.students.add(student)
+                    group.save()
+
+                    args["chosen_group_for_edit"] = group.id
+                elif "ask_remove_student" in request.POST:
+                    data = str(request.POST.get("ask_remove_student")).split("|")
+                    args["chosen_student_for_removal"] = str(data[1])
+                    args["chosen_group_for_removal"] = int(data[0])
+                    args["chosen_group_for_edit"] = int(data[0])
+                elif "remove_student" in request.POST:
+                    data = str(request.POST.get("remove_student")).split("|")
+                    print(data[1])
+                    group = models.Group.objects.get(id=int(data[0]))
+                    student = models.Student.objects.get(tucan_id=str(data[1]))
+
+                    if group.size == 2:
+                        group.delete()
+                    else:
+                        group.students.remove(student)
+                        group.save()
+
+                    args["chosen_group_for_edit"] = group.id
+
             groups_of_student = models.Group.objects.filter(students=request.user.student.tucan_id)
             members_of_groups = {}
             for group in groups_of_student:
@@ -495,14 +532,6 @@ def groups(request):
 
             args["groups_of_student"] = groups_of_student
             args["members_of_groups"] = members_of_groups
-
-            if request.method == "POST":
-
-                if "ask_delete_group" in request.POST:
-                    chosen_group = int(request.POST.get("ask_delete_group"))
-                    args["chosen_group"] = chosen_group
-                elif "delete_group" in request.POST:
-                    models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
 
     return render(request, template_name, args)
 
