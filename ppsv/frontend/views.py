@@ -478,9 +478,9 @@ def get_selection(selections_of_groups, chosen_selection_id):
 def groups(request):
     template_name = 'frontend/groups.html'
 
-    if request.user.is_authenticated:
+    args = {}
 
-        args = {}
+    if request.user.is_authenticated:
 
         if hasattr(request.user, "student"):
 
@@ -495,29 +495,70 @@ def groups(request):
                     chosen_group_for_edit = int(request.POST.get("open_edit"))
                     args["chosen_group_for_edit"] = chosen_group_for_edit
                 elif "add_student" in request.POST:
-                    student = models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
+                    new_member_student = models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                     group = models.Group.objects.get(id=int(request.POST.get("add_student")))
 
-                    group.students.add(student)
-                    group.save()
+                    students_after_addition = []
+                    for student in group.students.all():
+                        students_after_addition.append(student)
+                    students_after_addition.append(new_member_student)
+
+                    colliding_group = models.Group.objects.filter(students=students_after_addition[0])
+                    for student in students_after_addition:
+                        colliding_group = colliding_group.filter(students=student.tucan_id)
+                    for check_group in colliding_group:
+                        if check_group.size != len(students_after_addition):
+                            colliding_group = colliding_group.exclude(id=check_group.id)
+
+                    print(colliding_group)
+                    print(students_after_addition)
+
+                    if len(colliding_group) != 0:
+                        messages.error(request, f"Adding {new_member_student} would make this group a duplicate of "
+                                                f"an already existing one.")
+                        args["error_message"] = True
+                    else:
+                        group.students.add(new_member_student)
+                        group.save()
 
                     args["chosen_group_for_edit"] = group.id
                 elif "ask_remove_student" in request.POST:
                     data = str(request.POST.get("ask_remove_student")).split("|")
+                    print("Data: ")
+                    print(str(data[1]) + " " + str(int(data[0])))
                     args["chosen_student_for_removal"] = str(data[1])
                     args["chosen_group_for_removal"] = int(data[0])
                     args["chosen_group_for_edit"] = int(data[0])
                 elif "remove_student" in request.POST:
                     data = str(request.POST.get("remove_student")).split("|")
-                    print(data[1])
                     group = models.Group.objects.get(id=int(data[0]))
-                    student = models.Student.objects.get(tucan_id=str(data[1]))
+                    leaving_student = models.Student.objects.get(tucan_id=str(data[1]))
 
                     if group.size == 2:
                         group.delete()
                     else:
-                        group.students.remove(student)
-                        group.save()
+                        rest_students_after_removal = []
+                        for student in group.students.all():
+                            if leaving_student.tucan_id != student.tucan_id:
+                                rest_students_after_removal.append(student)
+                        colliding_group = models.Group.objects.filter(students=rest_students_after_removal[0])
+
+                        for student in rest_students_after_removal:
+                            colliding_group = colliding_group.filter(students=student.tucan_id)
+                        for check_group in colliding_group:
+                            if check_group.size > len(rest_students_after_removal):
+                                colliding_group = colliding_group.exclude(id=check_group.id)
+
+                        if len(colliding_group) != 0:
+                            if leaving_student.tucan_id == request.user.student.tucan_id:
+                                group.delete()
+                            else:
+                                args["chosen_student_for_removal"] = leaving_student.tucan_id
+                                args["chosen_group_for_removal"] = group.pk
+                                args["chosen_group_for_edit"] = group.pk
+                        else:
+                            group.students.remove(leaving_student)
+                            group.save()
 
                     args["chosen_group_for_edit"] = group.id
 
