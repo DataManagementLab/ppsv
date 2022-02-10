@@ -68,6 +68,7 @@ class NewUserForm(UserCreationForm):
 	# Das Passwort darf nicht allgemein üblich sein.
 	# Das Passwort darf nicht komplett aus Ziffern bestehen.
 
+
 class NewStudentForm(ModelForm):
 	"""New Student form
 	represents the form for creating a new student for the current user.
@@ -79,9 +80,12 @@ class NewStudentForm(ModelForm):
 	:attr lastname: The last name of the student
 	:type lastname: CharField
 	"""
-	tucan_id = forms.CharField(min_length=8, max_length=8, required=True, label=_('student ID'))
-	firstname = forms.CharField(max_length=200, required=True, label=_("first Name"))
-	lastname = forms.CharField(max_length=200, required=True, label=_("last Name"))
+	tucan_id = forms.CharField(min_length=8, max_length=8, required=True, widget=forms.TextInput(
+		attrs={'class': 'form-control', 'placeholder': 'TU-ID'}), label='')
+	firstname = forms.CharField(max_length=200, required=True, widget=forms.TextInput(
+		attrs={'class': 'form-control', 'placeholder': _('first name')}), label='')
+	lastname = forms.CharField(max_length=200, required=True, widget=forms.TextInput(
+		attrs={'class': 'form-control', 'placeholder': _('last name')}), label='')
 
 	class Meta:
 		"""Meta options

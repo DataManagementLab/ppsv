@@ -96,7 +96,7 @@ Selection Page
                                      <option value="{{ group.id }}"> {{ group.get_display }} </option>
                                     {% endfor %}
                                 </select>
-                                <button name="select_with_chosen_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#58ff45;color:white;border-radius:3px;"> Select topic with chosen group  </button>
+                                <button name="select_with_chosen_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;"> Select topic with chosen group  </button>
                             </div>
                             {% elif open_group_create %}
                             <div style="display:flex;flex-direction:row;width:40%;padding-left:5px;position:relative;margin-right:0px;">
@@ -131,7 +131,7 @@ Selection Page
                                         {% if not topic.id in selected_topics %}
                                             <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
                                                 {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
-                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#58ff45;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
                                             </div>
                                         {% else %}
                                             <div style="display:grid;width:40%;position:relative">

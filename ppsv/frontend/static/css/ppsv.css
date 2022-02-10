@@ -59,5 +59,15 @@
             border-radius: 8px;
         }
 
+        .profile-warning {
+            border: 2px solid red;
+            border-radius: 4px;
+            background-color: white;
+            color: #0a3d62;
+            height: 35px;
+            padding-top: 6px;
+        }
+
+
 
 
