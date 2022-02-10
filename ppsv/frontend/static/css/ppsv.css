@@ -47,3 +47,19 @@
         .undecorated-btn:focus {
             outline: none;
         }
+
+        .sub-btn {
+            background-color: #0a3d62;
+            color: #FFFFFF;
+            outline: none;
+            border: none;
+            border-radius: 8px;
+        }
+
+        /*remove before merge if vertical design*/
+        .border-line {
+            border-right: 1px solid #0a3d62;
+        }
+
+
+

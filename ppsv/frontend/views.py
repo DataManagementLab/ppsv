@@ -4,7 +4,7 @@ This file describes the frontend views.
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from course import models
-from .forms.forms import NewUserForm, NewStudentForm
+from .forms.forms import NewUserForm, NewStudentForm, UserLoginForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
@@ -543,7 +543,7 @@ def login_request(request):
     :type request: HttpRequest
     """
     if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
+        form = UserLoginForm(request, data=request.POST)
         # checks if the given login data is valid
         if form.is_valid():
             username = form.cleaned_data.get('username')
@@ -558,7 +558,7 @@ def login_request(request):
                 messages.error(request, "Invalid username or password.")
         else:
             messages.error(request, "Invalid username or password.")
-    form = AuthenticationForm()
+    form = UserLoginForm()
     return render(request=request, template_name="registration/login.html", context={"login_form": form})
 
 

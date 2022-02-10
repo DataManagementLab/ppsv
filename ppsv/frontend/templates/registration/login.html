@@ -1,17 +1,27 @@
 <!-- templates/registration/login.html -->
 {% extends 'frontend/base.html' %}
+{% load static %}
 
 {% block title %}Login{% endblock %}
 
 <!-- Login -->
 {% block content %}
-  <h2>Login</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ login_form.as_p }}
-    <button type="submit">Login</button>
-  </form>
-  <button onclick="location.href='{% url 'frontend:register' %}'" type="button">
-         Register</button>
-
+  <div class="container">
+    <div class="col">
+      <div class="row-cols-sm-1" style="width: 100%" id="col_1">
+        <form method="post">
+            {% csrf_token %}
+            {{ login_form.as_p }}
+            <button class="sub-btn form-control" style="width: 100%" type="submit">Login</button>
+        </form>
+      </div> <br>
+      <div class="row-cols-sm-1">
+        <h2><span>or</span></h2>
+      </div> <br>
+      <div class="row-cols-sm-1" style="width: 100%;text-align: center">
+        <h6>You do not have an account yet?</h6>
+        <button class="sub-btn form-control" style="width: 100%" onclick="location.href='{% url 'frontend:register' %}'" type="button">Register</button>
+      </div>
+    </div>
+  </div>
 {% endblock %}
