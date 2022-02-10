@@ -72,16 +72,32 @@ class NewStudentForm(ModelForm):
 
 
 class UserLoginForm(AuthenticationForm):
+	"""UserLoginForm
+	represents the login form for users.
+
+	:attr username: The input field for the username
+	:type username: UsernameField
+	:attr password: The input field for the username
+	:type password: CharField
+	"""
 
 	def __init__(self, *args, **kwargs):
+		"""Initializer
+		Initialize the UserLoginForm with pre configuration for class, placeholder, id and label.
+
+		:param args: The arguments
+		:type args: any
+		:param kwargs: The keyword arguments
+		:type kwargs: dict[string, Any]
+		"""
 		super(UserLoginForm, self).__init__(*args, **kwargs)
 
 	username = UsernameField(widget=forms.TextInput(
-		attrs={'class': 'form-control', 'placeholder': _('Username'), 'id': 'username'}), label='')
+		attrs={'class': 'form-control', 'placeholder': _('username'), 'id': 'username'}), label='')
 	password = forms.CharField(widget=forms.PasswordInput(
 		attrs={
 			'class': 'form-control',
-			'placeholder': _('Password'),
+			'placeholder': _('password'),
 			'id': 'password',
 		}
 	), label='')
