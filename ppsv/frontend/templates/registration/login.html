@@ -6,22 +6,24 @@
 
 <!-- Login -->
 {% block content %}
-  <div class="container">
-    <div class="col">
-      <div class="row-cols-sm-1" style="width: 100%" id="col_1">
-        <form method="post">
-            {% csrf_token %}
-            {{ login_form.as_p }}
-            <button class="sub-btn form-control" style="width: 100%" type="submit">Login</button>
-        </form>
-      </div> <br>
-      <div class="row-cols-sm-1">
-        <h2><span>or</span></h2>
-      </div> <br>
-      <div class="row-cols-sm-1" style="width: 100%;text-align: center">
-        <h6>You do not have an account yet?</h6>
-        <button class="sub-btn form-control" style="width: 100%" onclick="location.href='{% url 'frontend:register' %}'" type="button">Register</button>
-      </div>
+<div style="display: flex;justify-content: center">
+    <div style="width: 20%;display: flex;flex-direction: column;text-align: center">
+        <div class="row-cols-sm-1" id="col_1">
+            <form method="post">
+                {% csrf_token %}
+                {{ login_form.as_p }}
+                <button class="sub-btn form-control" style="width: 100%" type="submit">Login</button>
+            </form>
+        </div>
+            <div style="display:flex;flex-direction: row;vertical-align: baseline;margin-bottom: 10px">
+            <div style="background-color: #0a3d62;height: 2px;width: 48%;margin-top: 10px;margin-right: 2%"></div>
+                or
+            <div style="background-color: #0a3d62;height: 2px;width: 48%;margin-top: 10px;margin-left: 2%"></div>
+            </div>
+        <div class="row-cols-sm-1" style="text-align: center">
+            <h6>You do not have an account yet?</h6>
+            <button class="sub-btn form-control" style="width: 100%" onclick="location.href='{% url 'frontend:register' %}'" type="button">Register</button>
+        </div>
     </div>
-  </div>
+</div>
 {% endblock %}
