@@ -7,7 +7,6 @@ from course import models
 from .forms.forms import NewUserForm, NewStudentForm, UserLoginForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm
 from course.models import TopicSelection, Group
 from django.contrib.auth.models import User
 

@@ -7,6 +7,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, User
 from django.contrib.auth.models import User
 from django.forms import ModelForm
 from course.models import Student
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 
@@ -18,7 +19,8 @@ class NewUserForm(UserCreationForm):
 	:type email: EmailField
 	"""
 
-	email = forms.EmailField(required=True)
+	email = forms.EmailField(required=True, widget=forms.TextInput(
+		attrs={'class': 'form-control', 'placeholder': 'E-Mail'}), label='')
 
 	class Meta:
 		"""Meta options
@@ -43,6 +45,28 @@ class NewUserForm(UserCreationForm):
 			user.save()
 		return user
 
+	# formatting of the form
+	username = UsernameField(widget=forms.TextInput(
+		attrs={'class': 'form-control', 'placeholder': _('username'), 'id': 'username'}), label='', help_text=
+				mark_safe(_(
+					"<div style=\"padding-left: 10px\"><small>Letters, numbers and @/./+/-/_ only."
+					"</small></div>")))
+	password1 = forms.CharField(widget=forms.PasswordInput(
+		attrs={'class': 'form-control', 'placeholder': _('password'), 'id': 'password1'}
+	), label='')
+	password2 = forms.CharField(widget=forms.PasswordInput(
+		attrs={'class': 'form-control',	'placeholder': _('confirm password'), 'id': 'password2'}
+	), label='', help_text=mark_safe(_(
+									"<div style=\"padding-left: 10px\"><small>"
+									"The password must not contain any personal information.<br>"
+									"The password has to be at least 8 digits long.<br>"
+									"The password must not be commonly used.<br>"
+									"The password must not contain only numbers.</small></div>")))
+
+	# Das Passwort darf nicht zu ähnlich zu anderen Informationen sein.
+	# Das Passwort muss mindestens 8 Zeichen enthalten.
+	# Das Passwort darf nicht allgemein üblich sein.
+	# Das Passwort darf nicht komplett aus Ziffern bestehen.
 
 class NewStudentForm(ModelForm):
 	"""New Student form
@@ -81,17 +105,7 @@ class UserLoginForm(AuthenticationForm):
 	:type password: CharField
 	"""
 
-	def __init__(self, *args, **kwargs):
-		"""Initializer
-		Initialize the UserLoginForm with pre configuration for class, placeholder, id and label.
-
-		:param args: The arguments
-		:type args: any
-		:param kwargs: The keyword arguments
-		:type kwargs: dict[string, Any]
-		"""
-		super(UserLoginForm, self).__init__(*args, **kwargs)
-
+	# formatting of the form
 	username = UsernameField(widget=forms.TextInput(
 		attrs={'class': 'form-control', 'placeholder': _('username'), 'id': 'username'}), label='')
 	password = forms.CharField(widget=forms.PasswordInput(

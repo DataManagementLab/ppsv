@@ -1,18 +1,24 @@
 <!-- templates/registration/register.html -->
 {% extends 'frontend/base.html' %}
+{% load static %}
 
 {% block title %}Register{% endblock %}
 
 {% block content %}
 
 <!--Register-->
-<div class="container py-5">
-	<h2>Register</h2>
-	<form method="POST">
-		{% csrf_token %}
-		{{ register_form.as_p }}
-		<button class="btn btn-primary" type="submit">Register</button>
-	</form>
-	<p class="text-center">If you already have an account, <a href="/login">login</a> instead.</p>
+<div style="display: flex;justify-content: center">
+    <div style="display: flex;flex-direction: column;width: 20%">
+        <div style="text-align: center"> <h2>Create an account</h2> </div>
+        <br>
+        <div class="row-cols-sm-1">
+        <form method="POST">
+            {% csrf_token %}
+            {{ register_form.as_p }}
+            <button class="sub-btn form-control" type="submit">Register</button>
+        </form>
+        </div>
+        <p class="text-center">If you already have an account, <a href="/login">login</a> instead.</p>
+    </div>
 </div>
 {% endblock %}
