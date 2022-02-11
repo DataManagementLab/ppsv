@@ -1,5 +1,7 @@
 <!-- templates/registration/profile.html -->
 {% extends 'frontend/base.html' %}
+{% load static %}
+{% load i18n %}
 
 {% block title %}Profile{% endblock %}
 
@@ -7,13 +9,13 @@
 {% block content %}
 <div style="display: flex;justify-content: center">
     <div style="display: flex;flex-direction: column;width: 20%">
-        <div style="text-align: center"><h2>Create student profile</h2></div>
-        <div class="profile-warning" style="text-align: center">This information cannot be changed after submitting!</div>
+        <div style="text-align: center"><h2>{% translate "Create your student profile" %}</h2></div>
+        <div class="profile-warning" style="text-align: center">{% translate "This information cannot be changed after submitting!" %}</div>
         <br>
         <form method="post">
             {% csrf_token %}
             {{ profile_form.as_p }}
-            <button class="sub-btn form-control" type="submit">Save profile permanently</button>
+            <button class="sub-btn form-control" type="submit">{% translate "Save profile permanently" %}</button>
         </form>
     </div>
 </div>

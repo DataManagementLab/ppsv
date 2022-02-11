@@ -1,6 +1,7 @@
 <!-- templates/registration/login.html -->
 {% extends 'frontend/base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block title %}Login{% endblock %}
 
@@ -17,12 +18,12 @@
         </div>
             <div style="display:flex;flex-direction: row;vertical-align: baseline;margin-bottom: 10px">
             <div style="background-color: #0a3d62;height: 2px;width: 48%;margin-top: 10px;margin-right: 2%"></div>
-                or
+                {% translate "or" %}
             <div style="background-color: #0a3d62;height: 2px;width: 48%;margin-top: 10px;margin-left: 2%"></div>
             </div>
         <div class="row-cols-sm-1" style="text-align: center">
-            <h6>You do not have an account yet?</h6>
-            <button class="sub-btn form-control" style="width: 100%" onclick="location.href='{% url 'frontend:register' %}'" type="button">Register</button>
+            <h6>{% translate "I don't have an account." %}</h6>
+            <button class="sub-btn form-control" style="width: 100%" onclick="location.href='{% url 'frontend:register' %}'" type="button">{% translate "Register" %}</button>
         </div>
     </div>
 </div>

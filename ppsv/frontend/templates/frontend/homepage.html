@@ -1,7 +1,8 @@
 {% extends 'frontend/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Home{% endblock %}
+{% block title %}{% translate "Home" %}{% endblock %}
 
 {% block homepage_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px;">
@@ -13,9 +14,9 @@
 {% block content %}
 
 {% if user.is_authenticated %}
-  Hi {{ user.username }}!
+  {% translate "Hi" %} {{ user.username }}!
 {% else %}
-  <p>You are not logged in</p>
-  <a href="{% url 'frontend:login' %}">Log In</a>
+  <p>{% translate "You are not logged in." %}</p>
+  <a href="{% url 'frontend:login' %}">Login</a>
 {% endif %}
 {% endblock %}
