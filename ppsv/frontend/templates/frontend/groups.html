@@ -14,16 +14,22 @@
     {% csrf_token %}
     <div style="display:flex; justify-content: center;">
         <div style="display:grid;align-content: start;width:60%;">
+            <ul class="responsive-table" style="margin:0px;padding:0px;width:100%;">
+                <button class="create-group-btn">
+                    <i class="fa fa-caret-up" aria-hidden="true" style="position:absolute;left:15px;top:7px;font-size:30px;"></i>
+                    Create a new group
+                </button>
+            </ul>
             {% for group_of_student in groups_of_student %}
                 {% if group_of_student.size > 1 %}
                     <ul id="{{ group_of_student.id }}" class="responsive-table" style="margin:0px;padding:0px;width:100%;">
                         {% if chosen_group_for_deletion == group_of_student.id %}
                             <div style="display:flex; justify-content:center;">
-                                <div id="{{ group_of_student.id }}delete" style="position:absolute;z-index:2;width:58.85%;height:inherit;background-color:rgba(0,0,0,0.8);padding:1%;display:flex;justify-content:center;border-radius:3px;height:500px">
+                                <div id="{{ group_of_student.id }}delete" style="position:absolute;z-index:2;width:59.1%;height:inherit;background-color:rgba(0,0,0,0.8);padding:1%;display:flex;justify-content:center;border-radius:3px;height:500px">
                                    <div style="position:relative;z-index:2;width:450px;height:190px;box-sizing: content-box;background-color:white;border-radius:3px;display:flex;justify-content:center;align-items: center;flex-direction:column;padding:5px;">
-                                       <i class="fa fa-times-circle" aria-hidden="true" style="color:red;font-size:80px;margin-bottom: -5px"></i>
-                                       <span style="font-weight:500;font-size:25px;margin-bottom: -5px"> Are you sure </span>
-                                       <span style="font-weight:500;font-size:18px;margin-bottom: 5px"> you want to delete this group?  </span>
+                                       <i class="fa fa-times-circle" aria-hidden="true" style="color:red;font-size:80px;margin-bottom: -5px;flex:1"></i>
+                                       <span style="font-weight:500;font-size:25px;margin-bottom: -5px;flex:1"> Are you sure </span>
+                                       <span style="font-weight:500;font-size:18px;margin-bottom: 5px;flex:1"> you want to delete this group?  </span>
                                        <div style="flex: 1;">
                                            <button style="font-size:18px;background-color:rgba(94, 94, 94, 0.8);outline:none;border:none;border-radius:3px;color:white;padding: 7.5px 15px;margin-right:100px"> Cancel </button>
                                            <button name="delete_group" value="{{ chosen_group_for_deletion }}" style="font-size:18px;background-color:red;outline:none;border:none;border-radius:3px;color:white;padding: 7.5px 15px;"> Delete </button>
@@ -83,7 +89,7 @@
                                         <div style="flex:1;">{{ member.student.tucan_id }} </div>
                                         <div style="flex:1;">{{ member.student.firstname }} {{ member.student.lastname }}  </div>
                                         <div style="flex:1;display:flex;flex-direction:row">
-                                            <button class="undecorated-btn" type="submit" name="open_email_form" value="" style="flex:0.1">
+                                            <button class="undecorated-btn" type="submit" name="open_email_form" value="" style="flex:0.1;margin-right:5px">
                                                 <i class="fa fa-envelope-o" aria-hidden="true" style="font-size:16px"></i>
                                             </button>
                                             <span style="flex:0.1"> {{ member.email }} </span>

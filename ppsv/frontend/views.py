@@ -513,8 +513,8 @@ def groups(request):
                     if len("".join(request.POST.get("student_id")).split()) != 0:
                         if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                             if not models.Student.objects.get(
-                                    tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
-                                id=int(request.POST.get("add_student"))).students.all():
+                                    tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get\
+                                        (id=int(request.POST.get("add_student"))).students.all():
                                 new_member_student = \
                                     models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                                 group = models.Group.objects.get(id=int(request.POST.get("add_student")))

@@ -68,6 +68,86 @@
             padding-top: 6px;
         }
 
+        .table-btn {
+            border-radius: 3px;
+            padding: 25px 10px;
+            margin-bottom:10px;
+            background-color: transparent;
+            box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);
+
+            display: inline-block;
+            text-align: center;
+            align-items: flex-start;
+
+            color: black;
+
+            border: none;
+            outline: none;
+
+            width: 100%;
+        }
+
+        button.table-btn:focus {
+            outline: none;
+        }
+
+        button.table-btn:hover {
+            box-shadow: 0px 0px 9px 3px rgba(10,61,98,1);
+        }
+
+        .table-info {
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            background-color: rgba(12,143,204,1);
+            white-space: nowrap;
+
+            display: inline-block;
+            text-align: center;
+            align-items: flex-start;
+
+            color: white;
+
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .group-member {
+            background-color:#d4d4d4;
+            width:100%;
+            overflow:hidden;
+            text-overflow: ellipsis;
+            padding: 0px 5px;
+            border: solid 2px;
+            border-radius:3px;
+            margin-bottom:5px;
+            text-align:center;
+        }
+
+        .create-group-btn {
+            position:relative;
+
+            font-weight:500;
+            font-size:18px;
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom:10px;
+            background-color:#ffa826;
+
+            color:white;
+
+            border: none;
+            outline: none;
+
+            width: 100%;
+        }
+
+        .create-group-btn:focus {
+            outline: none;
+        }
+
+        .create-group-btn:hover {
+            background-color:#ff8426;
+        }
 
 
 
