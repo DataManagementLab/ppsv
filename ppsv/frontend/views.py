@@ -9,6 +9,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from course.models import TopicSelection, Group
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import user_passes_test
 
 
 def homepage(request):
@@ -301,6 +302,18 @@ def overview(request):
     return render(request, template_name, args)
 
 
+def check_profile(user):
+    """Checks if an user has the attribute student
+
+    :param user: The user of the content
+    :type user: User
+    :return: True if the user has the attribute student
+    :rtype: Boolean
+    """
+    return hasattr(user, 'student')
+
+
+@user_passes_test(check_profile, login_url='/profile/')
 def your_selection(request):
     template_name = 'frontend/your_selection.html'
 
@@ -475,6 +488,7 @@ def get_selection(selections_of_groups, chosen_selection_id):
                 return selection
 
 
+@user_passes_test(check_profile, login_url='/profile/')
 def groups(request):
     template_name = 'frontend/groups.html'
 
