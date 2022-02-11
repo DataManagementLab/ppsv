@@ -15,11 +15,49 @@
     <div style="display:flex; justify-content: center;">
         <div style="display:grid;align-content: start;width:60%;">
             <ul class="responsive-table" style="margin:0px;padding:0px;width:100%;">
-                <button class="create-group-btn">
-                    <i class="fa fa-caret-up" aria-hidden="true" style="position:absolute;left:15px;top:7px;font-size:30px;"></i>
+                {% if not open_group_create %}
+                <button name="open_create_new_group" type="submit" class="create-group-btn">
+                    <i class="fa fa-users" aria-hidden="true" style="position:absolute;left:15px;top:8px;font-size:30px;"></i>
+                    <i class="fa fa-plus" aria-hidden="true" style="position:absolute;left:37px;top:20px;font-size:25px;
+                    text-shadow: 0px 0px 2px #ffa826, 0px 0px 2px #ffa826;"></i>
                     Create a new group
                 </button>
+                {% endif %}
+                {% if open_group_create %}
+                        <div style="display: flex; flex-direction: column; border: 3px dashed #ffa826;margin: 5px 0px;padding: 4px;">
+                            <div style="justify-content: center;display:flex;flex-direction:row;position:relative;margin-right:0px;padding-left: 30px;">
+                                <input name="new_student_id" type="text" style="text-align:center;height:30px;width:40%;margin-top:10px;font-size: 17px" placeholder="Tucan-ID">
+                                <div>
+                                    <button class="undecorated-btn" type="submit" name="add_student_to_new_group" value="" style="margin-left:3px;margin-right:5px;font-size:25px;margin-top:10px">
+                                        <i class="fa fa-arrow-circle-right" aria-hidden="true" style="color:green; font-size: 30px"></i>
+                                    </button>
+                                </div>
+                                <div class="table-btn" style="overflow:auto;overflow-x: hidden;height:220px;width:45%;box-sizing: border-box;padding: 1% 5%;margin: 0px;">
+                                        <label class="group-member" style="border-style: dotted; font-size: 17px"> <div style="visibility: hidden"> New Student </div> </label> <br>
+                                        {% for member in members_in_new_group%}
+                                        <div style="position:relative;">
+                                        {% if member != request.user.student.tucan_id %}
+                                            <button class="undecorated-btn" type="submit" name="new_group_remove_student" value="{{ member }}" style="position:absolute;top:6px;left:8px" >
+                                                  <i class="fa fa-minus" aria-hidden="true" style="color:red;font-size:20px"> </i>
+                                            </button>
+                                            {% endif %}
+                                            <input name="member{{forloop.counter0}}" class="group-member" value="{{ member }}" style="padding-left:24px; font-size: 17px" readonly> <br>
+                                        </div>
+                                        {% endfor %}
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction: row;">
+                                    <button style="flex: 1; margin-right: 3px; background-color: rgba(94, 94, 94, 0.8); margin-bottom: 0px;" type="submit" class="create-group-btn">
+                                        Cancel
+                                    </button>
+                                    <button style="flex: 1; margin-left: 3px; background-color:green;color:white; margin-bottom: 0px;" name="create_new_group" type="submit" class="create-group-btn">
+                                        Create new group
+                                    </button>
+                            </div>
+                        </div>
+                {% endif %}
             </ul>
+
             {% for group_of_student in groups_of_student %}
                 {% if group_of_student.size > 1 %}
                     <ul id="{{ group_of_student.id }}" class="responsive-table" style="margin:0px;padding:0px;width:100%;">

@@ -185,7 +185,7 @@ def overview(request):
                                 else:
                                     messages.error(request, "A student with the tucan id " +
                                                    request.POST.get("new_student_id") +
-                                                   " not found.")
+                                                   "was not found.")
                             else:
                                 messages.error(request, "Your group would be too large for " +
                                                str(models.Topic.objects.get(id=data[0]).title)
@@ -229,7 +229,7 @@ def overview(request):
                     exception = False
 
                     if len(members_in_new_group) == 1:
-                        messages.error(request, f"Your group needs to contain more members than yourself !")
+                        messages.error(request, f"Your group needs to contain more members than yourself!")
                         exception = True
 
                     for groups_of_member in existing_groups:
@@ -238,7 +238,7 @@ def overview(request):
                                 if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
                                         and len(members_in_new_group) == \
                                         len("".join(group.get_display.split(",")).split()):
-                                    messages.error(request, f"This group already exists !")
+                                    messages.error(request, f"This group already exists!")
                                     exception = True
                                     break
 
@@ -500,6 +500,86 @@ def groups(request):
         if hasattr(request.user, "student"):
 
             if request.method == "POST":
+                if "open_create_new_group" in request.POST:
+                    args["members_in_new_group"] = [request.user.student.tucan_id]
+                    args["open_group_create"] = True
+                elif "add_student_to_new_group" in request.POST:
+                    members_in_new_group = []
+                    counter = 0
+                    while not (request.POST.get("member" + str(counter)) is None):
+                        members_in_new_group.append(str(request.POST.get("member" + str(counter))))
+                        counter += 1
+
+                    if "".join(request.POST.get("new_student_id").split()) != "":
+                        if members_in_new_group.count(str(request.POST.get("new_student_id"))) == 0:
+                            if models.Student.objects.filter(
+                                    tucan_id=request.POST.get("new_student_id")).exists():
+                                members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
+                            else:
+                                messages.error(request, "A student with the tucan id " +
+                                               request.POST.get("new_student_id") +
+                                               "was not found.")
+
+                        else:
+                            messages.error(request, "A student with the tucan id " +
+                                           request.POST.get("new_student_id") +
+                                           " is already in the group.")
+
+                    args["members_in_new_group"] = members_in_new_group
+                    args["open_group_create"] = True
+                elif "new_group_remove_student" in request.POST:
+                    members_in_new_group = []
+                    counter = 0
+                    while not (request.POST.get("member" + str(counter)) is None):
+                        members_in_new_group.append(str(request.POST.get("member" + str(counter))))
+                        counter += 1
+
+                    members_in_new_group.remove(str(request.POST.get("new_group_remove_student")))
+
+                    args["members_in_new_group"] = members_in_new_group
+                    args["open_group_create"] = True
+                elif "create_new_group" in request.POST:
+                    members_in_new_group = []
+                    counter = 0
+                    while not (request.POST.get("member" + str(counter)) is None):
+                        members_in_new_group.append(str(request.POST.get("member" + str(counter))))
+                        counter += 1
+
+                    existing_groups = []
+                    for member in members_in_new_group:
+                        if models.Group.objects.filter(students=member).exists():
+                            existing_groups.append(models.Group.objects.filter(students=member))
+
+                    error = False
+
+                    if len(members_in_new_group) == 1:
+                        messages.error(request, f"Your group needs to contain more members than yourself!")
+                        error = True
+
+                    for groups_of_member in existing_groups:
+                        if not error:
+                            for group in groups_of_member:
+                                if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
+                                        and len(members_in_new_group) == \
+                                        len("".join(group.get_display.split(",")).split()):
+                                    messages.error(request, f"This group already exists!")
+                                    error = True
+                                    break
+
+                    if not error:
+                        group = Group()
+                        group.save()
+
+                        counter = 0
+                        while not (request.POST.get("member" + str(counter)) is None):
+                            group.students.add(
+                                models.Student.objects.get(tucan_id=request.POST.get("member" + str(counter))))
+                            counter += 1
+
+                        messages.success(request, "Group has been created.")
+                    else:
+                        args["open_group_create"] = True
+                        args["members_in_new_group"] = members_in_new_group
 
                 if "ask_delete_group" in request.POST:
                     chosen_group_for_deletion = int(request.POST.get("ask_delete_group"))
@@ -513,8 +593,8 @@ def groups(request):
                     if len("".join(request.POST.get("student_id")).split()) != 0:
                         if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                             if not models.Student.objects.get(
-                                    tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get\
-                                        (id=int(request.POST.get("add_student"))).students.all():
+                                    tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
+                                               id=int(request.POST.get("add_student"))).students.all():
                                 new_member_student = \
                                     models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                                 group = models.Group.objects.get(id=int(request.POST.get("add_student")))
