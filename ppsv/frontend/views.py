@@ -9,7 +9,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from course.models import TopicSelection, Group
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import user_passes_test
+from frontend.decorators import user_passes_test
 
 
 def homepage(request):
@@ -314,7 +314,8 @@ def check_profile(user):
     return hasattr(user, 'student')
 
 
-@user_passes_test(check_profile, login_url='/profile/')
+@user_passes_test(check_profile, login_url='/profile/', message="Please create a student profile before "
+                                                                "selecting courses.")
 def your_selection(request):
     template_name = 'frontend/your_selection.html'
 
@@ -487,7 +488,8 @@ def get_selection(selections_of_groups, chosen_selection_id):
                 return selection
 
 
-@user_passes_test(check_profile, login_url='/profile/')
+@user_passes_test(check_profile, login_url='/profile/', message="Please create a student profile before "
+                                                                "selecting courses.")
 def groups(request):
     template_name = 'frontend/groups.html'
 
