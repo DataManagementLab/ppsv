@@ -77,8 +77,9 @@ def overview(request):
                 if "open_group_select" in request.POST:
                     data = str(request.POST.get("open_group_select")).split("|")
                     args["open_group_select"] = True
-                    args["groups"] = filter(lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
-                                            models.Group.objects.filter(students=request.user.student))
+                    args["groups"] = filter(
+                        lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                        models.Group.objects.filter(students=request.user.student))
                 elif "select_topic" in request.POST:
                     data = str(request.POST.get("select_topic")).split("|")
                     student_tu_id = str(request.user.student)
@@ -234,9 +235,9 @@ def overview(request):
                     for groups_of_member in existing_groups:
                         if not exception:
                             for group in groups_of_member:
-                                if set(members_in_new_group).issubset(
-                                        "".join(group.get_display.split(",")).split()) and len(members_in_new_group) == len(
-                                        "".join(group.get_display.split(",")).split()):
+                                if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
+                                        and len(members_in_new_group) == \
+                                        len("".join(group.get_display.split(",")).split()):
                                     messages.error(request, f"This group already exists !")
                                     exception = True
                                     break
@@ -317,10 +318,10 @@ def check_profile(user):
 def your_selection(request):
     template_name = 'frontend/your_selection.html'
 
+    args = {}
+
     # If the user is logged in and has the attribute "student" the your selection page is loaded
     if request.user.is_authenticated:
-
-        args = {}
 
         if hasattr(request.user, "student"):
 
@@ -475,9 +476,7 @@ def your_selection(request):
                 args["info_selection"] = info_selection
                 args["open_course_info"] = open_course_info
 
-        return render(request, template_name, args)
-
-    return render(request, template_name)
+    return render(request, template_name, args)
 
 
 # Help functions of your_selection
@@ -509,33 +508,47 @@ def groups(request):
                     chosen_group_for_edit = int(request.POST.get("open_edit"))
                     args["chosen_group_for_edit"] = chosen_group_for_edit
                 elif "add_student" in request.POST:
-                    new_member_student = models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
-                    group = models.Group.objects.get(id=int(request.POST.get("add_student")))
+                    if len("".join(request.POST.get("student_id")).split()) != 0:
+                        if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
+                            if not models.Student.objects.get(
+                                    tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
+                                id=int(request.POST.get("add_student"))).students.all():
+                                new_member_student = \
+                                    models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
+                                group = models.Group.objects.get(id=int(request.POST.get("add_student")))
+                                students_after_addition = []
+                                for student in group.students.all():
+                                    students_after_addition.append(student)
+                                students_after_addition.append(new_member_student)
 
-                    students_after_addition = []
-                    for student in group.students.all():
-                        students_after_addition.append(student)
-                    students_after_addition.append(new_member_student)
+                                colliding_group = models.Group.objects.filter(students=students_after_addition[0])
+                                for student in students_after_addition:
+                                    colliding_group = colliding_group.filter(students=student.tucan_id)
+                                for check_group in colliding_group:
+                                    if check_group.size != len(students_after_addition):
+                                        colliding_group = colliding_group.exclude(id=check_group.id)
 
-                    colliding_group = models.Group.objects.filter(students=students_after_addition[0])
-                    for student in students_after_addition:
-                        colliding_group = colliding_group.filter(students=student.tucan_id)
-                    for check_group in colliding_group:
-                        if check_group.size != len(students_after_addition):
-                            colliding_group = colliding_group.exclude(id=check_group.id)
+                                if len(colliding_group) != 0:
+                                    messages.error(request, f"Adding {new_member_student} "
+                                                            f"would make this group a duplicate of "
+                                                            f"an already existing one.")
+                                    args["error_message"] = True
+                                else:
+                                    group.students.add(new_member_student)
+                                    group.save()
+                            else:
+                                student_id = str(request.POST.get("student_id"))
+                                messages.error(request,
+                                               f"{student_id} is already a member of this group")
+                                args["error_message"] = True
+                        else:
+                            student_id = str(request.POST.get("student_id"))
+                            messages.error(request,
+                                           f"A student with the Tucan ID {student_id} does not exist")
+                            args["error_message"] = True
 
-                    print(colliding_group)
-                    print(students_after_addition)
+                    args["chosen_group_for_edit"] = int(request.POST.get("add_student"))
 
-                    if len(colliding_group) != 0:
-                        messages.error(request, f"Adding {new_member_student} would make this group a duplicate of "
-                                                f"an already existing one.")
-                        args["error_message"] = True
-                    else:
-                        group.students.add(new_member_student)
-                        group.save()
-
-                    args["chosen_group_for_edit"] = group.id
                 elif "ask_remove_student" in request.POST:
                     data = str(request.POST.get("ask_remove_student")).split("|")
                     print("Data: ")
