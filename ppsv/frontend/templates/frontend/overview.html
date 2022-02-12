@@ -17,6 +17,8 @@ Selection Page
     <div class="container-fluid" style="display:flex;justify-content:center;font-size:17px">
         <ul class="responsive-table" style="width:80%;padding:0px;margin:0px">
             <li class="table-header" style="padding: 16px;position:relative;font-size:17px;margin-bottom:5px">
+				{# The button, which lets the user return to the previous page, will first appear when at least a faculty was chosen.
+				   The buttons name changes according to the page it will return the user to if pressed. #}
                 {% if courses or topics or chosen_topic %}
                 <button name="{% if chosen_topic %}choose_course{% elif topics %}choose_faculty{% elif courses %}faculty_view{% endif %}"
                         value="{% if chosen_topic %}{{ chosen_course.id }}|{{ chosen_faculty }}|{{ open_course_info }}{% elif topics %}{{ chosen_faculty }}{% endif %}"
@@ -24,6 +26,7 @@ Selection Page
                     <i class="fa fa-caret-square-o-left" aria-hidden="true" style="font-size:25px;color:white;"></i>
                 </button>
                 {% endif %}
+				{# The text of the header changes according to which page the user is on #}
                 <div>{% if chosen_topic %} Select Your Topic {% elif courses %}  Choose a Course {% elif topics %} Choose a Topic {% else %} Choose a Faculty {% endif %} </div>
             </li>
 
@@ -66,6 +69,7 @@ Selection Page
                                 <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
                             </div>
                         </button>
+						{# If a topic has been chosen, the page of the chosen topic opens #}
                         {% else %}
                         <div style="display:flex;flex-direction:row;width:100%">
                             <div style="width:60%">
@@ -130,9 +134,11 @@ Selection Page
                                 {% if request.user.is_authenticated and request.user.student %}
                                         {% if not topic.id in selected_topics %}
                                             <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+												{# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
                                                 {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
                                                 <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
                                             </div>
+										{# If the topic, has been already selected by a group in which the user is a member, the page informs the user that he already selected this topic #}
                                         {% else %}
                                             <div style="display:grid;width:40%;position:relative">
                                                 <label style="position:absolute;top:20%;left:35%;text-align:center">
@@ -141,6 +147,7 @@ Selection Page
                                                 </label>
                                             </div>
                                         {% endif %}
+								{# If the user is either not logged in or has no student, he will be informed that he needs to be logged in or complete the registration  #}
                                 {% else %}
                                     <div style="display:grid;width:40%;position:relative">
                                         <label style="position:absolute;top:20%;left:13%;text-align:center">
@@ -152,6 +159,7 @@ Selection Page
                         </div>
                         {% endif %}
                     {% endfor %}
+				{# If the chosen course has no topics the user will be informed that the course has no topics #}
                 {% else %}
                     <div class="table-info" style="background-color:orange;font-size:14px">
                         There are no topics in this course
