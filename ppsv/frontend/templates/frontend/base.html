@@ -21,7 +21,6 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
     <link rel="stylesheet" href="{% static 'css/ppsv.css' %}">
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css?family=Arvo&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/table.css' %}">
@@ -34,15 +33,22 @@
 
 <!-- "header" contains on the left side the page name and on the right side a logo and the name of the user which is
 logged in right now. If a user is logged in, a logout button is displayed. If not, a login button is displayed. -->
-<div name="header" class="container-fluid"
-     style="background-color: #0a3d62;padding-top:1em;padding-bottom:1em;color:#ffffff;">
+<div name="header" class="container-fluid" style="background-color: #0a3d62;padding-left:50px;padding-right:50px;padding-bottom:10px;padding-top:20px;color:#ffffff;height:100px">
+    <div style="background-color: white;height: 5px; width: 100%;margin-bottom:20px"> </div>
     <h3 style="font-weight: 500;font-family-sans-serif: 'Roboto'"> Praktikums- & Seminarplatzvergabe </h3>
-    <div class ="content">
+    <div style="position:absolute;right:50px;top:37px;display: flex; flex-direction: row;">
+        {% if user.is_authenticated %}
+            {% if user.is_superuser %}
+            <a href="{% url 'admin:index' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px">
+                Admin Page
+            </a>
+            {% endif %}
+        {% endif %}
         <!-- user_menu -->
-        <div class="put-top-right" style="display:flex; flex-direction: row; justify-content: right; align-items: right">
+        <div style="display:flex; flex-direction: row; justify-content: right; align-items: right;margin-left:10px;margin-top:10px">
             {% block login %}
                 {% if user.is_authenticated %}
-                    Hi {{ user.username }}! (<a href="{% url 'frontend:logout' %}">Log Out</a>)
+                    {{ user.username }} (<a href="{% url 'frontend:logout' %}">Log Out</a>)
                 {% else %}
                     You are not logged in
                     (<a href="{% url 'frontend:login' %}">Log In</a>)
@@ -50,56 +56,54 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
             {% endblock %}
 
         </div>
-        <a style="color: white;" href="{% url 'frontend:login' %}"><i class="fa fa-user-circle-o fa-3x" aria-hidden="true"></i></a>
-    </div>
+        <a style="color: white;" href="{% url 'frontend:login' %}"><i class="fa fa-user-circle-o fa-3x" aria-hidden="true" style="margin-left:10px;"></i></a>
+        </div>
 </div>
 
 <!-- "navbar" contains all links to important html pages like the homepage,overview etc. -->
-<div name="navbar" class="container-fluid" style="background-color: #0C8FCC">
-    <div class="row" style="background-color: #0C8FCC">
+<div name="navbar" class="container-fluid" style="background-color: #0C8FCC;padding-left:50px;padding-right:50px;width:100%">
+    <div class="row" style="width:100%;">
         {% block homepage_navbar_container %}
-        <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn"><i class="fa fa-home fa-lg" aria-hidden="true"
-                                                        style="padding-bottom: 0.2em;padding-top: 0.2em"></i></button>
+        <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px;">
+            <button type="submit" class="navbar-btn" style="padding-top:0.42em;padding-bottom:0.42em;"> <i class="fa fa-home fa-lg" aria-hidden="true" style="font-size:26px"> </i></button>
         </form>
         {% endblock homepage_navbar_container %}
         {% block selection_page_navbar_container %}
-        <form class="navbar-form" action="{% url 'frontend:selection' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn"> {% if user.is_authenticated %} Select Your Topics {% else %} View Topics {% endif %} </button>
+        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" class="navbar-btn" style="padding-bottom: 0.3em;padding-top: 0.3em"> {% if user.is_authenticated %} Select Your Topics {% else %} View Topics {% endif %} </button>
         </form>
         {% endblock selection_page_navbar_container %}
         {% if user.is_authenticated %}
-        {% block overview_page_navbar_container %}
-        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn"> Your Selections </button>
+        {% block your_selection_page_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:your_selection' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" style="padding-bottom: 0.3em;padding-top: 0.3em" class="navbar-btn"> Your Selection </button>
         </form>
-        {% endblock overview_page_navbar_container %}
+        {% endblock your_selection_page_navbar_container %}
         {% endif %}
         {% if user.is_authenticated %}
         {% block groups_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn"> Your Groups </button>
+            <button type="submit" style="padding-bottom: 0.3em;padding-top: 0.3em" class="navbar-btn"> Your Groups </button>
         </form>
         {% endblock groups_page_navbar_container %}
         {% endif %}
         {# Sprache ändern #}
-        <button class="navbar-btn" style="float:right"><i class="fa fa-globe fa-lg" aria-hidden="true"
-                                                          style="padding-top:0.2em;padding-bottom:0.2em;"> </i></button>
+        <button class="navbar-btn" style="padding-top:0.15em;padding-bottom:0.42em;"><i class="fa fa-globe fa-lg" aria-hidden="true" style="font-size:24px"> </i></button>
     </div>
 </div>
 
 {% for message in messages %}
   <div class="alert {{ message.tags }} alert-dismissible" role="alert" style="margin-top: 5px;margin-bottom:0px;margin-left:5px;margin-right:5px">
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-         <span aria-hidden="True">&times;</span>
+            <span aria-hidden="True">&times;</span>
         </button>
-        {{ message }}
+        <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;" > {{ message }} </label>
   </div>
 {% endfor %}
 
 <!-- "content" contains everything that is not the header and can be modified by other html pages by using the block
 "content" -->
-<div name="content" class="container-fluid" style="padding-top: 2em;min-height:75vh;margin-bottom:50px">
+<div name="content" class="container-fluid" style="padding-top: 2em;min-height:75vh;margin-bottom:50px;">
     {% block content %}
 
     {% endblock %}

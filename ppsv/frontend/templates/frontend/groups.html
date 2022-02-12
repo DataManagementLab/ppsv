@@ -3,10 +3,222 @@
 
 {% block groups_page_navbar_container %}
         <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
-            <button type="submit" class="navbar-btn" style="background-color:#0a3d62;color:white;" > Your Groups </button>
+            <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;" >
+                Your Groups
+            </button>
         </form>
 {% endblock groups_page_navbar_container %}
 
 {% block content %}
+{# This form is sent by all buttons #}
+<form method="post" style="margin:0px;padding:0px;">
+    {% csrf_token %}
+    <div style="display:flex; justify-content: center;">
+        <div style="display:grid;align-content: start;width:60%;">
+            <ul class="responsive-table" style="margin:0px;padding:0px;width:100%;">
+				{# If the "Create a new group" button was pressed, the button itself will not be shown afterwards #}
+                {% if not open_group_create %}
+                <button name="open_create_new_group" type="submit" class="create-group-btn">
+                    <i class="fa fa-users" aria-hidden="true" style="position:absolute;left:15px;top:8px;font-size:30px;"></i>
+                    <i class="fa fa-plus" aria-hidden="true" style="position:absolute;left:37px;top:20px;font-size:25px;
+                    text-shadow: 0px 0px 2px #ffa826, 0px 0px 2px #ffa826;"></i>
+                    Create a new group
+                </button>
+                {% endif %}
+				{# If the "Create a new group" button was pressed, the group creation section will be shown #}
+                {% if open_group_create %}
+                        <div style="display: flex; flex-direction: column; border: 3px dashed #ffa826;margin: 5px 0px;padding: 4px;">
+                            <div style="justify-content: center;display:flex;flex-direction:row;position:relative;margin-right:0px;padding-left: 30px;">
+                                <input name="new_student_id" type="text" style="text-align:center;height:30px;width:40%;margin-top:10px;font-size: 17px" placeholder="Tucan-ID">
+                                <div>
+                                    <button class="undecorated-btn" type="submit" name="add_student_to_new_group" value="" style="margin-left:3px;margin-right:5px;font-size:25px;margin-top:10px">
+                                        <i class="fa fa-arrow-circle-right" aria-hidden="true" style="color:green; font-size: 30px"></i>
+                                    </button>
+                                </div>
+                                <div class="table-btn" style="overflow:auto;overflow-x: hidden;height:220px;width:45%;box-sizing: border-box;padding: 1% 5%;margin: 0px;">
+                                        <label class="group-member" style="border-style: dotted; font-size: 17px"> <div style="visibility: hidden"> New Student </div> </label> <br>
+										{# "members_in_new_group" contains all students, who were added to the new group #}
+									    {% for member in members_in_new_group%}
+                                        <div style="position:relative;">
+{#										if the member is not the student, who creates the group, the member will have a "remove" button#}
+{#											left of it in order to be able to remove the added student#}
+                                        {% if member != request.user.student.tucan_id %}
+                                            <button class="undecorated-btn" type="submit" name="new_group_remove_student" value="{{ member }}" style="position:absolute;top:6px;left:8px" >
+                                                  <i class="fa fa-minus" aria-hidden="true" style="color:red;font-size:20px"> </i>
+                                            </button>
+                                            {% endif %}
+                                            <input name="member{{forloop.counter0}}" class="group-member" value="{{ member }}" style="padding-left:24px; font-size: 17px" readonly> <br>
+                                        </div>
+                                        {% endfor %}
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction: row;">
+                                    <button style="flex: 1; margin-right: 3px; background-color: rgba(94, 94, 94, 0.8); margin-bottom: 0px;" type="submit" class="create-group-btn">
+                                        Cancel
+                                    </button>
+                                    <button style="flex: 1; margin-left: 3px; background-color:green;color:white; margin-bottom: 0px;" name="create_new_group" type="submit" class="create-group-btn">
+                                        Create new group
+                                    </button>
+                            </div>
+                        </div>
+                {% endif %}
+            </ul>
+			{# "groups_of_student" contains all groups, the student is a member of  #}
+            {% for group_of_student in groups_of_student %}
+				{# In order to not show the group which solely contains the student #}
+                {% if group_of_student.size > 1 %}
+                    <ul id="{{ group_of_student.id }}" class="responsive-table" style="margin:0px;padding:0px;width:100%;">
+						{# A popup, which asks if the user is sure to delete the group, will appear, when the "delete" button is pressed #}
+                        {% if chosen_group_for_deletion == group_of_student.id %}
+                            <div style="display:flex; justify-content:center;">
+                                <div id="{{ group_of_student.id }}delete" style="position:absolute;z-index:2;width:59.1%;height:inherit;background-color:rgba(0,0,0,0.8);padding:1%;display:flex;justify-content:center;border-radius:3px;height:500px">
+                                   <div style="position:relative;z-index:2;width:450px;height:190px;box-sizing: content-box;background-color:white;border-radius:3px;display:flex;justify-content:center;align-items: center;flex-direction:column;padding:5px;">
+                                       <i class="fa fa-times-circle" aria-hidden="true" style="color:red;font-size:80px;margin-bottom: -5px;flex:1"></i>
+                                       <span style="font-weight:500;font-size:25px;margin-bottom: -5px;flex:1"> Are you sure </span>
+                                       <span style="font-weight:500;font-size:18px;margin-bottom: 5px;flex:1"> you want to delete this group?  </span>
+                                       <div style="flex: 1;">
+                                           <button style="font-size:18px;background-color:rgba(94, 94, 94, 0.8);outline:none;border:none;border-radius:3px;color:white;padding: 7.5px 15px;margin-right:100px"> Cancel </button>
+                                           <button name="delete_group" value="{{ chosen_group_for_deletion }}" style="font-size:18px;background-color:red;outline:none;border:none;border-radius:3px;color:white;padding: 7.5px 15px;"> Delete </button>
+                                       </div>
+                                   </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <li class="table-header" style="padding: 15px;text-align:center;position:relative;">
+                            <button class="undecorated-btn" type="submit" {% if not chosen_group_for_edit == group_of_student.id %}  name="open_edit" value="{{ group_of_student.id }}" {% endif %} style="position:absolute;left:15px;top:15px;" title="Edit Group">
+                                <i class="fa fa-cog {% if chosen_group_for_edit == group_of_student.id %}spinning-icon{% endif %}" aria-hidden="true" style="color:white;font-size:20px"></i>
+                            </button>
+							{# The cog icon will spin if it is pressed #}
+                            {% if chosen_group_for_edit == group_of_student.id %}
+                            <style>
+                                    .spinning-icon {
+                                        -webkit-animation:spin 4s linear infinite;
+                                        -moz-animation:spin 4s linear infinite;
+                                        animation:spin 4s linear infinite;
+                                    }
 
+                                    @-moz-keyframes spin {
+                                        100% { -moz-transform: rotate(360deg);}
+                                    }
+                                    @-webkit-keyframes spin {
+                                        100% { -webkit-transform: rotate(360deg);}
+                                    }
+                                    @keyframes spin {
+                                        100% {
+                                            -webkit-transform: rotate(360deg);
+                                            transform:rotate(360deg);
+                                        }
+                            </style>
+                            {% endif %}
+                            <div style="margin: 0px 40px">
+{#								"members_of_groups" is a dictionary, which contains the group ids of all groups of the user as the key#}
+{#									and all members (user objects) of all groups as the value#}
+                                {% for members_group, members in members_of_groups.items %}
+                                    {% if group_of_student.id == members_group %}
+                                        {% for member in members %}
+                                            <span> {{ member.student.firstname }} {{ member.student.lastname }} {% if not members|last == member %}, {% endif %}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <button class="undecorated-btn" type="submit" name="ask_delete_group" value="{{ group_of_student.id }}" style="position:absolute;right:15px;top:15px;" title="Delete Group">
+                                <i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:20px"> </i>
+                            </button>
+                        </li>
+{#						"members_of_groups" is a dictionary, which contains the group ids of all groups of the user as the key#}
+{#									and all members (user objects) of all groups as the value  #}
+                        {% for members_group, members in members_of_groups.items %}
+                            {% if group_of_student.id == members_group %}
+                                {% for member in members %}
+                                    <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;display:flex;flex-direction:row;{% if chosen_student_for_removal == member.student.tucan_id and chosen_group_for_removal == group_of_student.id %} margin-bottom:0px{% endif %}">
+                                        <div style="flex:0.75"></div>
+										{# If the "edit" button for the group was pressed, "minus" buttons will appear left of all members of the chosen group in order to be able to remove members #}
+                                        {% if chosen_group_for_edit == members_group %}
+                                        <button class="undecorated-btn" type="submit" name="{% if group_of_student.size == 2 %}ask_remove_student{% else %}remove_student{% endif %}" value="{{ chosen_group_for_edit }}|{{ member.student.tucan_id }}" style="position:absolute;left:15px;top:18px;">
+                                          <i class="fa fa-minus" aria-hidden="true" style="color:red;font-size:20px"> </i>
+                                        </button>
+                                        {% endif %}
+                                        <div style="flex:1;">{{ member.student.tucan_id }} </div>
+                                        <div style="flex:1;">{{ member.student.firstname }} {{ member.student.lastname }}  </div>
+                                        <div style="flex:1;display:flex;flex-direction:row">
+                                            <button class="undecorated-btn" type="submit" name="open_email_form" value="" style="flex:0.1;margin-right:5px">
+                                                <i class="fa fa-envelope-o" aria-hidden="true" style="font-size:16px"></i>
+                                            </button>
+                                            <span style="flex:0.1"> {{ member.email }} </span>
+                                        </div>
+                                    </li>
+{#									If the user tries to remove a member of a group, which only has 2 members left, the user will be informed that the group will be deleted if#}
+{#										he chooses to remove the member #}
+                                    {% if chosen_student_for_removal == member.student.tucan_id and chosen_group_for_removal == group_of_student.id and group_of_student.size == 2 %}
+                                    <div class="alert-warning alert-dismissible" role="alert" style="margin-bottom:25px;display:flex; justify-content:center;padding:10px">
+                                            <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;padding:5px" >
+                                                If you remove this member, your group will be too small and will be deleted.
+                                            </label>
+                                            <button name="delete_group" value="{{ chosen_group_for_removal }}" style="border:none;outline:none;color:white;background-color:red;padding: 3px 10px">
+                                                Delete Group
+                                            </button>
+                                    </div>
+{#									If the removal of a member would result in a duplicate of another group, the user will be informed that the group will be deleted if#}
+{#										he chooses to remove the member#}
+                                    {% elif chosen_student_for_removal == member.student.tucan_id and chosen_group_for_removal == group_of_student.id %}
+                                    <div class="alert-warning alert-dismissible" role="alert" style="margin-bottom:25px;display:flex; justify-content:center;padding:10px">
+                                            <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;padding:5px" >
+                                                Duplicates are not allowed! If you remove this member, another group will have the same members as this group.
+                                            </label>
+                                            <button name="delete_group" value="{{ chosen_group_for_removal }}" style="border:none;outline:none;color:white;background-color:red;padding: 3px 10px">
+                                                Delete this group
+                                            </button>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+{#								If the removal of a member would result in a duplicate of another group, the user will be informed that the group will be deleted if#}
+{#										he chooses to remove the member#}
+                                {% if chosen_group_for_edit == members_group %}
+                                    <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;display:flex;flex-direction:row">
+                                        <div style="flex:1"></div>
+                                        <button class="undecorated-btn" type="submit" name="add_student" value="{{ chosen_group_for_edit }}" style="position:absolute;left:15px;top:18px;">
+                                          <i class="fa fa-plus" aria-hidden="true" style="color:green;font-size:20px"> </i>
+                                        </button>
+                                        <input name="student_id" style="text-align:center;height:20px;" placeholder="Tucan_ID">
+                                        <div style="flex:4.5;"></div>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</form>
+
+<!-- The scroll position is saved and loaded when the page submits a form but if an error message is thrown the y-scroll-position will be reset to 0 -->
+<script>
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        var scrollpos = sessionStorage.getItem('scrollpos');
+        {% if not error_message %}
+        if (scrollpos) {
+            window.scrollTo(0, scrollpos);
+            sessionStorage.removeItem('scrollpos');
+        }
+        {% endif %}
+    });
+
+    window.addEventListener("beforeunload", function (e) {
+           sessionStorage.setItem('scrollpos', window.scrollY);
+    });
+
+</script>
+
+<!-- If the "delete-group" button is pressed, the popup height will be the same as the height element which contains all graphical elements representing the group memebers -->
+<script>
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+       if ({{chosen_group_for_deletion}} != null) {
+            document.getElementById(String({{chosen_group_for_deletion}})+"delete").style.height = document.getElementById(String({{chosen_group_for_deletion}})).getBoundingClientRect().height;
+        }
+    });
+
+</script>
 {% endblock content %}
