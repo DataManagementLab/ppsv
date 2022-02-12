@@ -18,11 +18,16 @@ def homepage(request):
 
 
 def overview(request):
+    """View for overview page
+
+    :param request: The given request
+    :return: HttpRequest
+    """
     template_name = 'frontend/overview.html'
 
     args = {}
     if request.method == "POST":
-
+        # Display all faculties when coming back from somewhere else in overview
         if "faculty_view" in request.POST:
 
             all_faculties = models.Course.objects.values("faculty").distinct().order_by("faculty")
@@ -33,7 +38,7 @@ def overview(request):
                 faculties[faculty.get("faculty")] = course[0].get_faculty_display()
 
             args["faculties"] = faculties
-
+        # when a faculty is chosen show its courses
         elif "choose_faculty" in request.POST:
 
             chosen_faculty = str(request.POST.get("choose_faculty"))
@@ -44,7 +49,7 @@ def overview(request):
                 args["courses"] = courses_in_chosen_faculty
             else:
                 args["courses"] = "No_Courses"
-
+        # when a course is chosen display its topics
         elif "choose_course" in request.POST:
 
             data = str(request.POST.get("choose_course")).split("|")
@@ -65,7 +70,7 @@ def overview(request):
                 args["open_course_info"] = True
             else:
                 args["open_course_info"] = False
-
+        # when any of the following args is in request
         elif any(["choose_topic" in request.POST, "open_group_select" in request.POST,
                   "select_topic" in request.POST, "select_with_chosen_group" in request.POST,
                   "open_group_create" in request.POST, "add_student" in request.POST,
@@ -73,13 +78,16 @@ def overview(request):
 
             if "choose_topic" in request.POST:
                 data = str(request.POST.get("choose_topic")).split("|")
+            # Make sure that only authenticated users with a student profile can select topics
             if request.user.is_authenticated and hasattr(request.user, "student"):
+                # when deciding to choose a topic as a group
                 if "open_group_select" in request.POST:
                     data = str(request.POST.get("open_group_select")).split("|")
                     args["open_group_select"] = True
                     args["groups"] = filter(
                         lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
                         models.Group.objects.filter(students=request.user.student))
+                # when selecting a topic alone
                 elif "select_topic" in request.POST:
                     data = str(request.POST.get("select_topic")).split("|")
                     student_tu_id = str(request.user.student)
@@ -90,7 +98,7 @@ def overview(request):
                     for group in models.Group.objects.filter(students=student_tu_id):
                         if group.size == 1:
                             existing_groups.append(group)
-
+                    # check if the user has not already got a hidden group for himself
                     if len(existing_groups) == 0:
 
                         group_of_student = Group()
@@ -112,7 +120,7 @@ def overview(request):
                                          "You need to add a motivation text(when required) "
                                          "to your selection in order to fully "
                                          "complete your selection. You can do this on the \"Your Selection\" page.")
-
+                    # when the user already has a hidden group for himself
                     else:
 
                         topic_selections_of_group = models.TopicSelection.objects.filter(group=existing_groups[0].id)
@@ -138,6 +146,7 @@ def overview(request):
                                              "You need to add a motivation text(when required) "
                                              "to your selection in order to fully "
                                              "complete your selection. You can do this on the \"Your Selection\" page.")
+                # when the user selects a group with an already existing group
                 elif "select_with_chosen_group" in request.POST:
                     data = str(request.POST.get("select_with_chosen_group")).split("|")
                     selected_topic_id = data[0]
@@ -163,10 +172,12 @@ def overview(request):
                                          "You need to add a motivation text(when required) "
                                          "to your selection in order to fully complete your selection. "
                                          "You can do this on the your selection page.")
+                # when choosing to create a new group
                 elif "open_group_create" in request.POST:
                     data = str(request.POST.get("open_group_create")).split("|")
                     args["members_in_new_group"] = [request.user.student.tucan_id]
                     args["open_group_create"] = True
+                # adding a student to the new group draft
                 elif "add_student" in request.POST:
                     data = str(request.POST.get("add_student")).split("|")
 
@@ -199,6 +210,7 @@ def overview(request):
 
                     args["members_in_new_group"] = members_in_new_group
                     args["open_group_create"] = True
+                # remove a student from group draft
                 elif "remove_student" in request.POST:
                     data = str(request.POST.get("remove_student")).split("|")
 
@@ -212,6 +224,7 @@ def overview(request):
 
                     args["members_in_new_group"] = members_in_new_group
                     args["open_group_create"] = True
+                # when trying to select the topic and creating a new group
                 elif "select_with_new_group" in request.POST:
                     data = str(request.POST.get("select_with_new_group")).split("|")
 
@@ -288,7 +301,7 @@ def overview(request):
                         all_topics_selected_by_groups.append(selection.topic.id)
 
                 args["selected_topics"] = all_topics_selected_by_groups
-
+    # initially show all faculties
     else:
 
         all_faculties = models.Course.objects.values("faculty").distinct().order_by("faculty")
@@ -317,41 +330,45 @@ def check_profile(user):
 @user_passes_test(check_profile, login_url='/profile/', message="Please create a student profile before "
                                                                 "selecting courses.")
 def your_selection(request):
+    """ View for "Your selection" page
+
+    :param request:
+    :return:
+    """
     template_name = 'frontend/your_selection.html'
 
     args = {}
 
-    # If the user is logged in and has the attribute "student" the your selection page is loaded
+    # if the user is logged in and has the attribute "student" the your selection page is loaded
     if request.user.is_authenticated:
-
         if hasattr(request.user, "student"):
 
             student_tucan_id = str(request.user.student)
 
             groups_of_student = []
             selections_of_groups = []
-
+            # check if user has groups and collect them
             if models.Group.objects.filter(students=student_tucan_id).exists():
                 groups_of_student = models.Group.objects.filter(students=student_tucan_id)
                 for group in groups_of_student:
                     selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
 
             if request.method == "POST":
-
+                # when removing a selected topic from a group
                 if "remove_topic_button" in request.POST:
 
                     selection_id = str(request.POST.get('remove_topic_button'))
                     group_id = get_selection(selections_of_groups, selection_id).group.id
 
                     priority_of_removed_topic = get_selection(selections_of_groups, selection_id).priority
-
                     get_selection(selections_of_groups, selection_id).delete()
                     selections_of_groups.clear()
+                    # show the groups and selected topics without the deleted one
                     if models.Group.objects.filter(students=student_tucan_id).exists():
                         groups_of_student = models.Group.objects.filter(students=student_tucan_id)
                         for group in groups_of_student:
                             selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
-
+                    # move up the remaining selection priorities to fill the gap left by the removed topic
                     if priority_of_removed_topic != 0:
                         for selections in selections_of_groups:
                             for selection in selections:
@@ -359,7 +376,7 @@ def your_selection(request):
                                     if int(selection.priority) > int(priority_of_removed_topic):
                                         selection.priority = int(selection.priority) - 1
                                         selection.save()
-
+                # when pressing the button for editing the motivation text
                 elif "edit_motivation_text_button" in request.POST:
                     open_motivation_text_for_selection = int(request.POST.get("edit_motivation_text_button"))
 
@@ -371,7 +388,7 @@ def your_selection(request):
 
                     args["open_motivation_text_for_selection"] = open_motivation_text_for_selection
                     args["motivation_text_of_selection"] = motivation_text_of_selection
-
+                # when saving the motivation text after editing it
                 elif "save_motivation_text_button" in request.POST:
                     save_motivation_text_for = int(request.POST.get("save_motivation_text_button"))
                     motivation_text = str(request.POST.get("motivation_text"))
@@ -383,7 +400,7 @@ def your_selection(request):
                                 selection.save()
                                 messages.success(request, "Your motivation text has been saved.")
                                 break
-
+                # when choosing to increase the priority of a selected topic
                 elif "up_priority" in request.POST:
                     chosen_selection_id = int(request.POST.get("up_priority"))
                     chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
@@ -397,7 +414,7 @@ def your_selection(request):
                                     chosen_selection.priority = chosen_selection.priority - 1
                                     chosen_selection.save()
                                     break
-
+                # when choosing to decrease the priority of a selected topic
                 elif "down_priority" in request.POST:
                     chosen_selection_id = int(request.POST.get("down_priority"))
                     chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
@@ -413,11 +430,13 @@ def your_selection(request):
                                     break
 
             sorted_selections_of_groups = []
+            # sort selected topics by priority
             for selections in selections_of_groups:
                 sorted_selections_of_groups.append(sorted(selections, key=lambda x: x.priority))
             selections_of_groups = sorted_selections_of_groups
 
             motivation_text_required = []
+            # only show the edit motivation text button when a motivation text is required
             for selections in selections_of_groups:
                 for selection in selections:
                     course_of_selected_topic = models.Course.objects.get(topic=selection.topic.id)
@@ -428,7 +447,7 @@ def your_selection(request):
                     else:
                         info.append((selection, False))
                         motivation_text_required.append(info)
-
+            # leave edit open when opening information
             if 'save_motivation_text_button' not in request.POST and not request.POST.get(
                     "open_motivation_text_for_selection") is None:
                 open_motivation_text_for_selection = int(request.POST.get("open_motivation_text_for_selection"))
@@ -441,7 +460,7 @@ def your_selection(request):
 
                 args["open_motivation_text_for_selection"] = open_motivation_text_for_selection
                 args["motivation_text_of_selection"] = motivation_text_of_selection
-
+            # leave course information visible when pressing other buttons
             if not request.POST.get("open_selection_info") is None:
                 info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("open_selection_info")))
                 args["info_selection"] = info_selection
@@ -454,14 +473,14 @@ def your_selection(request):
             args["groups_of_student"] = groups_of_student
             args["selections_of_groups"] = selections_of_groups
             args["motivation_text_required"] = motivation_text_required
-
+            # opening the info of a selected topic
             if "info_button" in request.POST:
                 info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("info_button")))
                 open_course_info = False
 
                 args["info_selection"] = info_selection
                 args["open_course_info"] = open_course_info
-
+            # expanding the information the course of a selected topic
             if "course_info_button" in request.POST:
 
                 open = "".join(str(request.POST.get("selection")).split("|")[0].split())
@@ -491,18 +510,25 @@ def get_selection(selections_of_groups, chosen_selection_id):
 @user_passes_test(check_profile, login_url='/profile/', message="Please create a student profile before "
                                                                 "selecting courses.")
 def groups(request):
+    """ View for "Your Groups" page
+
+    :param request: The given request
+    :return: HttpRequest
+    """
     template_name = 'frontend/groups.html'
 
     args = {}
 
+    # if the user is logged in and has the attribute "student" the your selection page is loaded
     if request.user.is_authenticated:
-
         if hasattr(request.user, "student"):
 
             if request.method == "POST":
+                # creating a new empty group
                 if "open_create_new_group" in request.POST:
                     args["members_in_new_group"] = [request.user.student.tucan_id]
                     args["open_group_create"] = True
+                # adding a student to the new group draft
                 elif "add_student_to_new_group" in request.POST:
                     members_in_new_group = []
                     counter = 0
@@ -527,6 +553,7 @@ def groups(request):
 
                     args["members_in_new_group"] = members_in_new_group
                     args["open_group_create"] = True
+                # removing a student from the new group draft
                 elif "new_group_remove_student" in request.POST:
                     members_in_new_group = []
                     counter = 0
@@ -538,6 +565,7 @@ def groups(request):
 
                     args["members_in_new_group"] = members_in_new_group
                     args["open_group_create"] = True
+                # creating the new group from the draft if there are no collisions
                 elif "create_new_group" in request.POST:
                     members_in_new_group = []
                     counter = 0
@@ -580,15 +608,18 @@ def groups(request):
                     else:
                         args["open_group_create"] = True
                         args["members_in_new_group"] = members_in_new_group
-
+                # When pressing the button to delete a group
                 if "ask_delete_group" in request.POST:
                     chosen_group_for_deletion = int(request.POST.get("ask_delete_group"))
                     args["chosen_group_for_deletion"] = chosen_group_for_deletion
+                # Confirm the group deletion
                 elif "delete_group" in request.POST:
                     models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
+                # when clicking on the cog symbol to edit a group
                 elif "open_edit" in request.POST:
                     chosen_group_for_edit = int(request.POST.get("open_edit"))
                     args["chosen_group_for_edit"] = chosen_group_for_edit
+                # adding a student to the group if possible
                 elif "add_student" in request.POST:
                     if len("".join(request.POST.get("student_id")).split()) != 0:
                         if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
@@ -630,14 +661,13 @@ def groups(request):
                             args["error_message"] = True
 
                     args["chosen_group_for_edit"] = int(request.POST.get("add_student"))
-
+                # arguments for the location of a message that shows when removing a student from a group of 2 members
                 elif "ask_remove_student" in request.POST:
                     data = str(request.POST.get("ask_remove_student")).split("|")
-                    print("Data: ")
-                    print(str(data[1]) + " " + str(int(data[0])))
                     args["chosen_student_for_removal"] = str(data[1])
                     args["chosen_group_for_removal"] = int(data[0])
                     args["chosen_group_for_edit"] = int(data[0])
+                # Remove student from group if possible or delete the group if it is too small or a duplicate
                 elif "remove_student" in request.POST:
                     data = str(request.POST.get("remove_student")).split("|")
                     group = models.Group.objects.get(id=int(data[0]))
