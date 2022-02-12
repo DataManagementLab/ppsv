@@ -17,8 +17,8 @@ Selection Page
     <div class="container-fluid" style="display:flex;justify-content:center;font-size:17px">
         <ul class="responsive-table" style="width:80%;padding:0px;margin:0px">
             <li class="table-header" style="padding: 16px;position:relative;font-size:17px;margin-bottom:5px">
-				{# The button, which lets the user return to the previous page, will first appear when at least a faculty was chosen.
-				   The buttons name changes according to the page it will return the user to if pressed. #}
+{#				The button, which lets the user return to the previous page, will first appear when at least a faculty was chosen.#}
+{#				   The buttons name changes according to the page it will return the user to if pressed.#}
                 {% if courses or topics or chosen_topic %}
                 <button name="{% if chosen_topic %}choose_course{% elif topics %}choose_faculty{% elif courses %}faculty_view{% endif %}"
                         value="{% if chosen_topic %}{{ chosen_course.id }}|{{ chosen_faculty }}|{{ open_course_info }}{% elif topics %}{{ chosen_faculty }}{% endif %}"
@@ -26,7 +26,7 @@ Selection Page
                     <i class="fa fa-caret-square-o-left" aria-hidden="true" style="font-size:25px;color:white;"></i>
                 </button>
                 {% endif %}
-				{# The text of the header changes according to which page the user is on #}
+{#				{The text of the header changes according to which page the user is on#}
                 <div>{% if chosen_topic %} Select Your Topic {% elif courses %}  Choose a Course {% elif topics %} Choose a Topic {% else %} Choose a Faculty {% endif %} </div>
             </li>
 
@@ -69,7 +69,7 @@ Selection Page
                                 <div style="flex-basis:100%"> {% if topic.max_participants == 9999 %} &#8734 {% else %} {{ topic.max_participants }} {% endif %} </div>
                             </div>
                         </button>
-						{# If a topic has been chosen, the page of the chosen topic opens #}
+{#						If a topic has been chosen, the page of the chosen topic opens#}
                         {% else %}
                         <div style="display:flex;flex-direction:row;width:100%">
                             <div style="width:60%">

@@ -40,8 +40,8 @@
 										{# "members_in_new_group" contains all students, who were added to the new group #}
 									    {% for member in members_in_new_group%}
                                         <div style="position:relative;">
-										{# If the member is not the student, who creates the group, the member will have a "remove" button
-											left of it in order to be able to remove the added student #}
+{#										f the member is not the student, who creates the group, the member will have a "remove" button#}
+{#											left of it in order to be able to remove the added student#}
                                         {% if member != request.user.student.tucan_id %}
                                             <button class="undecorated-btn" type="submit" name="new_group_remove_student" value="{{ member }}" style="position:absolute;top:6px;left:8px" >
                                                   <i class="fa fa-minus" aria-hidden="true" style="color:red;font-size:20px"> </i>
@@ -111,8 +111,8 @@
                             </style>
                             {% endif %}
                             <div style="margin: 0px 40px">
-								{# "members_of_groups" is a dictionary, which contains the group ids of all groups of the user as the key
-									and all members (user objects) of all groups as the value  #}
+{#								"members_of_groups" is a dictionary, which contains the group ids of all groups of the user as the key#}
+{#									and all members (user objects) of all groups as the value#}
                                 {% for members_group, members in members_of_groups.items %}
                                     {% if group_of_student.id == members_group %}
                                         {% for member in members %}
@@ -125,8 +125,8 @@
                                 <i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:20px"> </i>
                             </button>
                         </li>
-						{# "members_of_groups" is a dictionary, which contains the group ids of all groups of the user as the key
-									and all members (user objects) of all groups as the value  #}
+{#						"members_of_groups" is a dictionary, which contains the group ids of all groups of the user as the key#}
+{#									and all members (user objects) of all groups as the value  #}
                         {% for members_group, members in members_of_groups.items %}
                             {% if group_of_student.id == members_group %}
                                 {% for member in members %}
@@ -147,8 +147,8 @@
                                             <span style="flex:0.1"> {{ member.email }} </span>
                                         </div>
                                     </li>
-									{# If the user tries to remove a member of a group, which only has 2 members left, the user will be informed that the group will be deleted if
-										he chooses to remove the member #}
+{#									If the user tries to remove a member of a group, which only has 2 members left, the user will be informed that the group will be deleted if#}
+{#										he chooses to remove the member #}
                                     {% if chosen_student_for_removal == member.student.tucan_id and chosen_group_for_removal == group_of_student.id and group_of_student.size == 2 %}
                                     <div class="alert-warning alert-dismissible" role="alert" style="margin-bottom:25px;display:flex; justify-content:center;padding:10px">
                                             <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;padding:5px" >
@@ -158,8 +158,8 @@
                                                 Delete Group
                                             </button>
                                     </div>
-									{# If the removal of a member would result in a duplicate of another group, the user will be informed that the group will be deleted if
-										he chooses to remove the member #}
+{#									If the removal of a member would result in a duplicate of another group, the user will be informed that the group will be deleted if#}
+{#										he chooses to remove the member#}
                                     {% elif chosen_student_for_removal == member.student.tucan_id and chosen_group_for_removal == group_of_student.id %}
                                     <div class="alert-warning alert-dismissible" role="alert" style="margin-bottom:25px;display:flex; justify-content:center;padding:10px">
                                             <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;padding:5px" >
@@ -171,8 +171,8 @@
                                     </div>
                                     {% endif %}
                                 {% endfor %}
-								{# If the removal of a member would result in a duplicate of another group, the user will be informed that the group will be deleted if
-										he chooses to remove the member #}
+{#								If the removal of a member would result in a duplicate of another group, the user will be informed that the group will be deleted if#}
+{#										he chooses to remove the member#}
                                 {% if chosen_group_for_edit == members_group %}
                                     <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;display:flex;flex-direction:row">
                                         <div style="flex:1"></div>
