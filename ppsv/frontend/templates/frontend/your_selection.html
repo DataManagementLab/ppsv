@@ -85,7 +85,7 @@
                                             <button name="remove_topic_button" value="{{ selection.id }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}"  type="submit"> Remove Topic </button>
                                     </div>
                                     <div class="col-1" >
-                                        <button name="info_button" value="{{ selection.id }}" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
+                                        <button name="{% if not info_selection.id == selection.id%}info_button{% else %}close_info_button{% endif %}" value="{{ selection.id }}" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
                                             <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px;color:rgba(94, 94, 94, 1)"
                                                aria-hidden="true"
                                                title="Show Details">
@@ -96,8 +96,21 @@
                                 {% if selection.id == open_motivation_text_for_selection %}
                                 <input name="open_motivation_text_for_selection" value="{{ open_motivation_text_for_selection }}" hidden>
                                 <li class="table-row">
-                                    <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="30">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
+                                    <div style="display: flex; flex-direction: column; width: 100%;">
+                                        <textarea id="motivation_text" name="motivation_text" style="width: 100%;" rows="12">{% if motivation_text_of_selection %}{{motivation_text_of_selection}}{% endif %}</textarea>
+                                        <div style="display: flex; flex-direction: row; width: 100%;">
+                                            <button class="button" name="cancel_motivation_save"
+                                                type="submit" style="width: 50%; margin:3px ;white-space:nowrap; background-color:grey; color:white; border:none; border-radius:5px;">
+                                                Discard Changes
+                                            </button>
+                                            <button class="button" name="save_motivation_text_button" value="{{ selection.id }}"
+                                                type="submit" style="width: 50%; margin:3px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
+                                                Save Motivation Text
+                                            </button>
+                                        </div>
+                                     </div>
                                 </li>
+
                                 <script type="text/javascript">
                                     var myInput = document.getElementById("motivation_text");
                                     if(myInput.addEventListener ) {

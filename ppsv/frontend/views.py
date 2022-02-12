@@ -112,14 +112,12 @@ def overview(request):
                         user_selection.save()
 
                         messages.success(request,
-                                         "Your Selection Was Successful! "
-                                         "You can find and edit your chosen topics on the "
-                                         "\"Your Selection\" page.")
-
-                        messages.warning(request,
-                                         "You need to add a motivation text(when required) "
-                                         "to your selection in order to fully "
-                                         "complete your selection. You can do this on the \"Your Selection\" page.")
+                                         "Your Selection Was Successful! You can find and edit your "
+                                         "chosen topics on the 'Your Selection' page.")
+                        if user_selection.topic.course.motivation_text:
+                            messages.warning(request,
+                                             "You need to add a motivation text "
+                                             "to your selection in order to fully complete your selection.")
                     # when the user already has a hidden group for himself
                     else:
 
@@ -139,39 +137,47 @@ def overview(request):
                             user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
                             user_selection.save()
                             messages.success(request,
-                                             "Your Selection Was Successful! You can find and edit your chosen topics on the "
-                                             "\"Your Selection\" page.")
-
-                            messages.warning(request,
-                                             "You need to add a motivation text(when required) "
-                                             "to your selection in order to fully "
-                                             "complete your selection. You can do this on the \"Your Selection\" page.")
+                                             "Your Selection Was Successful! You can find and edit your "
+                                             "chosen topics on the 'Your Selection' page.")
+                            if user_selection.topic.course.motivation_text:
+                                messages.warning(request,
+                                                 "You need to add a motivation text "
+                                                 "to your selection in order to fully complete your selection.")
                 # when the user selects a group with an already existing group
                 elif "select_with_chosen_group" in request.POST:
                     data = str(request.POST.get("select_with_chosen_group")).split("|")
                     selected_topic_id = data[0]
                     chosen_group_id = str(request.POST.get("group_options"))
-                    topic_selections_of_group = models.TopicSelection.objects.filter(group=chosen_group_id)
-                    already_selected = False
-                    for known_selection in topic_selections_of_group:
-                        if int(selected_topic_id) == int(known_selection.topic.id):
-                            already_selected = True
-                            messages.error(request, "Selection Failed! You have already selected this topic.")
+                    if chosen_group_id != str(-1):
+                        topic_selections_of_group = models.TopicSelection.objects.filter(group=chosen_group_id)
+                        already_selected = False
+                        for known_selection in topic_selections_of_group:
+                            if int(selected_topic_id) == int(known_selection.topic.id):
+                                already_selected = True
+                                messages.error(request, "Selection Failed! You have already selected this topic.")
 
-                    if not already_selected:
-                        selection = TopicSelection()
-                        selection.priority = len(topic_selections_of_group) + 1
-                        selection.group = models.Group.objects.get(id=chosen_group_id)
-                        selection.topic = models.Topic.objects.get(id=selected_topic_id)
-                        selection.save()
+                        if not already_selected:
+                            selection = TopicSelection()
+                            selection.priority = len(topic_selections_of_group) + 1
+                            selection.group = models.Group.objects.get(id=chosen_group_id)
+                            selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                            selection.save()
 
-                        messages.success(request,
-                                         "Your Selection Was Successful!"
-                                         " You can find and edit your chosen topics on the your selection page.")
-                        messages.warning(request,
-                                         "You need to add a motivation text(when required) "
-                                         "to your selection in order to fully complete your selection. "
-                                         "You can do this on the your selection page.")
+                            messages.success(request,
+                                             "Your Selection Was Successful! You can find and edit your "
+                                             "chosen topics on the 'Your Selection' page.")
+                            if selection.topic.course.motivation_text:
+                                messages.warning(request,
+                                                 "You need to add a motivation text "
+                                                 "to your selection in order to fully complete your selection.")
+
+                    else:
+                        args["open_group_select"] = True
+                        args["groups"] = filter(
+                            lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                            models.Group.objects.filter(students=request.user.student))
+                        messages.error(request, "No group selected!")
+
                 # when choosing to create a new group
                 elif "open_group_create" in request.POST:
                     data = str(request.POST.get("open_group_create")).split("|")
@@ -196,7 +202,7 @@ def overview(request):
                                 else:
                                     messages.error(request, "A student with the tucan id " +
                                                    request.POST.get("new_student_id") +
-                                                   "was not found.")
+                                                   " was not found.")
                             else:
                                 messages.error(request, "Your group would be too large for " +
                                                str(models.Topic.objects.get(id=data[0]).title)
@@ -272,12 +278,12 @@ def overview(request):
                         selection.save()
 
                         messages.success(request,
-                                         "Your Selection Was Successful! You can find and edit your chosen topics on the "
-                                         "overview page.")
-                        messages.warning(request,
-                                         "You need to set the priority and add a motivation text(when required) "
-                                         "to your selection in order to fully complete your selection. "
-                                         "You can do this on the overview page.")
+                                         "Your Selection Was Successful! You can find and edit your "
+                                         "chosen topics on the 'Your Selection' page.")
+                        if selection.topic.course.motivation_text:
+                            messages.warning(request,
+                                             "You need to add a motivation text "
+                                             "to your selection in order to fully complete your selection.")
 
             chosen_topic = data[0]
             chosen_course = data[1]
@@ -448,7 +454,8 @@ def your_selection(request):
                         info.append((selection, False))
                         motivation_text_required.append(info)
             # leave edit open when opening information
-            if 'save_motivation_text_button' not in request.POST and not request.POST.get(
+            if 'save_motivation_text_button' not in request.POST and 'cancel_motivation_save' not in request.POST\
+                    and not request.POST.get(
                     "open_motivation_text_for_selection") is None:
                 open_motivation_text_for_selection = int(request.POST.get("open_motivation_text_for_selection"))
 
@@ -461,7 +468,9 @@ def your_selection(request):
                 args["open_motivation_text_for_selection"] = open_motivation_text_for_selection
                 args["motivation_text_of_selection"] = motivation_text_of_selection
             # leave course information visible when pressing other buttons
-            if not request.POST.get("open_selection_info") is None:
+            print(request.POST.get("open_selection_info"))
+            print("close_info_button" not in request.POST)
+            if (not request.POST.get("open_selection_info") is None) and "close_info_button" not in request.POST:
                 info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("open_selection_info")))
                 args["info_selection"] = info_selection
                 if str(request.POST.get("open_course_info")) == 'True':
@@ -474,6 +483,7 @@ def your_selection(request):
             args["selections_of_groups"] = selections_of_groups
             args["motivation_text_required"] = motivation_text_required
             # opening the info of a selected topic
+            print(request.POST)
             if "info_button" in request.POST:
                 info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("info_button")))
                 open_course_info = False
@@ -544,7 +554,7 @@ def groups(request):
                             else:
                                 messages.error(request, "A student with the tucan id " +
                                                request.POST.get("new_student_id") +
-                                               "was not found.")
+                                               " was not found.")
 
                         else:
                             messages.error(request, "A student with the tucan id " +
