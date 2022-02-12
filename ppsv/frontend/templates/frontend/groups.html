@@ -40,7 +40,7 @@
 										{# "members_in_new_group" contains all students, who were added to the new group #}
 									    {% for member in members_in_new_group%}
                                         <div style="position:relative;">
-{#										f the member is not the student, who creates the group, the member will have a "remove" button#}
+{#										if the member is not the student, who creates the group, the member will have a "remove" button#}
 {#											left of it in order to be able to remove the added student#}
                                         {% if member != request.user.student.tucan_id %}
                                             <button class="undecorated-btn" type="submit" name="new_group_remove_student" value="{{ member }}" style="position:absolute;top:6px;left:8px" >
