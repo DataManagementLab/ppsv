@@ -173,8 +173,9 @@
                     </li>
                     <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
                         <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.max_participants }} {% endif %} </p>
-                        <label style="font-weight:500"> Description {% if info_selection.topic.file%} File {% endif %} </label>
-                        <p> {% if info_selection.topic.file%} File {% else %} {{ info_selection.topic.description }} {% endif %} </p>
+                        <label style="font-weight:500"> Description </label>
+                        <p> {{ info_selection.topic.description }} </p>
+                        <p> {% if info_selection.topic.file%} <a href="{{ BASE_DIR }}/media/{{ info_selection.topic.file }}">information file</a> {% endif %} </p>
                     </div>
                 </ul>
             </div>
