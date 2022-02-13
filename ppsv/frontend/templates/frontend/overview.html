@@ -186,7 +186,7 @@ Selection Page
                     <div style="display:flex;justify-content: space-around;">
                         <div style="flex-basis:100%"> Title </div>
                         <div style="flex-basis:100%"> Type </div>
-                        <div style="flex-basis:100%"> Registration Start </div>
+                        <div style="flex-basis:100%"> Status </div>
                         <div style="flex-basis:100%"> Registration End </div>
                         <div style="flex-basis:100%"> Max Participants </div>
                         <div style="flex-basis:100%"> CP </div>
@@ -197,7 +197,7 @@ Selection Page
                         <div style="display:flex;justify-content: space-around;">
                             <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ course.title }} </div>
                             <div style="flex-basis:100%"> {{ course.get_type_display }} </div>
-                            <div style="flex-basis:100%"> {{ course.registration_start|date }} </div>
+                            <div style="flex-basis:100%"> {{ course.get_status }} </div>
                             <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
                             <div style="flex-basis:100%"> {% if course.max_participants == 9999 %} &#8734 {% else %} {{ course.max_participants }} {% endif %} </div>
                             <div style="flex-basis:100%"> {{ course.cp }} </div>
