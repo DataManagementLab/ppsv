@@ -111,6 +111,20 @@ class Course(models.Model):
         """
         return self.title
 
+    @property
+    def get_status(self):
+        """String representation
+        Returns the registration status (Open,Upcoming,Closed).
+        :return: the registration status (Open,Upcoming,Closed)
+        :rtype: str
+        """
+        if timezone.now() < self.registration_start:
+            return "Upcoming"
+        elif self.registration_start < timezone.now() < self.registration_deadline:
+            return "Open"
+        elif timezone.now() > self.registration_deadline:
+            return "Closed"
+
 
 def course_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/course_<id>/<filename>
