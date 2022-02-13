@@ -44,7 +44,7 @@ Selection Page
                     <p> <label style="font-weight:500"> Course Type: </label> {{ chosen_course.get_type_display }} </p>
                     <p> <label style="font-weight:500"> Faculty: </label> {{ chosen_course.get_faculty_display }} </p>
                     <p> <label style="font-weight:500"> Language: </label> Sprache </p>
-                    <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.course.max_participants }} {% endif %} </p>
+                    <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
                     <p> <label style="font-weight:500"> Registration: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
                     <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
                     <p> <label style="font-weight:500"> Motivation Text: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
