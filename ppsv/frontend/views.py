@@ -13,6 +13,10 @@ from frontend.decorators import user_passes_test
 
 
 def homepage(request):
+    """View for homepage
+    :param request: The given request
+    :return: HttpRequest
+    """
     template_name = 'frontend/homepage.html'
 
     if request.user.is_authenticated:
@@ -35,15 +39,20 @@ def homepage(request):
                     selections_need_motivation = True
                     break
 
+            # Pins message to board if motivation texts are missing for selections
+            if selections_need_motivation:
+                msg = "You still need to write one or more motivation texts"
+                link = "frontend:your_selection"
+                recommendations[msg] = link
+
             # Pins message to board if no selections were made
             if not selections_exist:
                 msg = "You have not selected any topics yet"
                 link = "frontend:overview"
                 recommendations[msg] = link
-
-            # Pins message to board if motivation texts are missing for selections
-            if selections_need_motivation:
-                msg = "You still need to write one or more motivation texts"
+            # Otherwise show where they can be managed
+            else:
+                msg = "You can view and manage your selected topics here"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
@@ -55,6 +64,9 @@ def homepage(request):
 
             args["recommendations"] = recommendations
             return render(request, template_name, args)
+        else:
+            return render(request, template_name)
+
     else:
         return login_request(request, template_name)
 
