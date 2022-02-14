@@ -51,7 +51,7 @@ class NewUserForm(UserCreationForm):
 	# formatting of the form
 	username = UsernameField(widget=forms.TextInput(
 		attrs={'class': 'form-control', 'placeholder': _('username'), 'id': 'username'}), label='', help_text=
-				mark_safe(_(
+				mark_safe_lazy(_(
 					"<div style=\"padding-left: 10px\"><small>Letters, numbers and @/./+/-/_ only."
 					"</small></div>")))
 	password1 = forms.CharField(widget=forms.PasswordInput(
