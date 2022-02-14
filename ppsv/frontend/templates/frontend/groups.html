@@ -29,9 +29,9 @@
                 {% if open_group_create %}
                         <div style="display: flex; flex-direction: column; border: 3px dashed #ffa826;margin: 5px 0px;padding: 4px;">
                             <div style="justify-content: center;display:flex;flex-direction:row;position:relative;margin-right:0px;padding-left: 30px;">
-                                <input name="new_student_id" type="text" style="text-align:center;height:30px;width:40%;margin-top:10px;font-size: 17px" placeholder="Tucan-ID">
+                                <input onkeypress="keyPressListener1(event)" name="new_student_id" type="text" style="text-align:center;height:30px;width:40%;margin-top:10px;font-size: 17px" placeholder="Tucan-ID">
                                 <div>
-                                    <button class="undecorated-btn" type="submit" name="add_student_to_new_group" value="" style="margin-left:3px;margin-right:5px;font-size:25px;margin-top:10px">
+                                    <button id="add_student_to_new_group" class="undecorated-btn" type="submit" name="add_student_to_new_group" value="" style="margin-left:3px;margin-right:5px;font-size:25px;margin-top:10px">
                                         <i class="fa fa-arrow-circle-right" aria-hidden="true" style="color:green; font-size: 30px"></i>
                                     </button>
                                 </div>
@@ -176,10 +176,10 @@
                                 {% if chosen_group_for_edit == members_group %}
                                     <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;display:flex;flex-direction:row">
                                         <div style="flex:1"></div>
-                                        <button class="undecorated-btn" type="submit" name="add_student" value="{{ chosen_group_for_edit }}" style="position:absolute;left:15px;top:18px;">
+                                        <button id="add_student" class="undecorated-btn" type="submit" name="add_student" value="{{ chosen_group_for_edit }}" style="position:absolute;left:15px;top:18px;">
                                           <i class="fa fa-plus" aria-hidden="true" style="color:green;font-size:20px"> </i>
                                         </button>
-                                        <input name="student_id" style="text-align:center;height:20px;" placeholder="Tucan_ID">
+                                        <input onkeypress="keyPressListener(event)" name="student_id" style="text-align:center;height:20px;" placeholder="Tucan_ID">
                                         <div style="flex:4.5;"></div>
                                     </li>
                                 {% endif %}
@@ -213,12 +213,27 @@
 
 <!-- If the "delete-group" button is pressed, the popup height will be the same as the height element which contains all graphical elements representing the group memebers -->
 <script>
-
     document.addEventListener("DOMContentLoaded", function (event) {
        if ({{chosen_group_for_deletion}} != null) {
             document.getElementById(String({{chosen_group_for_deletion}})+"delete").style.height = document.getElementById(String({{chosen_group_for_deletion}})).getBoundingClientRect().height;
         }
     });
+</script>
 
+<!-- If enter is pressed in an input it will trigger a certain button -->
+<script>
+    function keyPressListener(event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                document.getElementById("add_student").click();
+            }
+    }
+
+     function keyPressListener1(event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                document.getElementById("add_student_to_new_group").click();
+            }
+    }
 </script>
 {% endblock content %}

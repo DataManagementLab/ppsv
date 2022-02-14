@@ -13,8 +13,62 @@ from frontend.decorators import user_passes_test
 
 
 def homepage(request):
+    """View for homepage
+    :param request: The given request
+    :return: HttpRequest
+    """
     template_name = 'frontend/homepage.html'
-    return render(request, template_name)
+
+    if request.user.is_authenticated:
+        if hasattr(request.user, "student"):
+            # In order to pin messages on the "What to do next" board, one needs to add the message
+            # as a key to "recommendations" and the link as the value
+            args = {}
+            recommendations = {}
+
+            groups_of_student = models.Group.objects.filter(students=request.user.student)
+            selections_exist = False
+            selections_need_motivation = False
+            for group in groups_of_student:
+                if models.TopicSelection.objects.filter(group=group).exists():
+                    selections_exist = True
+                    break
+
+            for group in groups_of_student:
+                if models.TopicSelection.objects.filter(group=group,motivation="").exists():
+                    selections_need_motivation = True
+                    break
+
+            # Pins message to board if motivation texts are missing for selections
+            if selections_need_motivation:
+                msg = "You still need to write one or more motivation texts"
+                link = "frontend:your_selection"
+                recommendations[msg] = link
+
+            # Pins message to board if no selections were made
+            if not selections_exist:
+                msg = "You have not selected any topics yet"
+                link = "frontend:overview"
+                recommendations[msg] = link
+            # Otherwise show where they can be managed
+            else:
+                msg = "You can view and manage your selected topics here"
+                link = "frontend:your_selection"
+                recommendations[msg] = link
+
+            # Pins message to board if no group was created
+            if len(models.Group.objects.filter(students=request.user.student)) <= 1:
+                msg = "You can create a group here"
+                link = "frontend:groups"
+                recommendations[msg] = link
+
+            args["recommendations"] = recommendations
+            return render(request, template_name, args)
+        else:
+            return render(request, template_name)
+
+    else:
+        return login_request(request, template_name)
 
 
 def overview(request):
@@ -721,12 +775,17 @@ def groups(request):
     return render(request, template_name, args)
 
 
-def login_request(request):
+def login_request(request, *given_template):
     """Login view
 
     :param request: The given request
+    :param given_template: a string representing a template name
     :type request: HttpRequest
     """
+    template_name = "registration/login.html"
+    if given_template:
+        template_name = given_template
+
     if request.method == "POST":
         form = UserLoginForm(request, data=request.POST)
         # checks if the given login data is valid
@@ -744,7 +803,7 @@ def login_request(request):
         else:
             messages.error(request, "Invalid username or password.")
     form = UserLoginForm()
-    return render(request=request, template_name="registration/login.html", context={"login_form": form})
+    return render(request, template_name, context={"login_form": form})
 
 
 def logout_request(request):
