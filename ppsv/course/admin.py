@@ -24,7 +24,7 @@ class CourseAdmin(admin.ModelAdmin):
     :type CourseAdmin.search_fields:  list[str]
     """
     fieldsets = [
-        (None, {'fields': ['title', 'type']}),
+        (None, {'fields': ['title', 'type', 'collection_exclusive']}),
         (_('Date Information'), {'fields': ['registration_start', 'registration_deadline']}),
         (_('Course Information'), {'fields': ['description', 'motivation_text', 'cp', 'faculty', 'organizer']}),
         (_('Participant Number'), {'fields': ['unlimited', 'max_participants']}),
@@ -93,7 +93,7 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ('get_display', 'size')
     readonly_fields = ('get_display', 'size',)
     fieldsets = [
-        (None, {'fields': ['students', 'size', 'assignments']}),
+        (None, {'fields': ['students', 'size', 'assignments', 'collection_count']}),
     ]
     # searching the students while creating or editing a group
     filter_horizontal = ('students', )
