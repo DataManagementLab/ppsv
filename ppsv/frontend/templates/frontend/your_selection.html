@@ -14,8 +14,8 @@
     {% csrf_token %}
     <div style="{% if info_selection %} display:flex; flex-direction: row; padding: 0px 25px; {% else %} display:flex; justify-content: center; {% endif %} ">
         <ul class="responsive-table" style="margin:0px;padding:0px;{% if info_selection %} flex:5; {% else %} width:60%;min-width:580px {% endif %}">
-            {% for group_of_student in groups_of_student %}
-            <li class="table-header" style="padding: 15px;text-align:center;position:relative;">
+            {% for group_of_student, selections_of_collections in selections_of_collections_of_groups.items %}
+            <li class="table-header" style="padding: 15px;text-align:center;position:relative; margin-bottom: 20px;">
                 <div>
                     {{ group_of_student.get_display }}
                 </div>
@@ -23,19 +23,21 @@
                 <i class="fa fa-users" aria-hidden="true" title="Group Overview" style="font-size:24px;position:absolute;z-index:2;right:20px;top:15px"></i>
                 {% endif %}
             </li>
-            {% for selections in selections_of_groups %}
-                {% for selection in selections %}
-                    {% if selection.group == group_of_student %}
-                        <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;;">
+            <div style="display: flex; flex-direction: column; margin-bottom: 30px">
+                {% for collection_number, selections in selections_of_collections.items %}
+                Collection {{ collection_number }}
+                <div style="border: 3px solid rgba(94, 94, 94, 1); border-style: dashed none dashed dashed; padding: 20px 0px; {% if not forloop.last %} margin-bottom: 20px; {% endif %}">
+                    {% for selection in selections %}
+                    <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;{% if selections|last == selection %} margin-bottom: 0px; {% endif %}">
                             <div style="display:inline-grid;grid-column-start: 1;grid-column-end: 3;position:absolute;z-index:2;left:1%;{% if selection.priority == 1 %} top:30 % {% else %} top:8% {% endif %};font-size:16px;">
                                 {% if selection.priority != 1 %}
-                                <button name="up_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:1;grid-column:1;">
+                                <button name="up_priority" value="{{ selection.id }}|{{ collection_number }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:1;grid-column:1;">
                                     <i class="fa fa-arrow-up" aria-hidden="true" style="color:rgba(94, 94, 94, 1)"></i>
                                 </button>
                                 {% endif %}
                                 <div style="grid-row:2;grid-column:1;margin-left:3px;color:rgba(10,61,98,1);"> {{ selection.priority }} </div>
                                 {% if selection.priority != selections|length%}
-                                <button name="down_priority" value="{{ selection.id }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:3;grid-column:1;">
+                                <button name="down_priority" value="{{ selection.id }}|{{ collection_number }}" type="submit" style="background-color:transparent;outline:none;border:none;padding:0px;grid-row:3;grid-column:1;">
                                     <i class="fa fa-arrow-down" aria-hidden="true" style="color:rgba(94, 94, 94, 1)"></i>
                                 </button>
                                 {% endif %}
@@ -81,7 +83,7 @@
                                 {% endfor %}
                             </div>
                             <div class="col-2">
-                                    <button name="remove_topic_button" value="{{ selection.id }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" value="{{selection.topic.id}}"  type="submit"> Remove Topic </button>
+                                    <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> Remove Topic </button>
                             </div>
                             <div class="col-1" >
                                 <button name="{% if not info_selection.id == selection.id%}info_button{% else %}close_info_button{% endif %}" value="{{ selection.id }}" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
@@ -130,10 +132,11 @@
                             }
                         </script>
                         {% endif %}
-                    {% endif %}
+                    {% endfor %}
+                </div>
                 {% endfor %}
+            </div>
             {% endfor %}
-        {% endfor %}
         </ul>
     {% if info_selection %}
     <div style="flex:3">

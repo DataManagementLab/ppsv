@@ -404,35 +404,85 @@ def your_selection(request):
 
     groups_of_student = []
     selections_of_groups = []
+
     # check if user has groups and collect them
     if models.Group.objects.filter(students=student_tucan_id).exists():
         groups_of_student = models.Group.objects.filter(students=student_tucan_id)
         for group in groups_of_student:
             selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
 
+    selections_of_collections_of_groups = {}
+
+    for group in groups_of_student:
+        selections_of_collections = {}
+        for collection_number in range(1, group.collection_count+1):
+            selections_of_collections[collection_number] = []
+            for selections in selections_of_groups:
+                if len(selections) > 0:
+                    if selections[0].group == group:
+                        selections_of_collection = []
+                        for selection in selections:
+                            if collection_number == selection.collection_number:
+                                selections_of_collection.append(selection)
+                        selections_of_collections[collection_number] = sorted(selections_of_collection, key=lambda x: x.priority)
+        selections_of_collections_of_groups[group] = selections_of_collections
+
     if request.method == "POST":
         # when removing a selected topic from a group
         if "remove_topic_button" in request.POST:
-
-            selection_id = str(request.POST.get('remove_topic_button'))
-            group_id = get_selection(selections_of_groups, selection_id).group.id
+            data = str(request.POST.get("remove_topic_button")).split("|")
+            selection_id = int(data[0])
+            collection_number = int(data[1])
+            group_of_selection = get_selection(selections_of_groups, selection_id).group
 
             priority_of_removed_topic = get_selection(selections_of_groups, selection_id).priority
             get_selection(selections_of_groups, selection_id).delete()
             selections_of_groups.clear()
+
             # show the groups and selected topics without the deleted one
             if models.Group.objects.filter(students=student_tucan_id).exists():
                 groups_of_student = models.Group.objects.filter(students=student_tucan_id)
                 for group in groups_of_student:
                     selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
+
+            del (selections_of_collections_of_groups[group])[collection_number]
+            selections_of_collections[collection_number] = []
+            for selections in selections_of_groups:
+                if len(selections) > 0:
+                    if selections[0].group == group:
+                        selections_of_collection = []
+                        for selection in selections:
+                            if collection_number == selection.collection_number:
+                                selections_of_collection.append(selection)
+                        selections_of_collections[collection_number] = sorted(selections_of_collection,
+                                                                              key=lambda x: x.priority)
+            selections_of_collections_of_groups[group] = selections_of_collections
+
+            for group in groups_of_student:
+                selections_of_collections = {}
+                for collection_number in range(1, group.collection_count + 1):
+                    selections_of_collections[collection_number] = []
+                    for selections in selections_of_groups:
+                        if len(selections) > 0:
+                            if selections[0].group == group:
+                                selections_of_collection = []
+                                for selection in selections:
+                                    if collection_number == selection.collection_number:
+                                        selections_of_collection.append(selection)
+                                selections_of_collections[collection_number] = sorted(selections_of_collection,
+                                                                                      key=lambda x: x.priority)
+                selections_of_collections_of_groups[group] = selections_of_collections
+
             # move up the remaining selection priorities to fill the gap left by the removed topic
             if priority_of_removed_topic != 0:
-                for selections in selections_of_groups:
-                    for selection in selections:
-                        if str(selection.group.id) == str(group_id):
-                            if int(selection.priority) > int(priority_of_removed_topic):
-                                selection.priority = int(selection.priority) - 1
-                                selection.save()
+                selections_in_same_collection = (selections_of_collections_of_groups[group_of_selection])[collection_number]
+                for selection in selections_in_same_collection:
+                    if int(selection.priority) > int(priority_of_removed_topic):
+                        selection.priority = int(selection.priority) - 1
+                        selection.save()
+            selections_of_collections_of_groups[group_of_selection][collection_number] = sorted(
+                selections_in_same_collection, key=lambda x: x.priority)
+
         # when pressing the button for editing the motivation text
         elif "edit_motivation_text_button" in request.POST:
             open_motivation_text_for_selection = int(request.POST.get("edit_motivation_text_button"))
@@ -459,32 +509,43 @@ def your_selection(request):
                         break
         # when choosing to increase the priority of a selected topic
         elif "up_priority" in request.POST:
-            chosen_selection_id = int(request.POST.get("up_priority"))
+            data = str(request.POST.get("up_priority")).split("|")
+            chosen_selection_id = int(data[0])
+            collection_number = int(data[1])
             chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
 
-            for selections in selections_of_groups:
-                for selection in selections:
-                    if selection.group.pk == chosen_selection.group.pk and selection.pk != chosen_selection.pk:
-                        if selection.priority == chosen_selection.priority - 1:
-                            selection.priority = chosen_selection.priority
-                            selection.save()
-                            chosen_selection.priority = chosen_selection.priority - 1
-                            chosen_selection.save()
-                            break
+            selections_in_same_collection = (selections_of_collections_of_groups[chosen_selection.group])[collection_number]
+
+            for selection in selections_in_same_collection:
+                if selection.pk != chosen_selection.pk:
+                    if selection.priority == chosen_selection.priority - 1:
+                        selection.priority = chosen_selection.priority
+                        selection.save()
+                        chosen_selection.priority = chosen_selection.priority - 1
+                        chosen_selection.save()
+                        break
+            selections_of_collections_of_groups[chosen_selection.group][collection_number] = sorted(selections_in_same_collection, key=lambda x: x.priority)
+
         # when choosing to decrease the priority of a selected topic
         elif "down_priority" in request.POST:
-            chosen_selection_id = int(request.POST.get("down_priority"))
+            data = str(request.POST.get("down_priority")).split("|")
+            chosen_selection_id = int(data[0])
+            collection_number = int(data[1])
             chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
 
-            for selections in selections_of_groups:
-                for selection in selections:
-                    if selection.group.pk == chosen_selection.group.pk and selection.pk != chosen_selection.pk:
-                        if selection.priority == chosen_selection.priority + 1:
-                            selection.priority = chosen_selection.priority
-                            selection.save()
-                            chosen_selection.priority = chosen_selection.priority + 1
-                            chosen_selection.save()
-                            break
+            selections_in_same_collection = (selections_of_collections_of_groups[chosen_selection.group])[
+                collection_number]
+
+            for selection in selections_in_same_collection:
+                if selection.pk != chosen_selection.pk:
+                    if selection.priority == chosen_selection.priority + 1:
+                        selection.priority = chosen_selection.priority
+                        selection.save()
+                        chosen_selection.priority = chosen_selection.priority + 1
+                        chosen_selection.save()
+                        break
+            selections_of_collections_of_groups[chosen_selection.group][collection_number] = sorted(
+                selections_in_same_collection, key=lambda x: x.priority)
 
     sorted_selections_of_groups = []
     # sort selected topics by priority
@@ -508,6 +569,7 @@ def your_selection(request):
     if 'save_motivation_text_button' not in request.POST and 'cancel_motivation_save' not in request.POST\
             and not request.POST.get(
             "open_motivation_text_for_selection") is None:
+
         open_motivation_text_for_selection = int(request.POST.get("open_motivation_text_for_selection"))
 
         for selections_of_group in selections_of_groups:
@@ -527,9 +589,7 @@ def your_selection(request):
         else:
             args["open_course_info"] = False
 
-    args["student_tu_id"] = student_tucan_id
-    args["groups_of_student"] = groups_of_student
-    args["selections_of_groups"] = selections_of_groups
+    args["selections_of_collections_of_groups"] = selections_of_collections_of_groups
     args["motivation_text_required"] = motivation_text_required
     # opening the info of a selected topic
     if "info_button" in request.POST:
