@@ -35,7 +35,7 @@ def homepage(request):
                     break
 
             for group in groups_of_student:
-                if models.TopicSelection.objects.filter(group=group,motivation="").exists():
+                if models.TopicSelection.objects.filter(group=group, motivation="").exists():
                     selections_need_motivation = True
                     break
 
@@ -415,7 +415,7 @@ def your_selection(request):
 
     for group in groups_of_student:
         selections_of_collections = {}
-        for collection_number in range(1, group.collection_count+1):
+        for collection_number in range(1, group.collection_count + 1):
             selections_of_collections[collection_number] = []
             for selections in selections_of_groups:
                 if len(selections) > 0:
@@ -424,7 +424,8 @@ def your_selection(request):
                         for selection in selections:
                             if collection_number == selection.collection_number:
                                 selections_of_collection.append(selection)
-                        selections_of_collections[collection_number] = sorted(selections_of_collection, key=lambda x: x.priority)
+                        selections_of_collections[collection_number] = sorted(selections_of_collection,
+                                                                              key=lambda x: x.priority)
         selections_of_collections_of_groups[group] = selections_of_collections
 
     if request.method == "POST":
@@ -475,7 +476,8 @@ def your_selection(request):
 
             # move up the remaining selection priorities to fill the gap left by the removed topic
             if priority_of_removed_topic != 0:
-                selections_in_same_collection = (selections_of_collections_of_groups[group_of_selection])[collection_number]
+                selections_in_same_collection = (selections_of_collections_of_groups[group_of_selection])[
+                    collection_number]
                 for selection in selections_in_same_collection:
                     if int(selection.priority) > int(priority_of_removed_topic):
                         selection.priority = int(selection.priority) - 1
@@ -514,7 +516,8 @@ def your_selection(request):
             collection_number = int(data[1])
             chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
 
-            selections_in_same_collection = (selections_of_collections_of_groups[chosen_selection.group])[collection_number]
+            selections_in_same_collection = (selections_of_collections_of_groups[chosen_selection.group])[
+                collection_number]
 
             for selection in selections_in_same_collection:
                 if selection.pk != chosen_selection.pk:
@@ -524,7 +527,8 @@ def your_selection(request):
                         chosen_selection.priority = chosen_selection.priority - 1
                         chosen_selection.save()
                         break
-            selections_of_collections_of_groups[chosen_selection.group][collection_number] = sorted(selections_in_same_collection, key=lambda x: x.priority)
+            selections_of_collections_of_groups[chosen_selection.group][collection_number] = sorted(
+                selections_in_same_collection, key=lambda x: x.priority)
 
         # when choosing to decrease the priority of a selected topic
         elif "down_priority" in request.POST:
@@ -546,6 +550,85 @@ def your_selection(request):
                         break
             selections_of_collections_of_groups[chosen_selection.group][collection_number] = sorted(
                 selections_in_same_collection, key=lambda x: x.priority)
+        elif "open_edit_collection" in request.POST:
+            open_edit_collection_for_group = int(request.POST.get("open_edit_collection"))
+            args["open_edit_collection_for_group"] = open_edit_collection_for_group
+        elif "add_collection" in request.POST:
+            for group in selections_of_collections_of_groups:
+                if group.id == int(request.POST.get("add_collection")):
+                    group.collection_count = group.collection_count + 1
+                    group.save()
+                    collections_of_group = selections_of_collections_of_groups[group]
+                    collections_of_group[group.collection_count] = []
+                    selections_of_collections_of_groups[group] = collections_of_group
+                    args["open_edit_collection_for_group"] = group.id
+                    break
+        elif "remove_collection" in request.POST:
+            data = str(request.POST.get("remove_collection")).split("|")
+            for group, collections_of_group in selections_of_collections_of_groups.items():
+                if group.id == int(data[0]):
+                    for collection_number, selections in collections_of_group.items():
+                        if collection_number == int(data[1]):
+                            if not len(selections) > 0:
+                                del (selections_of_collections_of_groups[group])[collection_number]
+                                group.collection_count = group.collection_count - 1
+                                group.save()
+                                break
+                            else:
+                                for selection in selections:
+                                    selection.delete()
+
+                                del (selections_of_collections_of_groups[group])[collection_number]
+                                group.collection_count = group.collection_count - 1
+                                group.save()
+                                break
+
+                    collections_of_group_temp = {}
+                    for collection_number, selections in collections_of_group.items():
+                        if collection_number < int(data[1]):
+                            collections_of_group_temp[collection_number] = collections_of_group[collection_number]
+                        if collection_number > int(data[1]):
+                            for selection in collections_of_group[collection_number]:
+                                selection.collection_number = selection.collection_number - 1
+                                selection.save()
+                            collections_of_group_temp[collection_number - 1] = collections_of_group[collection_number]
+
+                    selections_of_collections_of_groups[group] = collections_of_group_temp
+
+            args["open_edit_collection_for_group"] = int(data[0])
+        elif "ask_remove_collection" in request.POST:
+            data = str(request.POST.get("ask_remove_collection")).split("|")
+            args["ask_remove_group"] = int(data[0])
+            args["ask_remove_collection"] = int(data[1])
+            args["open_edit_collection_for_group"] = int(data[0])
+        elif "change_collection" in request.POST:
+            data = str(request.POST.get("change_collection")).split("|")
+            if len("".join(data[3]).split()) > 0:
+                for group, collections_of_group in selections_of_collections_of_groups.items():
+                    if group.id == int(data[0]):
+                        for collection_number, selections in collections_of_group.items():
+                            if collection_number == int(data[1]):
+                                for selection in selections:
+                                    if selection.id == int(data[2]):
+
+                                        for selection_in_same_collection in selections:
+                                            if selection_in_same_collection.priority > selection.priority:
+                                                selection_in_same_collection.priority = \
+                                                    selection_in_same_collection.priority - 1
+                                                selection_in_same_collection.save()
+
+                                        selection.collection_number = int(data[3])
+                                        selection.priority = len(collections_of_group[int(data[3])]) + 1
+                                        selection.save()
+                                        selections.remove(selection)
+                                        collections_of_group[int(data[3])].append(selection)
+
+                                        break
+                        else:
+                            continue
+                        break
+
+            args["open_edit_collection_for_group"] = int(data[0])
 
     sorted_selections_of_groups = []
     # sort selected topics by priority
@@ -566,9 +649,9 @@ def your_selection(request):
                 info.append((selection, False))
                 motivation_text_required.append(info)
     # leave edit open when opening information
-    if 'save_motivation_text_button' not in request.POST and 'cancel_motivation_save' not in request.POST\
+    if 'save_motivation_text_button' not in request.POST and 'cancel_motivation_save' not in request.POST \
             and not request.POST.get(
-            "open_motivation_text_for_selection") is None:
+        "open_motivation_text_for_selection") is None:
 
         open_motivation_text_for_selection = int(request.POST.get("open_motivation_text_for_selection"))
 
@@ -745,7 +828,7 @@ def groups(request):
                 if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                     if not models.Student.objects.get(
                             tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
-                                       id=int(request.POST.get("add_student"))).students.all():
+                        id=int(request.POST.get("add_student"))).students.all():
                         new_member_student = \
                             models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                         group = models.Group.objects.get(id=int(request.POST.get("add_student")))

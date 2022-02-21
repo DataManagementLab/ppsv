@@ -16,6 +16,31 @@
         <ul class="responsive-table" style="margin:0px;padding:0px;{% if info_selection %} flex:5; {% else %} width:60%;min-width:580px {% endif %}">
             {% for group_of_student, selections_of_collections in selections_of_collections_of_groups.items %}
             <li class="table-header" style="padding: 15px;text-align:center;position:relative; margin-bottom: 20px;">
+                <button class="undecorated-btn" type="submit" {% if not open_edit_collection_for_group == group_of_student.id  %} name="open_edit_collection" value="{{ group_of_student.id }}" {% endif %} style="position:absolute;left:15px;top:15px;" title="Edit Collections">
+                    <i class="fa fa-cog {% if open_edit_collection_for_group == group_of_student.id %} spinning-icon {% endif %}" aria-hidden="true" style="color:white;font-size:20px"></i>
+                </button>
+                {# The cog icon will spin if it is pressed #}
+                {% if open_edit_collection_for_group == group_of_student.id %}
+                <style>
+                    .spinning-icon {
+                        -webkit-animation:spin 4s linear infinite;
+                        -moz-animation:spin 4s linear infinite;
+                        animation:spin 4s linear infinite;
+                    }
+
+                    @-moz-keyframes spin {
+                        100% { -moz-transform: rotate(360deg);}
+                    }
+                    @-webkit-keyframes spin {
+                        100% { -webkit-transform: rotate(360deg);}
+                    }
+                    @keyframes spin {
+                        100% {
+                            -webkit-transform: rotate(360deg);
+                            transform:rotate(360deg);
+                        }
+                </style>
+                {% endif %}
                 <div>
                     {{ group_of_student.get_display }}
                 </div>
@@ -25,8 +50,15 @@
             </li>
             <div style="display: flex; flex-direction: column; margin-bottom: 30px">
                 {% for collection_number, selections in selections_of_collections.items %}
-                Collection {{ collection_number }}
-                <div style="border: 3px solid rgba(94, 94, 94, 1); border-style: dashed none dashed dashed; padding: 20px 0px; {% if not forloop.last %} margin-bottom: 20px; {% endif %}">
+                <span style="position:relative">
+                     Collection {{ collection_number }}
+                    {% if open_edit_collection_for_group == group_of_student.id and selections_of_collections.items|length > 1 %}
+                    <button class="undecorated-btn" type="submit" {% if selections|length > 0 %} name="ask_remove_collection" value="{{ open_edit_collection_for_group }}|{{ collection_number }}" {% else %} name="remove_collection" value="{{ open_edit_collection_for_group }}|{{ collection_number }}" {% endif %} title="Add new collection" style="position:absolute;top:2px;margin-left:5px" >
+                        <i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:18px"> </i>
+                    </button>
+                    {% endif %}
+                </span>
+                <div style="border: 3px solid rgba(94, 94, 94, 1); border-style: dashed none dashed dashed; padding: 20px 0px; {% if not forloop.last or open_edit_collection_for_group == group_of_student.id %} margin-bottom: 20px; {% endif %} {% if ask_remove_group == group_of_student.id and ask_remove_collection == collection_number %} margin-bottom: 0px; {% endif %}" >
                     {% for selection in selections %}
                     <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;{% if selections|last == selection %} margin-bottom: 0px; {% endif %}">
                             <div style="display:inline-grid;grid-column-start: 1;grid-column-end: 3;position:absolute;z-index:2;left:1%;{% if selection.priority == 1 %} top:30 % {% else %} top:8% {% endif %};font-size:16px;">
@@ -60,9 +92,15 @@
                                         position:absolute;z-index:2;top:-13px;left:15px";>
                                 {{ selection.topic.course.title }}
                             </div>
-                            <div class="col-3" style="overflow:hidden;text-overflow: ellipsis;">
+                            <div class="col-2" style="overflow:hidden;text-overflow: ellipsis;">
                                 {{ selection.topic.title }}
                             </div>
+                            {% if open_edit_collection_for_group == group_of_student.id %}
+                            <div>
+                                <input type="number" id="{{ group_of_student.id }}|{{ collection_number }}|{{ selection.id }}" name="collection_input" style="width:50px;text-align:center" min="1" max="{{selections_of_collections.items|length}}" value="{{ collection_number }}" onkeypress="keyPressListener(event)" title="Collection">
+                                <button id="{{ group_of_student.id }}|{{ collection_number }}|{{ selection.id }}|button" name="change_collection" value="" type="submit" hidden></button>
+                            </div>
+                            {% endif %}
                             <div class="col-2" style="margin-right:10px">
                                 {% for info in motivation_text_required %}
                                     {% for selection_in_required,required in info %}
@@ -134,7 +172,27 @@
                         {% endif %}
                     {% endfor %}
                 </div>
+                {% if ask_remove_group == group_of_student.id and ask_remove_collection == collection_number %}
+                <div class="alert-warning alert-dismissible" role="alert" style="margin-bottom:25px;display:flex; justify-content:center;padding:10px">
+                        <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;padding:5px" >
+                            If you delete this collection, all the selections will be deleted as well.
+                        </label>
+                        <button name="remove_collection" value="{{ ask_remove_group }}|{{ ask_remove_collection }}" style="border:none;outline:none;color:white;background-color:red;padding: 3px 10px">
+                            Delete Collection
+                        </button>
+                </div>
+                {% endif %}
                 {% endfor %}
+                {% if open_edit_collection_for_group == group_of_student.id %}
+                    <span style="position:relative;color:#ffa826" >
+                        Add Collection {{selections_of_collections.items|length|add:"+1"}}
+                        <button class="undecorated-btn" type="submit" name="add_collection" value="{{ open_edit_collection_for_group }}" title="Add new collection" style="position:absolute;top:2px;margin-left:5px" >
+                            <i class="fa fa-plus-square" aria-hidden="true" style="color:green;font-size:18px"> </i>
+                        </button>
+                    </span>
+                    <div style="position:relative;border: 3px solid #ffa826; border-style: dashed none dashed dashed; padding: 20px 0px; margin-bottom: 20px;">
+                    </div>
+                {% endif %}
             </div>
             {% endfor %}
         </ul>
@@ -201,4 +259,15 @@
     });
 </script>
 
+<!-- If enter is pressed in an input it will trigger a certain button -->
+<script>
+    function keyPressListener(event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                console.log(event.target.id);
+                document.getElementById(event.target.id + "|button" ).value = event.target.id + "|" + event.target.value;
+                document.getElementById(event.target.id + "|button" ).click();
+            }
+    }
+</script>
 {% endblock content %}
