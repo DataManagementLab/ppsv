@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-14 22:48+0100\n"
+"POT-Creation-Date: 2022-02-21 18:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,8 +27,8 @@ msgid ""
 "<div style=\"padding-left: 10px\"><small>Letters, numbers and @/./+/-/_ only."
 "</small></div>"
 msgstr ""
-"<div style=\"padding-left: 10px\"><small>Nur Buchstaben, Zahlen und @/./+/-/_ sind erlaubt."
-"</small></div>"
+"<div style=\"padding-left: 10px\"><small>Nur Buchstaben, Zahlen und @/./+/-/"
+"_ sind erlaubt.</small></div>"
 
 #: .\forms\forms.py:58 .\forms\forms.py:121
 msgid "password"
@@ -45,10 +45,10 @@ msgid ""
 "<br>The password must not be commonly used.<br>The password must not contain "
 "only numbers.</small></div>"
 msgstr ""
-"<div style=\"padding-left: 10px\"><small>Das Passwort darf nicht zu ähnlich zu anderen Informationen sein. "
-"<br>Das Passwort muss mindestens 8 Zeichen enthalten."
-"<br>Das Passwort darf nicht allgemein üblich sein.<br>Das Passwort darf nicht komplett "
-"aus Ziffern bestehen.</small></div>"
+"<div style=\"padding-left: 10px\"><small>Das Passwort darf nicht zu ähnlich "
+"zu anderen Informationen sein. <br>Das Passwort muss mindestens 8 Zeichen "
+"enthalten.<br>Das Passwort darf nicht allgemein üblich sein.<br>Das Passwort "
+"darf nicht komplett aus Ziffern bestehen.</small></div>"
 
 #: .\forms\forms.py:89
 msgid "first name"
@@ -186,7 +186,8 @@ msgstr "Du musst eingeloggt sein, um ein Thema auswählen zu können."
 
 #: .\templates\frontend\overview.html:146
 msgid "You need to be a student to select a topic."
-msgstr "Du musst ein Studierendenprofil haben, um ein Thema auswählen zu können."
+msgstr ""
+"Du musst ein Studierendenprofil haben, um ein Thema auswählen zu können."
 
 #: .\templates\frontend\overview.html:156
 msgid "There are no topics in this course."
@@ -252,25 +253,29 @@ msgstr "Account erstellen"
 
 #: .\templates\registration\register.html:22
 msgid "If you already have an account,"
-msgstr "Wenn du bereits einen Account hast, "
+msgstr "Wenn du bereits einen Account hast: "
 
 #: .\templates\registration\register.html:22
 msgid "instead."
-msgstr "."
+msgstr " "
 
 #: .\views.py:108 .\views.py:135 .\views.py:163 .\views.py:267
 msgid ""
 "Your selection was successful! You can find and edit your chosen topics on "
 "the \"My Selection\" page."
-msgstr "Die Auswahl war erfolgreich! Du kannst nun die ausgewählten Themen unter \"Meine Auswahl\" ansehen und bearbeiten."
+msgstr ""
+"Die Auswahl war erfolgreich! Du kannst nun die ausgewählten Themen unter "
+"\"Meine Auswahl\" ansehen und bearbeiten."
 
 #: .\views.py:113 .\views.py:140 .\views.py:167 .\views.py:272
 msgid ""
 "You need to add a motivation text (when required) to your selection in order "
 "to fully complete your selection. You can do this on the \"My Selection\" "
 "page."
-msgstr "Du musst noch, falls nötig, einen Motivationstext zum ausgewählten Kurs hinzufügen, um die Wahl abzuschließen."
-"Dies kannst du unter \"Meine Auswahl\" tun."
+msgstr ""
+"Du musst noch, falls nötig, einen Motivationstext zum ausgewählten Kurs "
+"hinzufügen, um die Wahl abzuschließen.Dies kannst du unter \"Meine Auswahl\" "
+"tun."
 
 #: .\views.py:126 .\views.py:153
 msgid "Selection failed! You have already selected this topic."
@@ -282,7 +287,7 @@ msgstr "Ein:e Student:in mit der TUCaN-ID "
 
 #: .\views.py:192
 msgid " not found."
-msgstr "konnte nicht gefunden werden."
+msgstr " konnte nicht gefunden werden."
 
 #: .\views.py:194
 msgid "Your group would be too large for "
@@ -313,14 +318,12 @@ msgid "Your motivation text has been saved."
 msgstr "Dein Motivationstext wurde gespeichert."
 
 #: .\views.py:539
-#, python-brace-format
-msgid "Adding {new_member_student} would make this group a duplicate "
-msgstr "Hinzufügen von {new_member_student} würde die Gruppe zu einem Duplikat machen."
+msgid "Adding {} would make this group a duplicate of an already existing one."
+msgstr "Hinzufügen von {} würde die Gruppe zu einem Duplikat machen."
 
 #: .\views.py:617
-#, python-brace-format
-msgid "You are now logged in as {username}."
-msgstr "Du bist nun angemeldet als {username}."
+msgid "You are now logged in as {}."
+msgstr "Du bist nun angemeldet als {}."
 
 #: .\views.py:620 .\views.py:622
 msgid "Invalid username or password."
@@ -344,7 +347,9 @@ msgstr "Das Studierendenprofil wurde erfolgreich gespeichert."
 
 #: .\views.py:679
 msgid "Student profile could not be saved. A user can only create one student."
-msgstr "Das Studierendenprofil konnte nicht gespeichert werden. Jeder Account kann nur eins erstellen."
+msgstr ""
+"Das Studierendenprofil konnte nicht gespeichert werden. Jeder Account kann "
+"nur eins erstellen."
 
 #: .\views.py:681
 msgid "Saving unsuccessful. Invalid information."

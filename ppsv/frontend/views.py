@@ -536,8 +536,8 @@ def groups(request):
                     print(students_after_addition)
 
                     if len(colliding_group) != 0:
-                        messages.error(request, _(f"Adding {new_member_student} would make this group a duplicate "
-                                                  f"of an already existing one."))
+                        messages.error(request, _("Adding {} would make this group a duplicate "
+                                                  "of an already existing one.").format(new_member_student))
                         args["error_message"] = True
                     else:
                         group.students.add(new_member_student)
@@ -614,7 +614,7 @@ def login_request(request):
             # proceeds to login the authenticated user
             if user is not None:
                 login(request, user)
-                messages.info(request, _(f"You are now logged in as {username}."))
+                messages.info(request, _("You are now logged in as {}.").format(username))
                 return redirect("frontend:homepage")
             else:
                 messages.error(request, _("Invalid username or password."))
