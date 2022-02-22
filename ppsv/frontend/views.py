@@ -29,6 +29,7 @@ def homepage(request):
             groups_of_student = models.Group.objects.filter(students=request.user.student)
             selections_exist = False
             selections_need_motivation = False
+            need_to_assign_topics_to_collection = False
             for group in groups_of_student:
                 if models.TopicSelection.objects.filter(group=group).exists():
                     selections_exist = True
@@ -36,8 +37,21 @@ def homepage(request):
 
             for group in groups_of_student:
                 if models.TopicSelection.objects.filter(group=group, motivation="").exists():
-                    selections_need_motivation = True
+                    for selection in models.TopicSelection.objects.filter(group=group, motivation=""):
+                        if selection.topic.course.motivation_text:
+                            selections_need_motivation = True
+                            break
+
+            for group in groups_of_student:
+                if models.TopicSelection.objects.filter(group=group, collection_number=0).exists():
+                    need_to_assign_topics_to_collection = True
                     break
+
+            # Pins message to board if motivation texts are missing for selections
+            if need_to_assign_topics_to_collection:
+                msg = "You still need to assign at least one topic to a collection"
+                link = "frontend:your_selection"
+                recommendations[msg] = link
 
             # Pins message to board if motivation texts are missing for selections
             if selections_need_motivation:
@@ -160,9 +174,10 @@ def overview(request):
                         group_of_student.students.add(student_tu_id)
 
                         user_selection = TopicSelection()
-                        user_selection.priority = 1
+                        # user_selection.priority = 1
                         user_selection.group = group_of_student
                         user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                        user_selection.collection_number = 0
                         user_selection.save()
 
                         messages.success(request,
@@ -186,9 +201,10 @@ def overview(request):
 
                         if not already_selected:
                             user_selection = TopicSelection()
-                            user_selection.priority = len(topic_selections_of_group) + 1
+                            # user_selection.priority = len(topic_selections_of_group) + 1
                             user_selection.group = existing_groups[0]
                             user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                            user_selection.collection_number = 0
                             user_selection.save()
                             messages.success(request,
                                              "Your selection was successful! You can find and edit your "
@@ -212,9 +228,10 @@ def overview(request):
 
                         if not already_selected:
                             selection = TopicSelection()
-                            selection.priority = len(topic_selections_of_group) + 1
+                            # selection.priority = len(topic_selections_of_group) + 1
                             selection.group = models.Group.objects.get(id=chosen_group_id)
                             selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                            selection.collection_number = 0
                             selection.save()
 
                             messages.success(request,
@@ -328,7 +345,8 @@ def overview(request):
                         selection = TopicSelection()
                         selection.group = group
                         selection.topic = models.Topic.objects.get(id=data[0])
-                        selection.priority = 1
+                        # selection.priority = 1
+                        selection.collection_number = 0
                         selection.save()
 
                         messages.success(request,
@@ -415,7 +433,7 @@ def your_selection(request):
 
     for group in groups_of_student:
         selections_of_collections = {}
-        for collection_number in range(1, group.collection_count + 1):
+        for collection_number in range(0, group.collection_count + 1):
             selections_of_collections[collection_number] = []
             for selections in selections_of_groups:
                 if len(selections) > 0:
@@ -446,22 +464,24 @@ def your_selection(request):
                 for group in groups_of_student:
                     selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
 
-            del (selections_of_collections_of_groups[group])[collection_number]
+            print((selections_of_collections_of_groups[group_of_selection])[collection_number])
+            del (selections_of_collections_of_groups[group_of_selection])[collection_number]
+
             selections_of_collections[collection_number] = []
             for selections in selections_of_groups:
                 if len(selections) > 0:
-                    if selections[0].group == group:
+                    if selections[0].group == group_of_selection:
                         selections_of_collection = []
                         for selection in selections:
                             if collection_number == selection.collection_number:
                                 selections_of_collection.append(selection)
                         selections_of_collections[collection_number] = sorted(selections_of_collection,
                                                                               key=lambda x: x.priority)
-            selections_of_collections_of_groups[group] = selections_of_collections
+            selections_of_collections_of_groups[group_of_selection] = selections_of_collections
 
             for group in groups_of_student:
                 selections_of_collections = {}
-                for collection_number in range(1, group.collection_count + 1):
+                for collection_number in range(0, group.collection_count + 1):
                     selections_of_collections[collection_number] = []
                     for selections in selections_of_groups:
                         if len(selections) > 0:
@@ -475,7 +495,7 @@ def your_selection(request):
                 selections_of_collections_of_groups[group] = selections_of_collections
 
             # move up the remaining selection priorities to fill the gap left by the removed topic
-            if priority_of_removed_topic != 0:
+            if priority_of_removed_topic != 0 and collection_number != 0:
                 selections_in_same_collection = (selections_of_collections_of_groups[group_of_selection])[
                     collection_number]
                 for selection in selections_in_same_collection:
@@ -603,32 +623,16 @@ def your_selection(request):
             args["open_edit_collection_for_group"] = int(data[0])
         elif "change_collection" in request.POST:
             data = str(request.POST.get("change_collection")).split("|")
-            if len("".join(data[3]).split()) > 0:
-                for group, collections_of_group in selections_of_collections_of_groups.items():
-                    if group.id == int(data[0]):
-                        for collection_number, selections in collections_of_group.items():
-                            if collection_number == int(data[1]):
-                                for selection in selections:
-                                    if selection.id == int(data[2]):
-
-                                        for selection_in_same_collection in selections:
-                                            if selection_in_same_collection.priority > selection.priority:
-                                                selection_in_same_collection.priority = \
-                                                    selection_in_same_collection.priority - 1
-                                                selection_in_same_collection.save()
-
-                                        selection.collection_number = int(data[3])
-                                        selection.priority = len(collections_of_group[int(data[3])]) + 1
-                                        selection.save()
-                                        selections.remove(selection)
-                                        collections_of_group[int(data[3])].append(selection)
-
-                                        break
-                        else:
-                            continue
-                        break
-
+            selections_of_collections_of_groups = \
+                change_collection(request, data, selections_of_collections_of_groups, False)
             args["open_edit_collection_for_group"] = int(data[0])
+        elif "assign_exclusives_to_matching_exclusive" in request.POST:
+            """group = models.Group.objects.get(id=int(request.POST.get("assign_exclusives_to_matching_exclusive")))
+            for selection in (selections_of_collections_of_groups[group])[0]:
+                data = [(request.POST.get("assign_exclusives_to_matching_exclusive")), 0, selection.id, str(0)]
+                selections_of_collections_of_groups = \
+                    change_collection(request, data, selections_of_collections_of_groups, True)
+            args["open_edit_collection_for_group"] = int(data[0])"""
 
     sorted_selections_of_groups = []
     # sort selected topics by priority
@@ -650,8 +654,7 @@ def your_selection(request):
                 motivation_text_required.append(info)
     # leave edit open when opening information
     if 'save_motivation_text_button' not in request.POST and 'cancel_motivation_save' not in request.POST \
-            and not request.POST.get(
-        "open_motivation_text_for_selection") is None:
+            and not request.POST.get("open_motivation_text_for_selection") is None:
 
         open_motivation_text_for_selection = int(request.POST.get("open_motivation_text_for_selection"))
 
@@ -700,6 +703,78 @@ def your_selection(request):
 
 
 # Help functions of your_selection
+def change_collection(request, data, selections_of_collections_of_groups, exclusive_matching):
+    if len("".join(data[3]).split()) > 0:
+        for group, collections_of_group in selections_of_collections_of_groups.items():
+            if group.id == int(data[0]):
+                for collection_number, selections in collections_of_group.items():
+                    if collection_number == int(data[1]):
+                        for selection in selections:
+                            if selection.id == int(data[2]) \
+                                    and (selection.collection_number != int("".join(data[3]).split()[0])
+                                         or exclusive_matching):
+                                the_selection_is_exclusive = False
+                                the_target_collection_has_exclusive_selections = False
+                                matching_exclusive_collection_number = [False, 0]
+
+                                if selection.topic.course.collection_exclusive:
+
+                                    for group0, collections_of_group0 in selections_of_collections_of_groups.items():
+                                        if group0.id == int(data[0]):
+                                            for collection_number0, selections0 in collections_of_group.items():
+                                                if collection_number0 > 0 and \
+                                                        collection_number0 != selection.collection_number and \
+                                                        len(selections0) > 0:
+                                                    if selections0[0].topic.course == selection.topic.course:
+                                                        matching_exclusive_collection_number = \
+                                                            [True, collection_number0]
+
+                                    if matching_exclusive_collection_number[0] \
+                                            and int(data[3]) != matching_exclusive_collection_number[1]:
+                                        data[3] = matching_exclusive_collection_number[1]
+                                        messages.info(request, "Automatically assigned \"" + str(selection.topic.title)
+                                                      + "\" to a matching collection")
+
+                                    if not len(collections_of_group[int(data[3])]) == 0:
+                                        if not collections_of_group[int(data[3])][0].topic.course \
+                                               == selection.topic.course:
+                                            the_selection_is_exclusive = True
+                                            messages.error(request, "The target collection already has topics "
+                                                                    "from a different course. The topic you are "
+                                                                    "trying to assign can only be in a collection "
+                                                                    "with topics from its same course.")
+                                else:
+                                    if not len(collections_of_group[int(data[3])]) == 0:
+                                        if not collections_of_group[int(data[3])][0].topic.course \
+                                               == selection.topic.course:
+                                            the_target_collection_has_exclusive_selections = True
+                                            messages.error(request, "The target collection exclusively "
+                                                                    "allows topics of course \""
+                                                           + str(selection.topic.course)
+                                                           + "\".")
+
+                                if not the_selection_is_exclusive \
+                                        and not the_target_collection_has_exclusive_selections:
+                                    for selection_in_same_collection in selections:
+                                        if selection_in_same_collection.priority > selection.priority:
+                                            selection_in_same_collection.priority = \
+                                                selection_in_same_collection.priority - 1
+                                            selection_in_same_collection.save()
+
+                                    selection.collection_number = int(data[3])
+                                    selection.priority = len(collections_of_group[int(data[3])]) + 1
+                                    selection.save()
+                                    selections.remove(selection)
+                                    collections_of_group[int(data[3])].append(selection)
+
+                                    break
+                else:
+                    continue
+                break
+
+    return selections_of_collections_of_groups
+
+
 def get_selection(selections_of_groups, chosen_selection_id):
     """ finds the selection in selections_of_groups that matches the given chosen_selection_id
 
