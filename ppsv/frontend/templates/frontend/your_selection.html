@@ -285,19 +285,24 @@
     </div>
 </form>
 
-<!-- The scroll position is saved and loaded when the page submits a form-->
+<!-- The scroll position is saved and loaded when the page submits a form but if an error message is thrown the y-scroll-position will be reset to 0 -->
 <script>
+
     document.addEventListener("DOMContentLoaded", function (event) {
         var scrollpos = sessionStorage.getItem('scrollpos');
-        if (scrollpos) {
-            window.scrollTo(0, scrollpos);
-            sessionStorage.removeItem('scrollpos');
-        }
+        {% if not error_message %}
+            if (scrollpos) {
+                window.scrollTo(0, scrollpos);
+                sessionStorage.removeItem('scrollpos');
+            }
+        {% endif %}
+
     });
 
     window.addEventListener("beforeunload", function (e) {
            sessionStorage.setItem('scrollpos', window.scrollY);
     });
+
 </script>
 
 <!-- If enter is pressed in an input it will trigger a certain button -->

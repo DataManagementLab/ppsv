@@ -623,8 +623,10 @@ def your_selection(request):
             args["open_edit_collection_for_group"] = int(data[0])
         elif "change_collection" in request.POST:
             data = str(request.POST.get("change_collection")).split("|")
-            selections_of_collections_of_groups = \
+            result_change_collection = \
                 change_collection(request, data, selections_of_collections_of_groups, False)
+            selections_of_collections_of_groups = result_change_collection[0]
+            args["error_message"] = result_change_collection[1]
             args["open_edit_collection_for_group"] = int(data[0])
         elif "assign_exclusives_to_matching_exclusive" in request.POST:
             """group = models.Group.objects.get(id=int(request.POST.get("assign_exclusives_to_matching_exclusive")))
@@ -704,6 +706,15 @@ def your_selection(request):
 
 # Help functions of your_selection
 def change_collection(request, data, selections_of_collections_of_groups, exclusive_matching):
+    """ Tries to change the collection of a given selection if allowed
+
+    :param request: The given request
+    :param data: an array containing the group id, collection_number, selection id and target collection_number
+    :param selections_of_collections_of_groups: the current state of selections
+    :param exclusive_matching: boolean whether this function should try to match exclusives automatically
+    :return: an array containing updated selections_of_collections_of_groups and a boolean for error handling
+    """
+    error = False
     if len("".join(data[3]).split()) > 0:
         for group, collections_of_group in selections_of_collections_of_groups.items():
             if group.id == int(data[0]):
@@ -743,15 +754,18 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                                                     "from a different course. The topic you are "
                                                                     "trying to assign can only be in a collection "
                                                                     "with topics from its same course.")
+                                            error = True
                                 else:
                                     if not len(collections_of_group[int(data[3])]) == 0:
                                         if not collections_of_group[int(data[3])][0].topic.course \
                                                == selection.topic.course:
-                                            the_target_collection_has_exclusive_selections = True
-                                            messages.error(request, "The target collection exclusively "
-                                                                    "allows topics of course \""
-                                                           + str(selection.topic.course)
-                                                           + "\".")
+                                            if collections_of_group[int(data[3])][0].topic.course.collection_exclusive:
+                                                the_target_collection_has_exclusive_selections = True
+                                                messages.error(request, "The target collection exclusively "
+                                                                        "allows topics of course \""
+                                                               + str(collections_of_group[int(data[3])][0].topic.course)
+                                                               + "\".")
+                                                error = True
 
                                 if not the_selection_is_exclusive \
                                         and not the_target_collection_has_exclusive_selections:
@@ -772,7 +786,7 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                     continue
                 break
 
-    return selections_of_collections_of_groups
+    return [selections_of_collections_of_groups, error]
 
 
 def get_selection(selections_of_groups, chosen_selection_id):
