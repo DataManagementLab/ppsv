@@ -15,6 +15,7 @@
     <div style="{% if info_selection %} display:flex; flex-direction: row; padding: 0px 25px; {% else %} display:flex; justify-content: center; {% endif %} ">
         <ul class="responsive-table" style="margin:0px;padding:0px;{% if info_selection %} flex:5; {% else %} width:60%;min-width:580px {% endif %}">
             {% for group_of_student, selections_of_collections in selections_of_collections_of_groups.items %}
+            {# possible extension for automatic collection assignment #}
             <!--
             <button class="undecorated-btn" type="submit" name="assign_exclusives_to_matching_exclusive" value="{{ group_of_student.id }}">
                     <i class="fa fa-cog" aria-hidden="true" style="color:black;font-size:20px"></i>
@@ -44,6 +45,7 @@
                             -webkit-transform: rotate(360deg);
                             transform:rotate(360deg);
                         }
+                    }
                 </style>
                 {% endif %}
                 <div>

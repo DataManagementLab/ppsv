@@ -174,7 +174,6 @@ def overview(request):
                         group_of_student.students.add(student_tu_id)
 
                         user_selection = TopicSelection()
-                        # user_selection.priority = 1
                         user_selection.group = group_of_student
                         user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
                         user_selection.collection_number = 0
@@ -201,7 +200,6 @@ def overview(request):
 
                         if not already_selected:
                             user_selection = TopicSelection()
-                            # user_selection.priority = len(topic_selections_of_group) + 1
                             user_selection.group = existing_groups[0]
                             user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
                             user_selection.collection_number = 0
@@ -228,7 +226,6 @@ def overview(request):
 
                         if not already_selected:
                             selection = TopicSelection()
-                            # selection.priority = len(topic_selections_of_group) + 1
                             selection.group = models.Group.objects.get(id=chosen_group_id)
                             selection.topic = models.Topic.objects.get(id=selected_topic_id)
                             selection.collection_number = 0
@@ -345,7 +342,6 @@ def overview(request):
                         selection = TopicSelection()
                         selection.group = group
                         selection.topic = models.Topic.objects.get(id=data[0])
-                        # selection.priority = 1
                         selection.collection_number = 0
                         selection.save()
 
@@ -464,7 +460,6 @@ def your_selection(request):
                 for group in groups_of_student:
                     selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id))
 
-            print((selections_of_collections_of_groups[group_of_selection])[collection_number])
             del (selections_of_collections_of_groups[group_of_selection])[collection_number]
 
             selections_of_collections[collection_number] = []
@@ -753,7 +748,7 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                             messages.error(request, "The target collection already has topics "
                                                                     "from a different course. The topic you are "
                                                                     "trying to assign can only be in a collection "
-                                                                    "with topics from its same course.")
+                                                                    "with topics from the same course.")
                                             error = True
                                 else:
                                     if not len(collections_of_group[int(data[3])]) == 0:
@@ -782,6 +777,9 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                     collections_of_group[int(data[3])].append(selection)
 
                                     break
+                        else:
+                            continue
+                        break
                 else:
                     continue
                 break
@@ -917,7 +915,7 @@ def groups(request):
                 if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                     if not models.Student.objects.get(
                             tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
-                        id=int(request.POST.get("add_student"))).students.all():
+                                        id=int(request.POST.get("add_student"))).students.all():
                         new_member_student = \
                             models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                         group = models.Group.objects.get(id=int(request.POST.get("add_student")))
