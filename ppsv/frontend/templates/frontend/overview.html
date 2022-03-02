@@ -1,13 +1,12 @@
 {% extends 'frontend/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}
-Selection Page
-{% endblock title%}
+{% block title %} {% translate "Overview" %} {% endblock title%}
 
 {% block selection_page_navbar_container %}
        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px;">
-            <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;"> {% if user.is_authenticated %} Select Your Topics {% else %} View Topics {% endif %} </button>
+            <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;"> {% translate "Overview" %} </button>
        </form>
 {% endblock selection_page_navbar_container %}
 
@@ -27,28 +26,28 @@ Selection Page
                 </button>
                 {% endif %}
 {#				The text of the header changes according to which page the user is on#}
-                <div>{% if chosen_topic %} Select Your Topic {% elif courses %}  Choose a Course {% elif topics %} Choose a Topic {% else %} Choose a Faculty {% endif %} </div>
+                <div>{% if chosen_topic %} {% translate "Select my Topic" %} {% elif courses %}  {% translate "Choose a Course" %} {% elif topics %} {% translate "Choose a Topic" %} {% else %} {% translate "Choose a Faculty" %} {% endif %} </div>
             </li>
 
             {% if topics %}
             <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);{% if open_course_info %} margin-bottom:0px {% else %} margin-bottom:10px {% endif %}">
                 <button name="{% if open_group_select %}open_group_select{% elif chosen_topic %}choose_topic{% else %}choose_course{% endif %}" value="{% if chosen_topic or open_group_select %}{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|{% if open_course_info %}False{% else %}True{% endif %}{% else %}{{ chosen_course.id }}|{{ chosen_faculty }}|{% if open_course_info %}False{% else %}True{% endif %}{% endif %}" class="button" type="submit"
                         style="color:white;background-color:transparent;width:100%;border:none;outline:none;text-transform: capitalize;font-size: 14px;overflow:hidden;text-overflow: ellipsis;margin-left:30px">
-                    <span style="font-weight:500"> Information for Course {{ chosen_course.title }} </span>
+                    <span style="font-weight:500"> {% translate "Information for Course" %} {{ chosen_course.title }} </span>
                     <i class="{% if open_course_info %} fa fa-caret-up {% else %} fa fa-caret-down {% endif %}" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px"></i>
                 </button>
             </li>
                 {% if open_course_info %}
                 <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
-                    <p> <label style="font-weight:500"> Organizer: </label> {{ chosen_course.organizer }} </p>
-                    <p> <label style="font-weight:500"> Course Type: </label> {{ chosen_course.get_type_display }} </p>
-                    <p> <label style="font-weight:500"> Faculty: </label> {{ chosen_course.get_faculty_display }} </p>
-                    <p> <label style="font-weight:500"> Language: </label> Sprache </p>
-                    <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
-                    <p> <label style="font-weight:500"> Registration: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
+                    <p> <label style="font-weight:500"> {% translate "Organizer" %}: </label> {{ chosen_course.organizer }} </p>
+                    <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ chosen_course.get_type_display }} </p>
+                    <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ chosen_course.get_faculty_display }} </p>
+                    <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
+                    <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
+                    <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
                     <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
-                    <p> <label style="font-weight:500"> Motivation Text: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
-                    <label style="font-weight:500"> Description </label>
+                    <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
+                    <label style="font-weight:500"> {% translate "Description" %} </label>
                     <p> {{ chosen_course.description }} </p>
                 </div>
                 {% endif %}
@@ -56,8 +55,8 @@ Selection Page
                     {% if not chosen_topic %}
                     <div class="table-info" style="{% if chosen_topic %} width:60%; {% endif %}">
                         <div style="display:flex;justify-content: space-around;">
-                            <div style="flex-basis:100%"> Title </div>
-                            <div style="flex-basis:100%"> Max Participants </div>
+                            <div style="flex-basis:100%"> {% translate "Title" %} </div>
+                            <div style="flex-basis:100%"> {% translate "Max Participants" %} </div>
                         </div>
                     </div>
                     {% endif %}
@@ -75,8 +74,8 @@ Selection Page
                             <div style="width:60%">
                             <div class="table-info">
                             <div style="display:flex;justify-content: space-around;">
-                                <div style="flex-basis:100%"> Title </div>
-                                <div style="flex-basis:100%"> Max Participants </div>
+                                <div style="flex-basis:100%"> {% translate "Title" %} </div>
+                                <div style="flex-basis:100%"> {% translate "Max Participants" %} </div>
                             </div>
                             </div>
                             <div class="table-btn">
@@ -91,11 +90,11 @@ Selection Page
                                 <button name="open_group_create" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;"> Create new group </button>
                                 <label style="text-align:center;position:relative;margin:0px;margin-top:1px">
                                     <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;left:15px;"></div>
-                                    or
+                                    {% translate "or" %}
                                     <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;right:15px;"></div>
                                 </label>
                                 <select name="group_options" style="text-align: center; height:25px;margin-left:5px;margin-right:5px;">
-                                    <option value="-1"> Choose your group </option>
+                                    <option value="-1"> {% translate "Choose my group" %} </option>
                                     {% for group in groups %}
                                      <option value="{{ group.id }}"> {{ group.get_display }} </option>
                                     {% endfor %}
@@ -108,7 +107,7 @@ Selection Page
                                 <div>
                                     <button type="submit" name="select_with_new_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info"
                                             style="text-align:center;position:absolute;bottom:10px;left:5px;width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background-color:green;color:white;padding-bottom:2px;border:none;outline:none;border-radius:3px">
-                                        Select with group
+                                        {% translate "Select with group" %}
                                     </button>
                                 </div>
                                 <div>
@@ -117,7 +116,7 @@ Selection Page
                                     </button>
                                 </div>
                                 <div class="table-btn" style="overflow:auto;overflow-x: hidden;height:120px;width:50%;box-sizing: border-box;padding: 1% 5%;margin:0px;">
-                                        <label class="group-member" style="border-style: dotted"> <div style="visibility: hidden"> New Student </div> </label> <br>
+                                        <label class="group-member" style="border-style: dotted"> <div style="visibility: hidden"> {% translate "New Student" %} </div> </label> <br>
                                         {% for member in members_in_new_group%}
                                         <div style="position:relative;">
                                         {% if member != request.user.student.tucan_id %}
@@ -143,7 +142,7 @@ Selection Page
                                             <div style="display:grid;width:40%;position:relative">
                                                 <label style="position:absolute;top:20%;left:35%;text-align:center">
                                                     <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
-                                                    <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> to your selections  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                                    <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
                                                 </label>
                                             </div>
                                         {% endif %}
@@ -151,7 +150,7 @@ Selection Page
                                 {% else %}
                                     <div style="display:grid;width:40%;position:relative">
                                         <label style="position:absolute;top:20%;left:13%;text-align:center">
-                                            <label style="color:red;margin:0px;font-size:25px;"> {% if not request.user.is_authenticated %} You need to be logged in to select a topic {% else %} You need to be a student to select a topic {% endif %} </label>
+                                            <label style="color:red;margin:0px;font-size:25px;"> {% if not request.user.is_authenticated %} {% translate "You need to be logged in to select a topic." %} {% else %} {% translate "You need to be a student to select a topic." %} {% endif %} </label>
                                         </label>
                                     </div>
                                 {% endif %}
@@ -162,18 +161,18 @@ Selection Page
 				{# If the chosen course has no topics the user will be informed that the course has no topics #}
                 {% else %}
                     <div class="table-info" style="background-color:orange;font-size:14px">
-                        There are no topics in this course
+                        {% translate "There are no topics in this course." %}
                 </div>
                 {% endif %}
                 {% if chosen_topic %}
                 <li class="table-header" style="padding: 8px;text-align:center;position:relative;background-color:rgba(94, 94, 94, 1);margin-bottom:0px;text-transform: capitalize;font-size: 14px;">
                     <div style="overflow:hidden;text-overflow: ellipsis;margin-left:30px">
-                        <span style="font-weight:500"> Information for Topic {{ chosen_topic.title }} </span>
+                        <span style="font-weight:500"> {% translate "Information for Topic" %} {{ chosen_topic.title }} </span>
                     </div>
                     <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
                 </li>
                 <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
-                        <label style="font-weight:500"> Description </label>
+                        <label style="font-weight:500"> {% translate "Description" %} </label>
                         <p> {{ chosen_topic.description }} </p>
                         <p> <a href="{{ BASE_DIR }}/media/{{ chosen_topic.file }}">information file</a> </p>
                     </div>
@@ -184,11 +183,11 @@ Selection Page
                 {% if courses != "No_Courses" %}
                     <div class="table-info">
                     <div style="display:flex;justify-content: space-around;">
-                        <div style="flex-basis:100%"> Title </div>
-                        <div style="flex-basis:100%"> Type </div>
-                        <div style="flex-basis:100%"> Status </div>
-                        <div style="flex-basis:100%"> Registration End </div>
-                        <div style="flex-basis:100%"> Max Participants </div>
+                        <div style="flex-basis:100%"> {% translate "Title" %} </div>
+                        <div style="flex-basis:100%"> {% translate "Type" %} </div>
+                        <div style="flex-basis:100%"> {% translate "Status" %} </div>
+                        <div style="flex-basis:100%"> {% translate "Registration End" %} </div>
+                        <div style="flex-basis:100%"> {% translate "Max Participants" %} </div>
                         <div style="flex-basis:100%"> CP </div>
                     </div>
                 </div>
@@ -206,7 +205,7 @@ Selection Page
                     {% endfor %}
                 {% else %}
                     <div class="table-info" style="background-color:orange;font-size:14px">
-                        There are no courses in this faculty
+                        {% translate "There are no courses in this faculty." %}
                 </div>
                 {% endif %}
             {% endif %}

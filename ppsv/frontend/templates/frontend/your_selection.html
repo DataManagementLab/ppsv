@@ -1,11 +1,12 @@
 {% extends 'frontend/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %} Your Selection {% endblock %}
+{% block title %} {% translate "My Selection" %} {% endblock %}
 
 {% block your_selection_page_navbar_container %}
 <form class="navbar-form" action="{% url 'frontend:your_selection' %}" style="float:left;padding-bottom: 0px">
-    <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;"> Your Selection </button>
+    <button type="submit" class="navbar-btn" style="color:#0a3d62;padding-top:0.3em;padding-bottom:0.3em;"> {% translate "My Selection" %} </button>
 </form>
 {% endblock your_selection_page_navbar_container %}
 
@@ -117,11 +118,11 @@
                             {% if not selection.priority or not selection.motivation and selection.topic.course.motivation_text %}
                                 <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:-30px "
                                    {% if not selection.priority and not selection.motivation and selection.topic.course.motivation_text %}
-                                       title="You need to set the priority for this topic and write a motivation text"
+                                       title="You need to set the priority for this topic and write a motivation text."
                                        {% elif not selection.priority %}
-                                       title="You need to set the priority for this topic"
+                                       title="You need to set the priority for this topic."
                                        {% elif not selection.motivation and selection.topic.course.motivation_text %}
-                                       title="You need to write a motivation text"
+                                       title="You need to write a motivation text."
                                    {% endif %} >
                                 </i>
                             {% endif %}
@@ -150,12 +151,12 @@
                                                 {% if selection.id == open_motivation_text_for_selection %}
                                                      <button class="button" name="save_motivation_text_button" value="{{ selection.id }}"
                                                             type="submit" style="margin:0px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
-                                                            Save Motivation Text
+                                                            {% translate "Save Motivation Text" %}
                                                      </button>
                                                 {% else %}
                                                     <button class="button" id="edit_motivation_text_button" name="edit_motivation_text_button" value="{{ selection.id }}"
                                                             type="submit" style="margin:0px ;white-space:nowrap; background-color:#0C8FCC; color:white; border:none; border-radius:5px;">
-                                                            Edit Motivation Text
+                                                            {% translate "Edit Motivation Text" %}
                                                     </button>
                                                 {% endif %}
                                         {% endif %}
@@ -163,7 +164,7 @@
                                 {% endfor %}
                             </div>
                             <div class="col-2">
-                                    <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> Remove Topic </button>
+                                    <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> {% translate "Remove Topic" %} </button>
                             </div>
                             <div class="col-1" >
                                 <button name="{% if not info_selection.id == selection.id%}info_button{% else %}close_info_button{% endif %}" value="{{ selection.id }}" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
@@ -258,15 +259,15 @@
                 </li>
                 {% if open_course_info %}
                     <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
-                        <p> <label style="font-weight:500"> Organizer: </label> {{ info_selection.topic.course.organizer }} </p>
-                        <p> <label style="font-weight:500"> Course Type: </label> {{ info_selection.topic.course.get_type_display }} </p>
-                        <p> <label style="font-weight:500"> Faculty: </label> {{ info_selection.topic.course.get_faculty_display }} </p>
-                        <p> <label style="font-weight:500"> Language: </label> Sprache </p>
-                        <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.course.max_participants }} {% endif %} </p>
-                        <p> <label style="font-weight:500"> Registration: </label> {{ info_selection.topic.course.registration_start }} - {{ info_selection.topic.course.registration_deadline }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Organizer" %}: </label> {{ info_selection.topic.course.organizer }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ info_selection.topic.course.get_type_display }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ info_selection.topic.course.get_faculty_display }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
+                        <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.course.max_participants }} {% endif %} </p>
+                        <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ info_selection.topic.course.registration_start }} - {{ info_selection.topic.course.registration_deadline }} </p>
                         <p> <label style="font-weight:500"> CP: </label> {{ info_selection.topic.course.cp }} </p>
-                        <p> <label style="font-weight:500"> Motivation Text: </label> {% if info_selection.topic.course.motivation_text %} required {% else %} not required {% endif %}</p>
-                        <label style="font-weight:500"> Description </label>
+                        <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if info_selection.topic.course.motivation_text %} required {% else %} not required {% endif %}</p>
+                        <label style="font-weight:500"> {% translate "Description" %} </label>
                         <p> {{ info_selection.topic.course.description }} </p>
                     </div>
                 {% endif %}

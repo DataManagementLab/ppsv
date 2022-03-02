@@ -10,6 +10,7 @@ from django.contrib import messages
 from course.models import TopicSelection, Group
 from django.contrib.auth.models import User
 from frontend.decorators import user_passes_test
+from django.utils.translation import gettext_lazy as _
 
 
 def homepage(request):
@@ -180,12 +181,12 @@ def overview(request):
                         user_selection.save()
 
                         messages.success(request,
-                                         "Your selection was successful! You can find and edit your "
-                                         "chosen topics on the 'Your Selection' page.")
+                                         _("Your selection was successful! You can prioritize and edit your "
+                                            "chosen topics on the 'Your Selection' page."))
                         if user_selection.topic.course.motivation_text:
                             messages.warning(request,
-                                             "You need to add a motivation text "
-                                             "to your selection in order to fully complete your selection.")
+                                             _("You need to add a motivation text "
+                                                "to your selection in order to fully complete your selection."))
                     # when the user already has a hidden group for himself
                     else:
 
@@ -196,7 +197,7 @@ def overview(request):
                         for known_selection in topic_selections_of_group:
                             if int(selected_topic_id) == int(known_selection.topic.id):
                                 already_selected = True
-                                messages.error(request, "Selection failed! You have already selected this topic.")
+                                messages.error(request, _("Selection failed! You have already selected this topic."))
 
                         if not already_selected:
                             user_selection = TopicSelection()
@@ -205,12 +206,14 @@ def overview(request):
                             user_selection.collection_number = 0
                             user_selection.save()
                             messages.success(request,
-                                             "Your selection was successful! You can find and edit your "
-                                             "chosen topics on the 'Your Selection' page.")
+                                             _("Your selection was successful! "
+                                               "You can find and edit your chosen topics on the "
+                                               "\"My Selection\" page."))
                             if user_selection.topic.course.motivation_text:
                                 messages.warning(request,
-                                                 "You need to add a motivation text "
-                                                 "to your selection in order to fully complete your selection.")
+                                                 _("You need to add a motivation text (when required) "
+                                                    "to your selection in order to fully "
+                                                    "complete your selection. You can do this on the \"My Selection\" page."))
                 # when the user selects a group with an already existing group
                 elif "select_with_chosen_group" in request.POST:
                     data = str(request.POST.get("select_with_chosen_group")).split("|")
@@ -222,7 +225,7 @@ def overview(request):
                         for known_selection in topic_selections_of_group:
                             if int(selected_topic_id) == int(known_selection.topic.id):
                                 already_selected = True
-                                messages.error(request, "Selection failed! You have already selected this topic.")
+                                messages.error(request, _("Selection failed! You have already selected this topic."))
 
                         if not already_selected:
                             selection = TopicSelection()
@@ -232,12 +235,14 @@ def overview(request):
                             selection.save()
 
                             messages.success(request,
-                                             "Your selection was successful! You can find and edit your "
-                                             "chosen topics on the 'Your Selection' page.")
+                                             _("Your selection was successful! "
+                                                "You can find and edit your chosen topics on the "
+                                                "\"My Selection\" page."))
                             if selection.topic.course.motivation_text:
                                 messages.warning(request,
-                                                 "You need to add a motivation text "
-                                                 "to your selection in order to fully complete your selection.")
+                                                 _("You need to add a motivation text (when required) "
+                                                    "to your selection in order to fully "
+                                                    "complete your selection. You can do this on the \"My Selection\" page."))
 
                     else:
                         args["open_group_select"] = True
@@ -268,19 +273,19 @@ def overview(request):
                                         tucan_id=request.POST.get("new_student_id")).exists():
                                     members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
                                 else:
-                                    messages.error(request, "A student with the tucan id " +
+                                    messages.error(request, _("A student with the tucan id ") +
                                                    request.POST.get("new_student_id") +
-                                                   " was not found.")
+                                                   _(" was not found."))
                             else:
-                                messages.error(request, "Your group would be too large for " +
+                                messages.error(request, _("Your group would be too large for ") +
                                                str(models.Topic.objects.get(id=data[0]).title)
-                                               + ". Your group can only have a maximum member count of " +
+                                               + _(". Your group can only have a maximum of ") +
                                                str(models.Topic.objects.get(id=data[0]).max_participants)
-                                               + ".")
+                                               + _(" members."))
                         else:
-                            messages.error(request, "A student with the tucan id " +
+                            messages.error(request, _("A student with the tucan id ") +
                                            request.POST.get("new_student_id") +
-                                           " is already in the group.")
+                                           _(" is already in the group."))
 
                     args["members_in_new_group"] = members_in_new_group
                     args["open_group_create"] = True
@@ -316,7 +321,7 @@ def overview(request):
                     exception = False
 
                     if len(members_in_new_group) == 1:
-                        messages.error(request, f"Your group needs to contain more members than yourself!")
+                        messages.error(request, _(f"Your group needs to contain more members than yourself!"))
                         exception = True
 
                     for groups_of_member in existing_groups:
@@ -324,8 +329,8 @@ def overview(request):
                             for group in groups_of_member:
                                 if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
                                         and len(members_in_new_group) == \
-                                        len("".join(group.get_display.split(",")).split()):
-                                    messages.error(request, f"This group already exists!")
+                                    len("".join(group.get_display.split(",")).split()):
+                                    messages.error(request, _(f"This group already exists!"))
                                     exception = True
                                     break
 
@@ -346,12 +351,14 @@ def overview(request):
                         selection.save()
 
                         messages.success(request,
-                                         "Your selection was successful! You can find and edit your "
-                                         "chosen topics on the 'Your Selection' page.")
+                                         _("Your selection was successful! "
+                                           "You can find and edit your chosen topics on the "
+                                           "\"My Selection\" page."))
                         if selection.topic.course.motivation_text:
                             messages.warning(request,
-                                             "You need to add a motivation text "
-                                             "to your selection in order to fully complete your selection.")
+                                             _("You need to add a motivation text (when required) "
+                                                "to your selection in order to fully "
+                                                "complete your selection. You can do this on the \"My Selection\" page."))
 
             chosen_topic = data[0]
             chosen_course = data[1]
@@ -522,7 +529,7 @@ def your_selection(request):
                     if selection.id == save_motivation_text_for:
                         selection.motivation = motivation_text
                         selection.save()
-                        messages.success(request, "Your motivation text has been saved.")
+                        messages.success(request, _("Your motivation text has been saved."))
                         break
         # when choosing to increase the priority of a selected topic
         elif "up_priority" in request.POST:
@@ -932,9 +939,9 @@ def groups(request):
                                 colliding_group = colliding_group.exclude(id=check_group.id)
 
                         if len(colliding_group) != 0:
-                            messages.error(request, f"Adding {new_member_student} "
-                                                    f"would make this group a duplicate of "
-                                                    f"an already existing one.")
+                            messages.error(request, _("Adding {} "
+                                                    f"would make this group a duplicate  "
+                                                    "of an already existing one.").format(new_member_student))
                             args["error_message"] = True
                         else:
                             group.students.add(new_member_student)
@@ -1026,12 +1033,12 @@ def login_request(request, *given_template):
             # proceeds to login the authenticated user
             if user is not None:
                 login(request, user)
-                messages.info(request, f"You are now logged in as {username}.")
+                messages.info(request, _("You are now logged in as {}.").format(username))
                 return redirect("frontend:homepage")
             else:
-                messages.error(request, "Invalid username or password.")
+                messages.error(request, _("Invalid username or password."))
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, _("Invalid username or password."))
     form = UserLoginForm()
     return render(request, template_name, context={"login_form": form})
 
@@ -1044,7 +1051,7 @@ def logout_request(request):
     """
     # logs the user out
     logout(request)
-    messages.info(request, "You have successfully logged out.")
+    messages.info(request, _("You have successfully logged out."))
     return redirect("frontend:homepage")
 
 
@@ -1061,9 +1068,9 @@ def register(request):
             # saves the given data as a new user and the user is logged in
             user = form.save()
             login(request, user)
-            messages.success(request, "Registration successful.")
+            messages.success(request, _("Registration successful."))
             return redirect("frontend:profile")
-        messages.error(request, "Unsuccessful registration. Invalid information.")
+        messages.error(request, _("Unsuccessful registration. Invalid information."))
     form = NewUserForm()
     return render(request=request, template_name="registration/register.html", context={"register_form": form})
 
@@ -1084,12 +1091,12 @@ def profile(request):
             student.user = request.user
             student.email = request.user.email
             student.save()
-            messages.success(request, "Student profile saved successfully.")
+            messages.success(request, _("Student profile has been saved successfully."))
             return redirect("frontend:homepage")
         if hasattr(request.user, "student"):
             # maybe overwriting the current student is possible, but changing the primary key is troublesome
-            messages.error(request, "Student profile could not be saved. A user can only create one student.")
+            messages.error(request, _("Student profile could not be saved. A user can only create one student."))
         else:
-            messages.error(request, "Saving unsuccessful. Invalid information.")
+            messages.error(request, _("Saving unsuccessful. Invalid information."))
     form = NewStudentForm()
     return render(request=request, template_name="registration/profile.html", context={"profile_form": form})

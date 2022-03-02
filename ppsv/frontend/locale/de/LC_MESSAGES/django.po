@@ -1,0 +1,356 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-21 18:03+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\forms\forms.py:53 .\forms\forms.py:117
+msgid "username"
+msgstr ""
+
+#: .\forms\forms.py:55
+msgid ""
+"<div style=\"padding-left: 10px\"><small>Letters, numbers and @/./+/-/_ only."
+"</small></div>"
+msgstr ""
+"<div style=\"padding-left: 10px\"><small>Nur Buchstaben, Zahlen und @/./+/-/"
+"_ sind erlaubt.</small></div>"
+
+#: .\forms\forms.py:58 .\forms\forms.py:121
+msgid "password"
+msgstr "Passwort"
+
+#: .\forms\forms.py:61
+msgid "confirm password"
+msgstr "Passwort bestätigen"
+
+#: .\forms\forms.py:63
+msgid ""
+"<div style=\"padding-left: 10px\"><small>The password must not contain any "
+"personal information.<br>The password has to be at least 8 digits long."
+"<br>The password must not be commonly used.<br>The password must not contain "
+"only numbers.</small></div>"
+msgstr ""
+"<div style=\"padding-left: 10px\"><small>Das Passwort darf nicht zu ähnlich "
+"zu anderen Informationen sein. <br>Das Passwort muss mindestens 8 Zeichen "
+"enthalten.<br>Das Passwort darf nicht allgemein üblich sein.<br>Das Passwort "
+"darf nicht komplett aus Ziffern bestehen.</small></div>"
+
+#: .\forms\forms.py:89
+msgid "first name"
+msgstr "Vorname"
+
+#: .\forms\forms.py:91
+msgid "last name"
+msgstr "Nachname"
+
+#: .\templates\frontend\base.html:38
+msgid "Internship & Seminar Allocation"
+msgstr "Praktika- & Seminarplatzvergabe"
+
+#: .\templates\frontend\base.html:53 .\templates\frontend\homepage.html:19
+msgid "You are not logged in."
+msgstr "Du bist nicht eingeloggt."
+
+#: .\templates\frontend\base.html:73 .\templates\frontend\overview.html:5
+#: .\templates\frontend\overview.html:9
+msgid "Overview"
+msgstr "Übersicht"
+
+#: .\templates\frontend\base.html:79 .\templates\frontend\your_selection.html:5
+#: .\templates\frontend\your_selection.html:9
+msgid "My Selection"
+msgstr "Meine Auswahl"
+
+#: .\templates\frontend\base.html:86
+msgid "My Groups"
+msgstr "Meine Gruppen"
+
+#: .\templates\frontend\homepage.html:5
+msgid "Home"
+msgstr ""
+
+#: .\templates\frontend\homepage.html:17
+msgid "Hi"
+msgstr "Hallo"
+
+#: .\templates\frontend\overview.html:26
+msgid "Select my Topic"
+msgstr "Mein Thema auswählen"
+
+#: .\templates\frontend\overview.html:26
+msgid "Choose a Course"
+msgstr "Wähle einen Kurs"
+
+#: .\templates\frontend\overview.html:26
+msgid "Choose a Topic"
+msgstr "Wähle ein Thema"
+
+#: .\templates\frontend\overview.html:26
+msgid "Choose a Faculty"
+msgstr "Wähle einen Fachbereich"
+
+#: .\templates\frontend\overview.html:33
+msgid "Information for Course"
+msgstr "Kursinformationen"
+
+#: .\templates\frontend\overview.html:39
+#: .\templates\frontend\your_selection.html:146
+msgid "Organizer"
+msgstr "Organisierende"
+
+#: .\templates\frontend\overview.html:40
+#: .\templates\frontend\your_selection.html:147
+msgid "Course Type"
+msgstr "Kursart"
+
+#: .\templates\frontend\overview.html:41
+#: .\templates\frontend\your_selection.html:148
+msgid "Faculty"
+msgstr "Fachbereich"
+
+#: .\templates\frontend\overview.html:42
+#: .\templates\frontend\your_selection.html:149
+msgid "Language"
+msgstr "Sprache"
+
+#: .\templates\frontend\overview.html:43
+#: .\templates\frontend\your_selection.html:150
+#: .\templates\frontend\your_selection.html:163
+msgid "Min | Max Participants"
+msgstr "Min | Max Teilnehmerzahl"
+
+#: .\templates\frontend\overview.html:44
+#: .\templates\frontend\your_selection.html:151
+msgid "Registration"
+msgstr "Registrierung"
+
+#: .\templates\frontend\overview.html:46
+#: .\templates\frontend\your_selection.html:153
+msgid "Motivation Text"
+msgstr "Motivationstext"
+
+#: .\templates\frontend\overview.html:47 .\templates\frontend\overview.html:167
+#: .\templates\frontend\your_selection.html:154
+#: .\templates\frontend\your_selection.html:164
+msgid "Description"
+msgstr "Beschreibung"
+
+#: .\templates\frontend\overview.html:55 .\templates\frontend\overview.html:73
+#: .\templates\frontend\overview.html:178
+msgid "Title"
+msgstr "Name"
+
+#: .\templates\frontend\overview.html:56 .\templates\frontend\overview.html:74
+#: .\templates\frontend\overview.html:182
+msgid "Max Participants"
+msgstr "Max Teilnehmerzahl"
+
+#: .\templates\frontend\overview.html:89 .\templates\registration\login.html:21
+msgid "or"
+msgstr "oder"
+
+#: .\templates\frontend\overview.html:93
+msgid "Choose my group"
+msgstr "Wähle deine Gruppe"
+
+#: .\templates\frontend\overview.html:106
+msgid "Select with group"
+msgstr "Mit Gruppe auswählen"
+
+#: .\templates\frontend\overview.html:115
+msgid "New Student"
+msgstr "Neue:r Student:in"
+
+#: .\templates\frontend\overview.html:139
+msgid "See My Selection"
+msgstr "Meine Auswahl ansehen"
+
+#: .\templates\frontend\overview.html:146
+msgid "You need to be logged in to select a topic."
+msgstr "Du musst eingeloggt sein, um ein Thema auswählen zu können."
+
+#: .\templates\frontend\overview.html:146
+msgid "You need to be a student to select a topic."
+msgstr ""
+"Du musst ein Studierendenprofil haben, um ein Thema auswählen zu können."
+
+#: .\templates\frontend\overview.html:156
+msgid "There are no topics in this course."
+msgstr "In diesem Kurs gibt es keine verfügbaren Themen."
+
+#: .\templates\frontend\overview.html:162
+msgid "Information for Topic"
+msgstr "Themeninformationen"
+
+#: .\templates\frontend\overview.html:179
+msgid "Type"
+msgstr "Art"
+
+#: .\templates\frontend\overview.html:180
+msgid "Registration Start"
+msgstr "Registrierungsstart"
+
+#: .\templates\frontend\overview.html:181
+msgid "Registration End"
+msgstr "Registrierungsende"
+
+#: .\templates\frontend\overview.html:200
+msgid "There are no courses in this faculty."
+msgstr "In diesem Fachbereich gibt es keine verfügbaren Kurse."
+
+#: .\templates\frontend\your_selection.html:73
+msgid "Save Motivation Text"
+msgstr "Motivationstext speichern"
+
+#: .\templates\frontend\your_selection.html:78
+msgid "Edit Motivation Text"
+msgstr "Motivationstext bearbeiten"
+
+#: .\templates\frontend\your_selection.html:86
+msgid "Remove Topic"
+msgstr "Thema löschen"
+
+#: .\templates\registration\login.html:25
+msgid "I don't have an account."
+msgstr "Ich habe keinen Account."
+
+#: .\templates\registration\login.html:26
+#: .\templates\registration\register.html:6
+#: .\templates\registration\register.html:19
+msgid "Register"
+msgstr "Registrieren"
+
+#: .\templates\registration\profile.html:12
+msgid "Create your student profile"
+msgstr "Erstellung eines Studentenprofils"
+
+#: .\templates\registration\profile.html:13
+msgid "This information cannot be changed after submitting!"
+msgstr "Diese Daten können später nicht mehr geändert werden!"
+
+#: .\templates\registration\profile.html:18
+msgid "Save profile permanently"
+msgstr "Profil unwiderruflich speichern"
+
+#: .\templates\registration\register.html:13
+msgid "Create an account"
+msgstr "Account erstellen"
+
+#: .\templates\registration\register.html:22
+msgid "If you already have an account,"
+msgstr "Wenn du bereits einen Account hast: "
+
+#: .\templates\registration\register.html:22
+msgid "instead."
+msgstr " "
+
+#: .\views.py:108 .\views.py:135 .\views.py:163 .\views.py:267
+msgid ""
+"Your selection was successful! You can find and edit your chosen topics on "
+"the \"My Selection\" page."
+msgstr ""
+"Die Auswahl war erfolgreich! Du kannst nun die ausgewählten Themen unter "
+"\"Meine Auswahl\" ansehen und bearbeiten."
+
+#: .\views.py:113 .\views.py:140 .\views.py:167 .\views.py:272
+msgid ""
+"You need to add a motivation text (when required) to your selection in order "
+"to fully complete your selection. You can do this on the \"My Selection\" "
+"page."
+msgstr ""
+"Du musst noch, falls nötig, einen Motivationstext zum ausgewählten Kurs "
+"hinzufügen, um die Wahl abzuschließen.Dies kannst du unter \"Meine Auswahl\" "
+"tun."
+
+#: .\views.py:126 .\views.py:153
+msgid "Selection failed! You have already selected this topic."
+msgstr "Die Auswahl ist fehlgeschlagen! Du hast diesen Kurs bereits gewählt."
+
+#: .\views.py:190 .\views.py:200
+msgid "A student with the tucan id "
+msgstr "Ein:e Student:in mit der TUCaN-ID "
+
+#: .\views.py:192
+msgid " not found."
+msgstr " konnte nicht gefunden werden."
+
+#: .\views.py:194
+msgid "Your group would be too large for "
+msgstr "Deine Gruppe ist zu groß für "
+
+#: .\views.py:196
+msgid ". Your group can only have a maximum of "
+msgstr ". Deine Gruppe kann maximal aus "
+
+#: .\views.py:198
+msgid " members."
+msgstr " Mitgliedern bestehen."
+
+#: .\views.py:202
+msgid " is already in the group."
+msgstr " ist bereits in deiner Gruppe."
+
+#: .\views.py:236
+msgid "Your group needs to contain more members than yourself!"
+msgstr "Deine Gruppe muss mehr Personen beinhalten, als nur dich selbst!"
+
+#: .\views.py:246
+msgid "This group already exists!"
+msgstr "Diese Gruppe existiert bereits!"
+
+#: .\views.py:390
+msgid "Your motivation text has been saved."
+msgstr "Dein Motivationstext wurde gespeichert."
+
+#: .\views.py:539
+msgid "Adding {} would make this group a duplicate of an already existing one."
+msgstr "Hinzufügen von {} würde die Gruppe zu einem Duplikat machen."
+
+#: .\views.py:617
+msgid "You are now logged in as {}."
+msgstr "Du bist nun angemeldet als {}."
+
+#: .\views.py:620 .\views.py:622
+msgid "Invalid username or password."
+msgstr "Benutzername oder Passwort sind falsch."
+
+#: .\views.py:635
+msgid "You have successfully logged out."
+msgstr "Du hast dich erfolgreich ausgeloggt."
+
+#: .\views.py:652
+msgid "Registration successful."
+msgstr "Registrierung erfolgreich."
+
+#: .\views.py:654
+msgid "Unsuccessful registration. Invalid information."
+msgstr "Die Registrierung ist fehlgeschlagen. Unzulässige Angaben.."
+
+#: .\views.py:675
+msgid "Student profile has been saved successfully."
+msgstr "Das Studierendenprofil wurde erfolgreich gespeichert."
+
+#: .\views.py:679
+msgid "Student profile could not be saved. A user can only create one student."
+msgstr ""
+"Das Studierendenprofil konnte nicht gespeichert werden. Jeder Account kann "
+"nur eins erstellen."
+
+#: .\views.py:681
+msgid "Saving unsuccessful. Invalid information."
+msgstr "Speichern fehlgeschlagen. Ungültige Angaben."

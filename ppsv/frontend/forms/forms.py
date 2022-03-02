@@ -9,6 +9,9 @@ from django.forms import ModelForm
 from course.models import Student
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from django.utils.functional import lazy
+
+mark_safe_lazy = lazy(mark_safe, str)
 
 
 class NewUserForm(UserCreationForm):
@@ -48,7 +51,7 @@ class NewUserForm(UserCreationForm):
 	# formatting of the form
 	username = UsernameField(widget=forms.TextInput(
 		attrs={'class': 'form-control', 'placeholder': _('username'), 'id': 'username'}), label='', help_text=
-				mark_safe(_(
+				mark_safe_lazy(_(
 					"<div style=\"padding-left: 10px\"><small>Letters, numbers and @/./+/-/_ only."
 					"</small></div>")))
 	password1 = forms.CharField(widget=forms.PasswordInput(
@@ -56,7 +59,7 @@ class NewUserForm(UserCreationForm):
 	), label='')
 	password2 = forms.CharField(widget=forms.PasswordInput(
 		attrs={'class': 'form-control',	'placeholder': _('confirm password'), 'id': 'password2'}
-	), label='', help_text=mark_safe(_(
+	), label='', help_text=mark_safe_lazy(_(
 									"<div style=\"padding-left: 10px\"><small>"
 									"The password must not contain any personal information.<br>"
 									"The password has to be at least 8 digits long.<br>"
