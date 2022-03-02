@@ -325,7 +325,7 @@ class TopicSelection(models.Model):
     motivation = models.TextField(verbose_name=_("motivation Text"), blank=True)
     priority = models.IntegerField(verbose_name=_("priority"), default=1,
                                    validators=[MaxValueValidator(99), MinValueValidator(1)])
-    collection_number = models.IntegerField(verbose_name=_("collection Number"), default=1)
+    collection_number = models.IntegerField(verbose_name=_("collection number"), default=1)
 
     class Meta:
         """Meta options
