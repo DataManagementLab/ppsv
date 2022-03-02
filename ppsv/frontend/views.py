@@ -483,17 +483,17 @@ def your_selection(request):
 
             for group in groups_of_student:
                 selections_of_collections = {}
-                for collection_number in range(0, group.collection_count + 1):
-                    selections_of_collections[collection_number] = []
+                for collection_number_it in range(0, group.collection_count + 1):
+                    selections_of_collections[collection_number_it] = []
                     for selections in selections_of_groups:
                         if len(selections) > 0:
                             if selections[0].group == group:
                                 selections_of_collection = []
                                 for selection in selections:
-                                    if collection_number == selection.collection_number:
+                                    if collection_number_it == selection.collection_number:
                                         selections_of_collection.append(selection)
-                                selections_of_collections[collection_number] = sorted(selections_of_collection,
-                                                                                      key=lambda x: x.priority)
+                                selections_of_collections[collection_number_it] = sorted(selections_of_collection,
+                                                                                         key=lambda x: x.priority)
                 selections_of_collections_of_groups[group] = selections_of_collections
 
             # move up the remaining selection priorities to fill the gap left by the removed topic
