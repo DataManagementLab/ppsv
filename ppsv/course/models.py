@@ -29,6 +29,8 @@ class Course(models.Model):
     :type Course.registration_deadline: DateTimeField
     :attr Course.description: The description of the course
     :type Course.description: TextField
+    :attr Course.collection_exclusive: if a user can only choose this course in one collection with one group
+    :type Course.collection_exclusive: BooleanField
     :attr Course.unlimited: if the number of participants is unlimited
     :type Course.unlimited: BooleanField
     :attr Course.max_participants: the maximum number of participants
@@ -55,7 +57,7 @@ class Course(models.Model):
     registration_start = models.DateTimeField(default=timezone.now, verbose_name=_("registration Start"))
     registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
     description = models.TextField(verbose_name=_("description"))
-
+    collection_exclusive = models.BooleanField(_("collection exclusive"), blank=True, default=False)
     unlimited = models.BooleanField('unlimited number of participants', blank=True, default=False)
     max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
                                            validators=[MaxValueValidator(9999), MinValueValidator(0)],)
@@ -246,6 +248,7 @@ class Group(models.Model):
     """
     students = models.ManyToManyField(Student, verbose_name=_("students"))
     assignments = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
+    collection_count = models.IntegerField(verbose_name=_("number of collections"), default=1)
 
     # instead of this model we now us a Property for group size
     # size = models.IntegerField(verbose_name=_("group Size"), default=1,
@@ -313,6 +316,8 @@ class TopicSelection(models.Model):
     :type TopicSelection.motivation: TextField
     :attr TopicSelection.priority: The priority of the selected topic
     :type TopicSelection.priority: IntegerField
+    :attr TopicSelection.collection_number: The collection_number of the selected topic
+    :type TopicSelection.collection_number: IntegerField
 
     """
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name=_("group"))
@@ -320,6 +325,7 @@ class TopicSelection(models.Model):
     motivation = models.TextField(verbose_name=_("motivation Text"), blank=True)
     priority = models.IntegerField(verbose_name=_("priority"), default=1,
                                    validators=[MaxValueValidator(99), MinValueValidator(1)])
+    collection_number = models.IntegerField(verbose_name=_("collection Number"), default=1)
 
     class Meta:
         """Meta options
