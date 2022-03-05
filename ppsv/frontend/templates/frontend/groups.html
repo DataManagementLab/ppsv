@@ -121,9 +121,16 @@
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <button class="undecorated-btn" type="submit" name="ask_delete_group" value="{{ group_of_student.id }}" style="position:absolute;right:15px;top:15px;" title="Delete Group">
-                                <i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:20px"> </i>
-                            </button>
+                            {# If the "edit" button for the group was pressed, "trash" button will appear right of the chosen group's name in order to be able to delete the chosen group #}
+                            {% for members_group, members in members_of_groups.items %}
+                                {% if group_of_student.id == members_group %}
+                                    {% if chosen_group_for_edit == members_group %}
+                                        <button class="undecorated-btn" type="submit" name="ask_delete_group" value="{{ group_of_student.id }}" style="position:absolute;right:15px;top:15px;" title="Delete Group">
+                                            <i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:20px"> </i>
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
                         </li>
 {#						"members_of_groups" is a dictionary, which contains the group ids of all groups of the user as the key#}
 {#									and all members (user objects) of all groups as the value  #}
