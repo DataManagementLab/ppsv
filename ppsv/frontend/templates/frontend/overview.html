@@ -116,7 +116,6 @@
                                     </button>
                                 </div>
                                 <div class="table-btn" style="overflow:auto;overflow-x: hidden;height:120px;width:50%;box-sizing: border-box;padding: 1% 5%;margin:0px;">
-                                        <label class="group-member" style="border-style: dotted"> <div style="visibility: hidden"> {% translate "New Student" %} </div> </label> <br>
                                         {% for member in members_in_new_group%}
                                         <div style="position:relative;">
                                         {% if member != request.user.student.tucan_id %}
