@@ -38,18 +38,23 @@
                 </button>
             </li>
                 {% if open_course_info %}
-                <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
-                    <p> <label style="font-weight:500"> {% translate "Organizer" %}: </label> {{ chosen_course.organizer }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ chosen_course.get_type_display }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ chosen_course.get_faculty_display }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
-                    <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
-                    <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
-                    <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
-                    <label style="font-weight:500"> {% translate "Description" %} </label>
-                    <p> {{ chosen_course.description }} </p>
+                <div class="container-fluid;" style="display:flex;justify-content:center;margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal; flex-wrap: wrap;">
+                    <div style="width: 50%; float:left; display: inline-block;">
+                        <p> <label style="font-weight:500"> {% translate "Organizer" %}: </label> {{ chosen_course.organizer }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ chosen_course.get_type_display }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ chosen_course.get_faculty_display }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
+                        <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
+                        <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
+                        <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
+                    </div>
+                    <div style="width: 50%; float:right; display: inline-block;">
+                        <label style="font-weight:500"> {% translate "Description" %}: </label>
+                        <p> {{ chosen_course.description }} </p>
+                    </div>
                 </div>
+
                 {% endif %}
                 {% if topics != "No_Topics" %}
                     {% if not chosen_topic %}
