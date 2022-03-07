@@ -138,8 +138,8 @@
                                         {# topics of courses with status Imminent cannot be chosen #}
                                         {% if chosen_course.get_status == "Imminent" %}
                                             <div style="display:grid;width:40%;position:relative">
-                                                <label style="position:absolute;top:20%;left:13%;text-align:center">
-                                                    <label style="color:red;margin:0px;font-size:17px;"> {% translate "You cannot choose this topic yet. The registration for this topic starts on {{chosen_course.registration_start}}." %} </label>
+                                                <label style="position:absolute;top:20%;left:0%;text-align:center">
+                                                    <label style="color:red;margin:0px;font-size:20px;"> {% translate "You cannot choose this topic yet. The registration for this topic starts on" %} {{chosen_course.registration_start}}. </label>
                                                 </label>
                                             </div>
                                         {% else %}
@@ -152,7 +152,7 @@
                                             {# If the topic has been already selected by a group in which the user is a member, the page informs the user that he already selected this topic #}
                                             {% else %}
                                                 <div style="display:grid;width:40%;position:relative">
-                                                    <label style="position:absolute;top:20%;left:35%;text-align:center">
+                                                    <label style="position:absolute;top:20%;left:25%;text-align:center">
                                                         <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
                                                         <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
                                                     </label>
@@ -162,7 +162,7 @@
 								{# If the user is either not logged in or has no student, he will be informed that he needs to be logged in or complete the registration  #}
                                 {% else %}
                                     <div style="display:grid;width:40%;position:relative">
-                                        <label style="position:absolute;top:20%;left:13%;text-align:center">
+                                        <label style="position:absolute;top:20%;left:0%;text-align:center">
                                             <label style="color:red;margin:0px;font-size:25px;"> {% if not request.user.is_authenticated %} {% translate "You need to be logged in to select a topic." %} {% else %} {% translate "You need to be a student to select a topic." %} {% endif %} </label>
                                         </label>
                                     </div>
@@ -203,7 +203,7 @@
                         <div style="flex-basis:100%"> {% translate "Max Participants" %} </div>
                         <div style="flex-basis:100%"> CP </div>
                     </div>
-                </div>
+                    </div>
                     {% for course in courses %}
                         {# only courses with status Open or Imminent (registration starts in less than 14 days) are shown in the course overview #}
                         {% if course.get_status == "Open" or course.get_status == "Imminent" %}
@@ -222,14 +222,14 @@
                 {% else %}
                     <div class="table-info" style="background-color:orange;font-size:14px">
                         {% translate "There are no courses in this faculty." %}
-                </div>
+                    </div>
                 {% endif %}
             {% endif %}
 
             {% for faculty_short, faculty_long in faculties.items %}
                 <button class="table-btn" name="choose_faculty" type="submit" value="{{ faculty_short }}" style="padding:15px;">
                 {{ faculty_long }}
-            </button>
+                </button>
             {% endfor %}
         </ul>
     </div>
