@@ -135,20 +135,29 @@
                             </div>
                             {% else %}
                                 {% if request.user.is_authenticated and request.user.student %}
-                                        {% if not topic.id in selected_topics %}
-                                            <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
-												{# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
-                                                {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
-                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
-                                            </div>
-										{# If the topic has been already selected by a group in which the user is a member, the page informs the user that he already selected this topic #}
-                                        {% else %}
+                                        {# topics of courses with status Imminent cannot be chosen #}
+                                        {% if chosen_course.get_status == "Imminent" %}
                                             <div style="display:grid;width:40%;position:relative">
-                                                <label style="position:absolute;top:20%;left:35%;text-align:center">
-                                                    <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
-                                                    <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                                <label style="position:absolute;top:20%;left:13%;text-align:center">
+                                                    <label style="color:red;margin:0px;font-size:17px;"> {% translate "You cannot choose this topic yet. The registration for this topic starts on {{chosen_course.registration_start}}." %} </label>
                                                 </label>
                                             </div>
+                                        {% else %}
+                                            {% if not topic.id in selected_topics %}
+                                                <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+                                                    {# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
+                                                    {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
+                                                    <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                                </div>
+                                            {# If the topic has been already selected by a group in which the user is a member, the page informs the user that he already selected this topic #}
+                                            {% else %}
+                                                <div style="display:grid;width:40%;position:relative">
+                                                    <label style="position:absolute;top:20%;left:35%;text-align:center">
+                                                        <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
+                                                        <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                                    </label>
+                                                </div>
+                                            {% endif %}
                                         {% endif %}
 								{# If the user is either not logged in or has no student, he will be informed that he needs to be logged in or complete the registration  #}
                                 {% else %}
@@ -196,7 +205,8 @@
                     </div>
                 </div>
                     {% for course in courses %}
-                        {% if course.get_status != "Closed" %}
+                        {# only courses with status Open or Imminent (registration starts in less than 14 days) are shown in the course overview #}
+                        {% if course.get_status == "Open" or course.get_status == "Imminent" %}
                             <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}|True">
                                 <div style="display:flex;justify-content: space-around;">
                                     <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ course.title }} </div>
