@@ -250,9 +250,6 @@ class Group(models.Model):
     assignments = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
     collection_count = models.IntegerField(verbose_name=_("number of collections"), default=1)
 
-    # instead of this model we now us a Property for group size
-    # size = models.IntegerField(verbose_name=_("group Size"), default=1,
-    #                           validators=[MaxValueValidator(99), MinValueValidator(1)])
     @property
     def size(self):
         """size of the group
@@ -339,6 +336,14 @@ class TopicSelection(models.Model):
         """
         verbose_name = _("topic Selection")
         verbose_name_plural = _("topic Selections")
+
+    def __str__(self):
+        """String representation
+        Returns the string representation of this object.
+        :return: the string representation of this object
+        :rtype: str
+        """
+        return '{}, {}'.format(self.group, self.topic)
 
 
 class TextSaves(models.Model):
