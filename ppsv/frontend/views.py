@@ -115,9 +115,15 @@ def overview(request):
 
             args["chosen_faculty"] = chosen_faculty
             if len(courses_in_chosen_faculty) != 0:
-                args["courses"] = courses_in_chosen_faculty
-            else:
-                args["courses"] = "No_Courses"
+                available = False
+                for course in courses_in_chosen_faculty:
+                    if course.get_status in ["Imminent", "Open"]:
+                        available = True
+                        break
+                if available:
+                    args["courses"] = courses_in_chosen_faculty
+                else:
+                    args["courses"] = "No_Courses"
         # when a course is chosen display its topics
         elif "choose_course" in request.POST:
 
