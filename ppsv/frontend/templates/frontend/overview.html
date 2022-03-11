@@ -55,9 +55,16 @@
                     </div>
                 </div>
 
+
+
                 {% endif %}
                 {% if topics != "No_Topics" %}
                     {% if not chosen_topic %}
+                    {% if request.user.is_authenticated and request.user.student %}
+                    <div style="display:grid;padding:10px;width:35%;margin-bottom:8px;position:relative">
+                    <button name="select_all_topics" value="{% for topic in topics %}{{ topic.id }}|{% endfor %}{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;padding:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> Select all topics of this course </button>
+                    </div>
+                    {% endif %}
                     <div class="table-info" style="{% if chosen_topic %} width:60%; {% endif %}">
                         <div style="display:flex;justify-content: space-around;">
                             <div style="flex-basis:100%"> {% translate "Title" %} </div>
