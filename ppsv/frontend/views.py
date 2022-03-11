@@ -504,8 +504,8 @@ def your_selection(request):
                     if int(selection.priority) > int(priority_of_removed_topic):
                         selection.priority = int(selection.priority) - 1
                         selection.save()
-            selections_of_collections_of_groups[group_of_selection][collection_number] = sorted(
-                selections_in_same_collection, key=lambda x: x.priority)
+                selections_of_collections_of_groups[group_of_selection][collection_number] = sorted(
+                    selections_in_same_collection, key=lambda x: x.priority)
 
         # when pressing the button for editing the motivation text
         elif "edit_motivation_text_button" in request.POST:
