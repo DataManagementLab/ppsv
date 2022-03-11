@@ -20,8 +20,8 @@
             <!--
             <button class="undecorated-btn" type="submit" name="assign_exclusives_to_matching_exclusive" value="{{ group_of_student.id }}">
                     <i class="fa fa-cog" aria-hidden="true" style="color:black;font-size:20px"></i>
-             </button>
-             -->
+            </button>
+            -->
             <li class="table-header" style="padding: 15px;text-align:center;position:relative; margin-bottom: 20px;">
                 <button class="undecorated-btn" type="submit" {% if not open_edit_collection_for_group == group_of_student.id  %} name="open_edit_collection" value="{{ group_of_student.id }}" {% endif %} style="position:absolute;left:15px;top:15px;" title="Edit Collections">
                     <i class="fa fa-cog {% if open_edit_collection_for_group == group_of_student.id %} spinning-icon {% endif %}" aria-hidden="true" style="color:white;font-size:20px"></i>
@@ -76,14 +76,14 @@
                                         position:absolute;z-index:2;top:-13px;left:15px";>
                                 {{ selection.topic.course.title }}
                                 </div>
-                                <div class="col-2" style="overflow:hidden;text-overflow: ellipsis;">
+                                <div class="col-3" style="overflow:hidden;text-overflow: ellipsis;">
                                     {{ selection.topic.title }}
                                 </div>
                                 <div>
                                     <input type="number" id="{{ group_of_student.id }}|0|{{ selection.id }}" name="collection_input" style="width:50px;text-align:center" min="0" max="{{ group_of_student.collection_count }}" value="{{ collection_number }}" onkeypress="keyPressListener(event)" title="Collection">
                                     <button id="{{ group_of_student.id }}|0|{{ selection.id }}|button" name="change_collection" value="" type="submit" hidden></button>
                                 </div>
-                                <div class="col-2">
+                                <div class="col-3">
                                         <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> Remove Topic </button>
                                 </div>
                         </li>
@@ -133,7 +133,7 @@
                                         position:absolute;z-index:2;top:-13px;left:15px";>
                                 {{ selection.topic.course.title }}
                             </div>
-                            <div class="col-2" style="overflow:hidden;text-overflow: ellipsis;">
+                            <div class="col-3" style="overflow:hidden;text-overflow: ellipsis;">
                                 {{ selection.topic.title }}
                             </div>
                             {% if open_edit_collection_for_group == group_of_student.id %}

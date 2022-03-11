@@ -189,6 +189,7 @@ def overview(request):
             else:
                 args["open_course_info"] = False
 
+            group_to_select = None
             for group in models.Group.objects.filter(students=student_id_of_user):
                 topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id)
                 for selected_topic_of_group in topic_selections_of_group:
@@ -199,12 +200,16 @@ def overview(request):
                     continue
                 break
 
-            if group_to_select:
+            if group_to_select is not None:
                 topic_selections_of_group = models.TopicSelection.objects.filter(group=group_to_select.id)
                 for topic_to_select in topics_in_chosen_course:
                     print(topic_selections_of_group)
-                    if topic_selections_of_group.filter(topic=topic_to_select.id).exists():
-                        print(topic_to_select)
+                    # Don't select topics that have already been selected by the group
+                    if not topic_selections_of_group.filter(topic=topic_to_select.id).exists():
+                        # Only select topics that can fit the group
+                        if group_to_select.size <= topic_to_select.max_participants:
+                            print("Select this topic: " + str(topic_to_select))
+
 
             # already_selected = False
             #
@@ -326,22 +331,22 @@ def overview(request):
                                 already_selected = True
                                 messages.error(request, _("Selection failed! You have already selected this topic."))
 
-                                if not already_selected:
-                                    selection = TopicSelection()
-                                    selection.group = models.Group.objects.get(id=chosen_group_id)
-                                    selection.topic = models.Topic.objects.get(id=selected_topic_id)
-                                    selection.collection_number = 0
-                                    selection.save()
+                        if not already_selected:
+                            selection = TopicSelection()
+                            selection.group = models.Group.objects.get(id=chosen_group_id)
+                            selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                            selection.collection_number = 0
+                            selection.save()
 
-                                    messages.success(request,
-                                                     _("Your selection was successful! "
-                                                        "You can find and edit your chosen topics on the "
-                                                        "\"My Selection\" page."))
-                                    if selection.topic.course.motivation_text:
-                                        messages.warning(request,
-                                                         _("You need to add a motivation text (when required) "
-                                                            "to your selection in order to fully "
-                                                            "complete your selection. You can do this on the \"My Selection\" page."))
+                            messages.success(request,
+                                             _("Your selection was successful! "
+                                                "You can find and edit your chosen topics on the "
+                                                "\"My Selection\" page."))
+                            if selection.topic.course.motivation_text:
+                                messages.warning(request,
+                                                 _("You need to add a motivation text (when required) "
+                                                    "to your selection in order to fully "
+                                                    "complete your selection. You can do this on the \"My Selection\" page."))
 
                     else:
                         args["open_group_select"] = True
@@ -428,7 +433,7 @@ def overview(request):
                             for group in groups_of_member:
                                 if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
                                         and len(members_in_new_group) == \
-                                    len("".join(group.get_display.split(",")).split()):
+                                        len("".join(group.get_display.split(",")).split()):
                                     messages.error(request, _(f"This group already exists!"))
                                     exception = True
                                     break
