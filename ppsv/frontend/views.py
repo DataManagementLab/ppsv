@@ -31,6 +31,7 @@ def homepage(request):
             selections_exist = False
             selections_need_motivation = False
             need_to_assign_topics_to_collection = False
+            collection_has_mixed_course_types = False
             for group in groups_of_student:
                 if models.TopicSelection.objects.filter(group=group).exists():
                     selections_exist = True
@@ -48,26 +49,55 @@ def homepage(request):
                     need_to_assign_topics_to_collection = True
                     break
 
+            # check for a collection that has mixed course types
+            for group in groups_of_student:
+                # collection 0 is allowed to have mixed types of courses
+                for collection in range(1, group.collection_count+1):
+                    # check if there are topics in the selection
+                    if models.TopicSelection.objects.filter(group=group, collection_number=collection).exists():
+                        topics_in_current_collection = models.TopicSelection.objects.filter(
+                            group=group, collection_number=collection)
+                        # only look at collections with one or more entry
+                        if topics_in_current_collection.count() > 1:
+                            course_type_of_first_topic = topics_in_current_collection[0].topic.course.type
+                            for topic_to_check in topics_in_current_collection:
+                                # check if there are different course types in this collection
+                                if not topic_to_check.topic.course.type == course_type_of_first_topic:
+                                    collection_has_mixed_course_types = True
+                                    break
+                            else:
+                                continue
+                            break
+                else:
+                    continue
+                break
+
             # Pins message to board if motivation texts are missing for selections
             if need_to_assign_topics_to_collection:
-                msg = "You still need to assign at least one topic to a collection"
+                msg = "You still need to assign at least one topic to a collection!"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if motivation texts are missing for selections
             if selections_need_motivation:
-                msg = "You still need to write one or more motivation texts"
+                msg = "You still need to write one or more motivation texts!"
+                link = "frontend:your_selection"
+                recommendations[msg] = link
+
+            # Pins message to board if the user has mixed course types in a collection
+            if collection_has_mixed_course_types:
+                msg = "There is at least one collection that has mixed course types!"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if no selections were made
             if not selections_exist:
-                msg = "You have not selected any topics yet"
+                msg = "You have not selected any topics yet!"
                 link = "frontend:overview"
                 recommendations[msg] = link
             # Otherwise show where they can be managed
             else:
-                msg = "You can view and manage your selected topics here"
+                msg = "You can view and manage your selected topics and collections here:"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
