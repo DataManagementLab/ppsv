@@ -167,7 +167,7 @@
                                                         {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
                                                         <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
                                                     </div>
-                                                {# If the topic has been already selected by a group in which the user is a member, the page informs the user that he already selected this topic #}
+                                                {# If the topic has been already selected by a group in which the user is a member, the page informs the user that they already selected this topic #}
                                                 {% else %}
                                                     <div style="display:grid;width:40%;position:relative">
                                                         <label style="position:absolute;top:20%;left:25%;text-align:center">
@@ -178,7 +178,7 @@
                                                 {% endif %}
                                             {% endif %}
                                         {% endif %}
-								{# If the user is either not logged in or has no student, he will be informed that he needs to be logged in or complete the registration  #}
+								{# If the user is either not logged in or has no student, they will be informed that they need to be logged in or complete the registration  #}
                                 {% else %}
                                     <div style="display:grid;width:40%;position:relative">
                                         <label style="position:absolute;top:20%;left:0%;text-align:center">

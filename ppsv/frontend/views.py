@@ -235,12 +235,10 @@ def overview(request):
             if group_to_select is not None:
                 topic_selections_of_group = models.TopicSelection.objects.filter(group=group_to_select.id)
                 for topic_to_select in topics_in_chosen_course:
-                    print(topic_selections_of_group)
                     # Don't select topics that have already been selected by the group
                     if not topic_selections_of_group.filter(topic=topic_to_select.id).exists():
                         # Only select topics that can fit the group
                         if group_to_select.size <= topic_to_select.max_participants:
-                            print("Select this topic: " + str(topic_to_select))
                             user_selection = TopicSelection()
                             user_selection.group = group_to_select
                             user_selection.topic = models.Topic.objects.get(id=topic_to_select.id)
