@@ -162,11 +162,27 @@
                                                 </div>
                                             {% else %}
                                                 {% if not topic.id in selected_topics %}
-                                                    <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
-                                                        {# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
-                                                        {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
-                                                        <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
-                                                    </div>
+                                                    {% if group_to_select_is_None %}
+                                                        <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+                                                            {# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
+                                                            {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
+                                                            <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                                        </div>
+                                                    {% else %}
+                                                        <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+                                                            {# If the size of group_to_select is 1, only the option to select the topic alone will be shown #}
+                                                            {% if group_to_select.size == 1 %}
+                                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                                            {% else %}
+                                                                {% if chosen_topic.max_participants >= group_to_select.size %}
+                                                                    Hier sollen die Gruppenmitglieder stehen.
+                                                                    <button name="select_with_existing_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with this group </button>
+                                                                {% else %}
+                                                                    Group Size too big
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
                                                 {# If the topic has been already selected by a group in which the user is a member, the page informs the user that they already selected this topic #}
                                                 {% else %}
                                                     <div style="display:grid;width:40%;position:relative">
