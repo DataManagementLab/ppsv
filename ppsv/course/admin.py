@@ -111,7 +111,6 @@ class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['students', 'size', 'assignments', 'collection_count']}),
     ]
-    # searching the students while creating or editing a group
     filter_horizontal = ('students', )
 
     def get_form(self, request, obj=None, **kwargs):
@@ -121,7 +120,7 @@ class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
         :rtype: ModelForm
         """
         form = super().get_form(request, obj, **kwargs)
-        # disable student and topic creation during group creation and editing
+        # disable student creation during group creation and editing
         form.base_fields['students'].widget.can_add_related = False
         return form
 
@@ -141,8 +140,9 @@ class TopicSelectionAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr TopicSelectionAdmin.list_filter: activates filters in the right sidebar of the change list page of the admin
     :type TopicSelectionAdmin.list_filter: list[str]
     """
-    list_display = ('group', 'topic', 'collection_number')
-    search_fields = ('group', 'topic', 'collection_number')
+    list_display = ('__str__', 'get_display', 'topic', 'collection_number')
+    readonly_fields = ('get_display', )
+    search_fields = ('group__id', 'topic__title', 'collection_number')
     list_filter = ('topic', )
 
     def get_form(self, request, obj=None, **kwargs):
@@ -152,7 +152,7 @@ class TopicSelectionAdmin(ImportExportMixin, admin.ModelAdmin):
         :rtype: ModelForm
         """
         form = super().get_form(request, obj, **kwargs)
-        # disable student and topic creation during group creation and editing
+        # disable group and topic creation during group creation and editing
         form.base_fields['group'].widget.can_add_related = False
         form.base_fields['topic'].widget.can_add_related = False
         return form

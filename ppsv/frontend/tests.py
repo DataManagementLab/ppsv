@@ -4,6 +4,8 @@ from django.test import TestCase
 from django.utils import timezone
 from course.models import Course
 from .forms.forms import NewStudentForm, NewUserForm, UserLoginForm
+from django.utils.safestring import mark_safe
+from django.utils.functional import lazy
 
 
 class FormTests(TestCase):
@@ -42,16 +44,21 @@ class FormTests(TestCase):
         self.assertTrue(form.fields['password1'].label is '')
         self.assertTrue(form.fields['password2'].label is '')
 
-    # der mist funktioniert nicht
-    # def test_new_user_form_help_text(self):
-    #     """
-    #     Tests if the helptexts of the input fields are correct.
-    #     """
-    #     form = NewUserForm()
-    #     print(form.fields['username'].help_text)
-    #     self.assertTrue(form.fields['username'].help_text is "<div style=\"padding-left: 10px\"><small>Letters, "
-    #                                                          "numbers "
-    #                                                          "and @/./+/-/_ only.</small></div>")
+    def test_new_user_form_help_text(self):
+        """
+        Tests if the help texts of the input fields are correct.
+        """
+        form = NewUserForm()
+        mark_safe_lazy = lazy(mark_safe, str)
+        self.assertTrue(form.fields['username'].help_text == mark_safe_lazy(
+            "<div style=\"padding-left: 10px\"><small>Letters, numbers and @/./+/-/_ only."
+            "</small></div>"))
+        self.assertTrue(form.fields['password2'].help_text == mark_safe_lazy(
+            "<div style=\"padding-left: 10px\"><small>"
+            "The password must not contain any personal information.<br>"
+            "The password has to be at least 8 digits long.<br>"
+            "The password must not be commonly used.<br>"
+            "The password must not contain only numbers.</small></div>"))
 
     def test_user_login_form_labels(self):
         """

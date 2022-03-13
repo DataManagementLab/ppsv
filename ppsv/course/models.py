@@ -324,6 +324,20 @@ class TopicSelection(models.Model):
                                    validators=[MaxValueValidator(99), MinValueValidator(1)])
     collection_number = models.IntegerField(verbose_name=_("collection number"), default=1)
 
+    @property
+    def get_display(self):
+        """String representation
+        Returns all members of the group.
+        :return: a string representation of this object
+        :rtype: str
+        """
+        if self.group.size == 0:
+            return 'Empty'
+        studs = self.group.students.all()
+        return ', '.join(str(stud) for stud in studs)
+
+    get_display.fget.short_description = _("group")
+
     class Meta:
         """Meta options
 

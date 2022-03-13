@@ -79,3 +79,9 @@ class ModelTests(TestCase):
         Tests the string representation of a topic selection.
         """
         self.assertEqual(self.selection.__str__(), 'group 2, Title')
+
+    def test_topic_selection_get_display(self):
+        """
+        Tests the get_display method/property of a topic selection.
+        """
+        self.assertEqual(self.selection.get_display, 'ab12eeee')
