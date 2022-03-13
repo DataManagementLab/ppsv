@@ -38,21 +38,37 @@
                 </button>
             </li>
                 {% if open_course_info %}
-                <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
-                    <p> <label style="font-weight:500"> {% translate "Organizer" %}: </label> {{ chosen_course.organizer }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ chosen_course.get_type_display }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ chosen_course.get_faculty_display }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
-                    <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
-                    <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
-                    <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
-                    <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
-                    <label style="font-weight:500"> {% translate "Description" %} </label>
-                    <p> {{ chosen_course.description }} </p>
+                <div class="container-fluid;" style="display:flex;justify-content:center;margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal; flex-wrap: wrap;">
+                    <div style="width: 50%; float:left; display: inline-block;">
+                        <p> <label style="font-weight:500"> {% translate "Organizer" %}: </label> {{ chosen_course.organizer }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ chosen_course.get_type_display }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ chosen_course.get_faculty_display }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
+                        <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
+                        <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
+                        <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
+                    </div>
+                    <div style="width: 50%; float:right; display: inline-block;">
+                        <label style="font-weight:500"> {% translate "Description" %}: </label>
+                        <p> {{ chosen_course.description }} </p>
+                    </div>
                 </div>
+
+
+
                 {% endif %}
                 {% if topics != "No_Topics" %}
                     {% if not chosen_topic %}
+                    {% if request.user.is_authenticated and request.user.student %}
+                    {% if not chosen_course.get_status == "Imminent" and not chosen_course.get_status == "Closed" %}
+                    {% if show_select_remaining_topics_button %}
+                    <div style="display:flex;justify-content:center;padding:10px;width:100%;margin-bottom:8px;position:relative">
+                    <button name="select_all_remaining_topics" type="submit" value="{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;padding:10px;padding-left: 50px;padding-right: 50px;"> Select all remaining topics of this course </button>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
                     <div class="table-info" style="{% if chosen_topic %} width:60%; {% endif %}">
                         <div style="display:flex;justify-content: space-around;">
                             <div style="flex-basis:100%"> {% translate "Title" %} </div>
@@ -116,7 +132,6 @@
                                     </button>
                                 </div>
                                 <div class="table-btn" style="overflow:auto;overflow-x: hidden;height:120px;width:50%;box-sizing: border-box;padding: 1% 5%;margin:0px;">
-                                        <label class="group-member" style="border-style: dotted"> <div style="visibility: hidden"> {% translate "New Student" %} </div> </label> <br>
                                         {% for member in members_in_new_group%}
                                         <div style="position:relative;">
                                         {% if member != request.user.student.tucan_id %}
@@ -131,25 +146,42 @@
                             </div>
                             {% else %}
                                 {% if request.user.is_authenticated and request.user.student %}
-                                        {% if not topic.id in selected_topics %}
-                                            <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
-												{# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
-                                                {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
-                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
-                                            </div>
-										{# If the topic has been already selected by a group in which the user is a member, the page informs the user that he already selected this topic #}
-                                        {% else %}
+                                        {# topics of courses with status Imminent or Closed cannot be chosen #}
+                                        {% if chosen_course.get_status == "Imminent" %}
                                             <div style="display:grid;width:40%;position:relative">
-                                                <label style="position:absolute;top:20%;left:35%;text-align:center">
-                                                    <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
-                                                    <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                                <label style="position:absolute;top:20%;left:0%;text-align:center">
+                                                    <label style="color:red;margin:0px;font-size:20px;"> {% translate "You cannot choose this topic yet. The registration for this topic starts on" %} {{chosen_course.registration_start}}. </label>
                                                 </label>
                                             </div>
+                                        {% else %}
+                                            {% if chosen_course.get_status == "Closed" %}
+                                                <div style="display:grid;width:40%;position:relative">
+                                                    <label style="position:absolute;top:20%;left:0%;text-align:center">
+                                                        <label style="color:red;margin:0px;font-size:20px;"> {% translate "You cannot choose this topic anymore." %} </label>
+                                                    </label>
+                                                </div>
+                                            {% else %}
+                                                {% if not topic.id in selected_topics %}
+                                                    <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
+                                                        {# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
+                                                        {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
+                                                        <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                                    </div>
+                                                {# If the topic has been already selected by a group in which the user is a member, the page informs the user that they already selected this topic #}
+                                                {% else %}
+                                                    <div style="display:grid;width:40%;position:relative">
+                                                        <label style="position:absolute;top:20%;left:25%;text-align:center">
+                                                            <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
+                                                            <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                                        </label>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
                                         {% endif %}
-								{# If the user is either not logged in or has no student, he will be informed that he needs to be logged in or complete the registration  #}
+								{# If the user is either not logged in or has no student, they will be informed that they need to be logged in or complete the registration  #}
                                 {% else %}
                                     <div style="display:grid;width:40%;position:relative">
-                                        <label style="position:absolute;top:20%;left:13%;text-align:center">
+                                        <label style="position:absolute;top:20%;left:0%;text-align:center">
                                             <label style="color:red;margin:0px;font-size:25px;"> {% if not request.user.is_authenticated %} {% translate "You need to be logged in to select a topic." %} {% else %} {% translate "You need to be a student to select a topic." %} {% endif %} </label>
                                         </label>
                                     </div>
@@ -190,30 +222,33 @@
                         <div style="flex-basis:100%"> {% translate "Max Participants" %} </div>
                         <div style="flex-basis:100%"> CP </div>
                     </div>
-                </div>
+                    </div>
                     {% for course in courses %}
-                    <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}|True">
-                        <div style="display:flex;justify-content: space-around;">
-                            <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ course.title }} </div>
-                            <div style="flex-basis:100%"> {{ course.get_type_display }} </div>
-                            <div style="flex-basis:100%"> {{ course.get_status }} </div>
-                            <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
-                            <div style="flex-basis:100%"> {% if course.max_participants == 9999 %} &#8734 {% else %} {{ course.max_participants }} {% endif %} </div>
-                            <div style="flex-basis:100%"> {{ course.cp }} </div>
-                        </div>
-                    </button>
+                        {# only courses with status Open or Imminent (registration starts in less than 14 days) are shown in the course overview #}
+                        {% if course.get_status == "Open" or course.get_status == "Imminent" %}
+                            <button class="table-btn" name="choose_course" type="submit" value="{{ course.id }}|{{ chosen_faculty }}|True">
+                                <div style="display:flex;justify-content: space-around;">
+                                    <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ course.title }} </div>
+                                    <div style="flex-basis:100%"> {{ course.get_type_display }} </div>
+                                    <div style="flex-basis:100%"> {{ course.get_status }} </div>
+                                    <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
+                                    <div style="flex-basis:100%"> {% if course.max_participants == 9999 %} &#8734 {% else %} {{ course.max_participants }} {% endif %} </div>
+                                    <div style="flex-basis:100%"> {{ course.cp }} </div>
+                                </div>
+                            </button>
+                        {% endif %}
                     {% endfor %}
                 {% else %}
                     <div class="table-info" style="background-color:orange;font-size:14px">
-                        {% translate "There are no courses in this faculty." %}
-                </div>
+                        {% translate "There are no courses in this faculty right now." %}
+                    </div>
                 {% endif %}
             {% endif %}
 
             {% for faculty_short, faculty_long in faculties.items %}
                 <button class="table-btn" name="choose_faculty" type="submit" value="{{ faculty_short }}" style="padding:15px;">
                 {{ faculty_long }}
-            </button>
+                </button>
             {% endfor %}
         </ul>
     </div>

@@ -116,12 +116,15 @@ class Course(models.Model):
     @property
     def get_status(self):
         """String representation
-        Returns the registration status (Open,Upcoming,Closed).
-        :return: the registration status (Open,Upcoming,Closed)
+        Returns the registration status (Open,Imminent, Upcoming,Closed).
+        :return: the registration status (Open,Imminent, Upcoming,Closed)
         :rtype: str
         """
         if timezone.now() < self.registration_start:
-            return "Upcoming"
+            if (self.registration_start - timezone.now()).days <= 14:
+                return "Imminent"
+            else:
+                return "Upcoming"
         elif self.registration_start < timezone.now() < self.registration_deadline:
             return "Open"
         elif timezone.now() > self.registration_deadline:

@@ -31,6 +31,7 @@ def homepage(request):
             selections_exist = False
             selections_need_motivation = False
             need_to_assign_topics_to_collection = False
+            collection_has_mixed_course_types = False
             for group in groups_of_student:
                 if models.TopicSelection.objects.filter(group=group).exists():
                     selections_exist = True
@@ -48,26 +49,55 @@ def homepage(request):
                     need_to_assign_topics_to_collection = True
                     break
 
+            # check for a collection that has mixed course types
+            for group in groups_of_student:
+                # collection 0 is allowed to have mixed types of courses
+                for collection in range(1, group.collection_count+1):
+                    # check if there are topics in the selection
+                    if models.TopicSelection.objects.filter(group=group, collection_number=collection).exists():
+                        topics_in_current_collection = models.TopicSelection.objects.filter(
+                            group=group, collection_number=collection)
+                        # only look at collections with one or more entry
+                        if topics_in_current_collection.count() > 1:
+                            course_type_of_first_topic = topics_in_current_collection[0].topic.course.type
+                            for topic_to_check in topics_in_current_collection:
+                                # check if there are different course types in this collection
+                                if not topic_to_check.topic.course.type == course_type_of_first_topic:
+                                    collection_has_mixed_course_types = True
+                                    break
+                            else:
+                                continue
+                            break
+                else:
+                    continue
+                break
+
             # Pins message to board if motivation texts are missing for selections
             if need_to_assign_topics_to_collection:
-                msg = "You still need to assign at least one topic to a collection"
+                msg = "You still need to assign at least one topic to a collection!"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if motivation texts are missing for selections
             if selections_need_motivation:
-                msg = "You still need to write one or more motivation texts"
+                msg = "You still need to write one or more motivation texts!"
+                link = "frontend:your_selection"
+                recommendations[msg] = link
+
+            # Pins message to board if the user has mixed course types in a collection
+            if collection_has_mixed_course_types:
+                msg = "There is at least one collection that has mixed course types!"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if no selections were made
             if not selections_exist:
-                msg = "You have not selected any topics yet"
+                msg = "You have not selected any topics yet!"
                 link = "frontend:overview"
                 recommendations[msg] = link
             # Otherwise show where they can be managed
             else:
-                msg = "You can view and manage your selected topics here"
+                msg = "You can view and manage your selected topics and collections here:"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
@@ -115,9 +145,15 @@ def overview(request):
 
             args["chosen_faculty"] = chosen_faculty
             if len(courses_in_chosen_faculty) != 0:
-                args["courses"] = courses_in_chosen_faculty
-            else:
-                args["courses"] = "No_Courses"
+                available = False
+                for course in courses_in_chosen_faculty:
+                    if course.get_status in ["Imminent", "Open"]:
+                        available = True
+                        break
+                if available:
+                    args["courses"] = courses_in_chosen_faculty
+                else:
+                    args["courses"] = "No_Courses"
         # when a course is chosen display its topics
         elif "choose_course" in request.POST:
 
@@ -139,6 +175,90 @@ def overview(request):
                 args["open_course_info"] = True
             else:
                 args["open_course_info"] = False
+
+            if len(topics_in_chosen_course) != 0:
+                # Make sure that only authenticated users with a student profile can select topics
+                if request.user.is_authenticated and hasattr(request.user, "student"):
+                    student_id_of_user = str(request.user.student)
+
+                    show_select_all_topics_button = False
+                    for group in models.Group.objects.filter(students=student_id_of_user):
+                        topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id)
+                        for selected_topic_of_group in topic_selections_of_group:
+                            if topics_in_chosen_course.filter(id=selected_topic_of_group.topic.id).exists():
+                                show_select_all_topics_button = True
+                                break
+                        else:
+                            continue
+                        break
+                    args["show_select_remaining_topics_button"] = show_select_all_topics_button
+                else:
+                    args["show_select_remaining_topics_button"] = False
+            else:
+                args["show_select_remaining_topics_button"] = False
+
+        # when selecting all remaining topics of a course (alone)
+        elif "select_all_remaining_topics" in request.POST:
+            data = str(request.POST.get("select_all_remaining_topics")).split("|")
+            chosen_course = data[0]
+            chosen_faculty = data[1]
+            open_course_info = data[2]
+
+            student_id_of_user = str(request.user.student)
+
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course)
+
+            args["chosen_faculty"] = chosen_faculty
+            args["chosen_course"] = models.Course.objects.get(id=chosen_course)
+            if len(topics_in_chosen_course) != 0:
+                args["topics"] = topics_in_chosen_course
+            else:
+                args["topics"] = "No_Topics"
+            if open_course_info == "True":
+                args["open_course_info"] = True
+            else:
+                args["open_course_info"] = False
+
+            group_to_select = None
+            for group in models.Group.objects.filter(students=student_id_of_user):
+                topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id)
+                for selected_topic_of_group in topic_selections_of_group:
+                    if topics_in_chosen_course.filter(id=selected_topic_of_group.topic.id).exists():
+                        group_to_select = group
+                        break
+                else:
+                    continue
+                break
+
+            a_topic_has_too_little_space = False
+            selected_at_least_one_new_topic = False
+            if group_to_select is not None:
+                topic_selections_of_group = models.TopicSelection.objects.filter(group=group_to_select.id)
+                for topic_to_select in topics_in_chosen_course:
+                    # Don't select topics that have already been selected by the group
+                    if not topic_selections_of_group.filter(topic=topic_to_select.id).exists():
+                        # Only select topics that can fit the group
+                        if group_to_select.size <= topic_to_select.max_participants:
+                            user_selection = TopicSelection()
+                            user_selection.group = group_to_select
+                            user_selection.topic = models.Topic.objects.get(id=topic_to_select.id)
+                            user_selection.collection_number = 0
+                            user_selection.save()
+                            selected_at_least_one_new_topic = True
+                        else:
+                            a_topic_has_too_little_space = True
+
+                if selected_at_least_one_new_topic:
+                    messages.success(request,
+                                     _("Your selection was successful! "
+                                       "You can find and edit your chosen topics on the "
+                                       "\"My Selection\" page."))
+                else:
+                    messages.warning(request, _("Could not select any new topics!"))
+                if a_topic_has_too_little_space:
+                    messages.warning(request, _("There was at least one topic that could not be selected because "
+                                                "it does not have enough space for your group."))
+
         # when any of the following args is in request
         elif any(["choose_topic" in request.POST, "open_group_select" in request.POST,
                   "select_topic" in request.POST, "select_with_chosen_group" in request.POST,
@@ -156,6 +276,7 @@ def overview(request):
                     args["groups"] = filter(
                         lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
                         models.Group.objects.filter(students=request.user.student))
+
                 # when selecting a topic alone
                 elif "select_topic" in request.POST:
                     data = str(request.POST.get("select_topic")).split("|")
@@ -329,7 +450,7 @@ def overview(request):
                             for group in groups_of_member:
                                 if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
                                         and len(members_in_new_group) == \
-                                    len("".join(group.get_display.split(",")).split()):
+                                        len("".join(group.get_display.split(",")).split()):
                                     messages.error(request, _(f"This group already exists!"))
                                     exception = True
                                     break
