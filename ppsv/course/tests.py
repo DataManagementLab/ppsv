@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
 from .models import Course, Student, Group, TopicSelection, Topic
-from django.urls import reverse
 
 
 class ModelTests(TestCase):
@@ -58,7 +57,7 @@ class ModelTests(TestCase):
 
     def test_get_display(self):
         """
-        Tests the ge7/display method of a group.
+        Tests the get_display method/property of a group.
         """
         self.assertEqual(self.group1.get_display, 'ab12eeee, bc22eeee, cd33eeee')
 
@@ -80,16 +79,3 @@ class ModelTests(TestCase):
         Tests the string representation of a topic selection.
         """
         self.assertEqual(self.selection.__str__(), 'group 2, Title')
-
-
-# only as an example
-# class CourseIndexViewTests(TestCase):
-#     def test_page_response(self):
-#         """
-#         check response
-#         """
-#         response = self.client.get(reverse('index'))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertContains(response, "Hello, world. You're at the course view.")
-
-

@@ -3,18 +3,74 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 from course.models import Course
+from .forms.forms import NewStudentForm, NewUserForm, UserLoginForm
 
 
-def create_course(title, type, registration_start, registration_deadline, description, unlimited, max_participants, cp, faculty, motivation_text, organizer):
-    """
-    Create a course with the given attributes
-    """
-    # time = timezone.now() + datetime.timedelta(days=days)
-    return Course.objects.create(title=title, type=type, registration_start=registration_start,
-                                 registration_deadline=registration_deadline, description=description,
-                                 unlimited=unlimited, max_participants=max_participants, cp=cp, faculty=faculty,
-                                 motivation_text=motivation_text, organizer=organizer)
+class FormTests(TestCase):
+    def test_new_student_form_labels(self):
+        """
+        Tests if the labels of the input fields are correct.
+        """
+        form = NewStudentForm()
+        self.assertTrue(form.fields['tucan_id'].label is '')
+        self.assertTrue(form.fields['firstname'].label is '')
+        self.assertTrue(form.fields['lastname'].label is '')
 
+    def test_new_student_form_tucan_id_length(self):
+        """
+        Tests inputs other than eight in the tucan-id input field.
+        """
+        tucan_id1 = 'aa22bb'
+        tucan_id2 = '999999999'
+        tucan_id3 = 'bb88abcd'
+        first_name = 'Hans'
+        last_name = 'Hans'
+        form = NewStudentForm(data={'tucan_id': tucan_id1, 'firstname': first_name, 'lastname': last_name})
+        self.assertFalse(form.is_valid())
+        form = NewStudentForm(data={'tucan_id': tucan_id2, 'firstname': first_name, 'lastname': last_name})
+        self.assertFalse(form.is_valid())
+        form = NewStudentForm(data={'tucan_id': tucan_id3, 'firstname': first_name, 'lastname': last_name})
+        self.assertTrue(form.is_valid())
+
+    def test_new_user_form_labels(self):
+        """
+        Tests if the labels of the input fields are correct.
+        """
+        form = NewUserForm()
+        self.assertTrue(form.fields['email'].label is '')
+        self.assertTrue(form.fields['username'].label is '')
+        self.assertTrue(form.fields['password1'].label is '')
+        self.assertTrue(form.fields['password2'].label is '')
+
+    # der mist funktioniert nicht
+    # def test_new_user_form_help_text(self):
+    #     """
+    #     Tests if the helptexts of the input fields are correct.
+    #     """
+    #     form = NewUserForm()
+    #     print(form.fields['username'].help_text)
+    #     self.assertTrue(form.fields['username'].help_text is "<div style=\"padding-left: 10px\"><small>Letters, "
+    #                                                          "numbers "
+    #                                                          "and @/./+/-/_ only.</small></div>")
+
+    def test_user_login_form_labels(self):
+        """
+        Tests if the labels of the input fields are correct.
+        """
+        form = UserLoginForm()
+        self.assertTrue(form.fields['username'].label is '')
+        self.assertTrue(form.fields['password'].label is '')
+
+# def create_course(title, type, registration_start, registration_deadline, description, unlimited, max_participants,
+#                   cp, faculty, motivation_text, organizer):
+#     """
+#     Create a course with the given attributes
+#     """
+#     # time = timezone.now() + datetime.timedelta(days=days)
+#     return Course.objects.create(title=title, type=type, registration_start=registration_start,
+#                                  registration_deadline=registration_deadline, description=description,
+#                                  unlimited=unlimited, max_participants=max_participants, cp=cp, faculty=faculty,
+#                                  motivation_text=motivation_text, organizer=organizer)
 
 
 # class CourseOverviewViewTests(TestCase):
@@ -73,3 +129,13 @@ def create_course(title, type, registration_start, registration_deadline, descri
 #             response.context['latest_question_list'],
 #             [question2, question1],
 #         )
+
+# only as an example
+# class CourseIndexViewTests(TestCase):
+#     def test_page_response(self):
+#         """
+#         check response
+#         """
+#         response = self.client.get(reverse('index'))
+#         self.assertEqual(response.status_code, 200)
+#         self.assertContains(response, "Hello, world. You're at the course view.")
