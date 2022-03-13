@@ -230,6 +230,8 @@ def overview(request):
                     continue
                 break
 
+            a_topic_has_too_little_space = False
+            selected_at_least_one_new_topic = False
             if group_to_select is not None:
                 topic_selections_of_group = models.TopicSelection.objects.filter(group=group_to_select.id)
                 for topic_to_select in topics_in_chosen_course:
@@ -239,38 +241,25 @@ def overview(request):
                         # Only select topics that can fit the group
                         if group_to_select.size <= topic_to_select.max_participants:
                             print("Select this topic: " + str(topic_to_select))
+                            user_selection = TopicSelection()
+                            user_selection.group = group_to_select
+                            user_selection.topic = models.Topic.objects.get(id=topic_to_select.id)
+                            user_selection.collection_number = 0
+                            user_selection.save()
+                            selected_at_least_one_new_topic = True
+                        else:
+                            a_topic_has_too_little_space = True
 
-
-            # already_selected = False
-            #
-            # for known_selection in topic_selections_of_group:
-            #     for selected_topic_id in selected_topics_ids:
-            #         if int(selected_topic_id) == int(known_selection.topic.id):
-            #             already_selected = True
-            #             messages.error(request, _("Selection failed! You have already selected this topic."))
-            #
-            # if not already_selected:
-            #     for selected_topic_id in selected_topics_ids:
-            #         user_selection = TopicSelection()
-            #         user_selection.group = existing_groups[0]
-            #         user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
-            #         user_selection.collection_number = 0
-            #         user_selection.save()
-            #         if user_selection.topic.course.motivation_text:
-            #             messages.warning(request,
-            #                              _("You need to add a motivation text (when required) "
-            #                                "to your selection in order to fully "
-            #                                "complete your selection. You can do this on the \"My Selection\" page."))
-            #         messages.success(request,
-            #                          _("Your selection was successful! "
-            #                            "You can find and edit your chosen topics on the "
-            #                            "\"My Selection\" page."))
-
-
-
-
-
-
+                if selected_at_least_one_new_topic:
+                    messages.success(request,
+                                     _("Your selection was successful! "
+                                       "You can find and edit your chosen topics on the "
+                                       "\"My Selection\" page."))
+                else:
+                    messages.warning(request, _("Could not select any new topics!"))
+                if a_topic_has_too_little_space:
+                    messages.warning(request, _("There was at least one topic that could not be selected because "
+                                                "it does not have enough space for your group."))
 
         # when any of the following args is in request
         elif any(["choose_topic" in request.POST, "open_group_select" in request.POST,

@@ -63,8 +63,8 @@
                     {% if request.user.is_authenticated and request.user.student %}
                     {% if not chosen_course.get_status == "Imminent" and not chosen_course.get_status == "Closed" %}
                     {% if show_select_remaining_topics_button %}
-                    <div style="display:grid;padding:10px;width:35%;margin-bottom:8px;position:relative">
-                    <button name="select_all_remaining_topics" type="submit" value="{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;padding:5px"> Select all remaining topics of this course </button>
+                    <div style="display:flex;justify-content:center;padding:10px;width:100%;margin-bottom:8px;position:relative">
+                    <button name="select_all_remaining_topics" type="submit" value="{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;padding:10px;padding-left: 50px;padding-right: 50px;"> Select all remaining topics of this course </button>
                     </div>
                     {% endif %}
                     {% endif %}
