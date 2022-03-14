@@ -856,6 +856,7 @@ def your_selection(request):
             args["open_edit_collection_for_group"] = int(data[0])
         elif "change_collection" in request.POST:
             data = str(request.POST.get("change_collection")).split("|")
+            print(request.POST.get("change_collection"))
             result_change_collection = \
                 change_collection(request, data, selections_of_collections_of_groups, False)
             selections_of_collections_of_groups = result_change_collection[0]

@@ -80,8 +80,16 @@
                                     {{ selection.topic.title }}
                                 </div>
                                 <div>
-                                    <input type="number" id="{{ group_of_student.id }}|0|{{ selection.id }}" name="collection_input" style="width:50px;text-align:center" min="0" max="{{ group_of_student.collection_count }}" value="{{ collection_number }}" onkeypress="keyPressListener(event)" title="Collection">
-                                    <button id="{{ group_of_student.id }}|0|{{ selection.id }}|button" name="change_collection" value="" type="submit" hidden></button>
+                                    <select id="{{ group_of_student.id }}|0|{{ selection.id }}" name="collection_input" style="width:150px;text-align:center" onkeypress="keyPressListener(event)">
+                                        <option value="0"> {% translate "Choose collection" %} </option>
+                                        {% with ''|center:group_of_student.collection_count as range %}
+                                        {% for _ in range %}
+                                            {{ forloop.counter }}
+                                        <option value="{{ forloop.counter }}"> Collection {{ forloop.counter }} </option>
+                                        {% endfor %}
+                                        {% endwith %}
+                                    </select>
+                                    <button id="{{ group_of_student.id }}|0|{{ selection.id }}|button" name="change_collection" value="{{ group_of_student.id }}|0|{{ selection.id }}|{{ collection_input.value }}" type="submit"> Put </button>
                                 </div>
                                 <div class="col-3">
                                         <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> Remove Topic </button>
