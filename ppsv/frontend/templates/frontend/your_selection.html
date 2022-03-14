@@ -80,16 +80,18 @@
                                     {{ selection.topic.title }}
                                 </div>
                                 <div>
-                                    <select id="{{ group_of_student.id }}|0|{{ selection.id }}" name="collection_input" style="width:150px;text-align:center" onkeypress="keyPressListener(event)">
+
+                                    <select name="collection_input{{ selection.id }}" style="width:150px;text-align:center">
                                         <option value="0"> {% translate "Choose collection" %} </option>
                                         {% with ''|center:group_of_student.collection_count as range %}
                                         {% for _ in range %}
-                                            {{ forloop.counter }}
+
                                         <option value="{{ forloop.counter }}"> Collection {{ forloop.counter }} </option>
                                         {% endfor %}
                                         {% endwith %}
                                     </select>
-                                    <button id="{{ group_of_student.id }}|0|{{ selection.id }}|button" name="change_collection" value="{{ group_of_student.id }}|0|{{ selection.id }}|{{ collection_input.value }}" type="submit"> Put </button>
+                                    <button name="change_collection_button" value="{{ group_of_student.id }}|0|{{ selection.id }}" type="submit"> Put </button>
+
                                 </div>
                                 <div class="col-3">
                                         <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> Remove Topic </button>
@@ -316,15 +318,4 @@
 
 </script>
 
-<!-- If enter is pressed in an input it will trigger a certain button -->
-<script>
-    function keyPressListener(event) {
-            if (event.keyCode == 13) {
-                event.preventDefault();
-                console.log(event.target.id);
-                document.getElementById(event.target.id + "|button" ).value = event.target.id + "|" + event.target.value;
-                document.getElementById(event.target.id + "|button" ).click();
-            }
-    }
-</script>
 {% endblock content %}

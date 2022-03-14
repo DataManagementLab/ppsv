@@ -854,9 +854,12 @@ def your_selection(request):
             args["ask_remove_group"] = int(data[0])
             args["ask_remove_collection"] = int(data[1])
             args["open_edit_collection_for_group"] = int(data[0])
-        elif "change_collection" in request.POST:
-            data = str(request.POST.get("change_collection")).split("|")
-            print(request.POST.get("change_collection"))
+        elif "change_collection_button" in request.POST:
+            print(request.POST)
+            data = str(request.POST.get("change_collection_button")).split("|")
+            data.append(str(request.POST.get("collection_input"+data[2])))
+
+            print(data)
             result_change_collection = \
                 change_collection(request, data, selections_of_collections_of_groups, False)
             selections_of_collections_of_groups = result_change_collection[0]
