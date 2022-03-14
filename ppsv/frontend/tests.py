@@ -103,7 +103,6 @@ class HomepageViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'frontend/homepage.html')
 
-    # TODO: Ist der Test korrekt, um zu checken, ob das login form angezeigt wird?
     def test_view_for_anonymous_user(self):
         """
         Tests if an anonymous user is presented the login form and the welcome text on the homepage.
@@ -112,7 +111,6 @@ class HomepageViewTests(TestCase):
         self.assertContains(response, 'Willkommen')
         self.assertContains(response, '<div class="row-cols-sm-1" id="col_1">')
 
-    # TODO: other reminders
     def test_view_for_logged_in_user(self):
         """
         Tests if an logged in user is presented with the reminders depending on their selections.
@@ -121,83 +119,3 @@ class HomepageViewTests(TestCase):
         response = self.client.get(reverse('frontend:homepage'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'You still need to assign at least one topic to a collection')
-
-
-# def create_course(title, type, registration_start, registration_deadline, description, unlimited, max_participants,
-#                   cp, faculty, motivation_text, organizer):
-#     """
-#     Create a course with the given attributes
-#     """
-#     # time = timezone.now() + datetime.timedelta(days=days)
-#     return Course.objects.create(title=title, type=type, registration_start=registration_start,
-#                                  registration_deadline=registration_deadline, description=description,
-#                                  unlimited=unlimited, max_participants=max_participants, cp=cp, faculty=faculty,
-#                                  motivation_text=motivation_text, organizer=organizer)
-
-
-# class CourseOverviewViewTests(TestCase):
-#     def test_no_questions(self):
-#         """
-#         If no questions exist, an appropriate message is displayed.
-#         """
-#         response = self.client.get(reverse('polls:index'))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertContains(response, "No polls are available.")
-#         self.assertQuerysetEqual(response.context['latest_question_list'], [])
-#
-#     def test_past_question(self):
-#         """
-#         Questions with a pub_date in the past are displayed on the
-#         index page.
-#         """
-#         question = create_question(question_text="Past question.", days=-30)
-#         response = self.client.get(reverse('polls:index'))
-#         self.assertQuerysetEqual(
-#             response.context['latest_question_list'],
-#             [question],
-#         )
-#
-#     def test_future_question(self):
-#         """
-#         Questions with a pub_date in the future aren't displayed on
-#         the index page.
-#         """
-#         create_question(question_text="Future question.", days=30)
-#         response = self.client.get(reverse('polls:index'))
-#         self.assertContains(response, "No polls are available.")
-#         self.assertQuerysetEqual(response.context['latest_question_list'], [])
-#
-#     def test_future_question_and_past_question(self):
-#         """
-#         Even if both past and future questions exist, only past questions
-#         are displayed.
-#         """
-#         question = create_question(question_text="Past question.", days=-30)
-#         create_question(question_text="Future question.", days=30)
-#         response = self.client.get(reverse('polls:index'))
-#         self.assertQuerysetEqual(
-#             response.context['latest_question_list'],
-#             [question],
-#         )
-#
-#     def test_two_past_questions(self):
-#         """
-#         The questions index page may display multiple questions.
-#         """
-#         question1 = create_question(question_text="Past question 1.", days=-30)
-#         question2 = create_question(question_text="Past question 2.", days=-5)
-#         response = self.client.get(reverse('polls:index'))
-#         self.assertQuerysetEqual(
-#             response.context['latest_question_list'],
-#             [question2, question1],
-#         )
-
-# only as an example
-# class CourseIndexViewTests(TestCase):
-#     def test_page_response(self):
-#         """
-#         check response
-#         """
-#         response = self.client.get(reverse('index'))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertContains(response, "Hello, world. You're at the course view.")
