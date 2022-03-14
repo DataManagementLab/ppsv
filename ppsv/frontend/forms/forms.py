@@ -66,11 +66,6 @@ class NewUserForm(UserCreationForm):
 									"The password must not be commonly used.<br>"
 									"The password must not contain only numbers.</small></div>")))
 
-	# Das Passwort darf nicht zu ähnlich zu anderen Informationen sein.
-	# Das Passwort muss mindestens 8 Zeichen enthalten.
-	# Das Passwort darf nicht allgemein üblich sein.
-	# Das Passwort darf nicht komplett aus Ziffern bestehen.
-
 
 class NewStudentForm(ModelForm):
 	"""New Student form
