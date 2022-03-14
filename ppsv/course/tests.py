@@ -11,8 +11,7 @@ class ModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         """
-        Sets up a test group.
-        :return: Group
+        Sets up test data.
         """
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
         cls.user2 = User.objects.create_user(username='testuser2', password='12345')
