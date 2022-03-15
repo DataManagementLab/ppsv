@@ -260,7 +260,7 @@
                 {% if open_course_info %}
                     <div style="margin-left:10px;margin-right:10px;margin-bottom:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px; white-space: normal;">
                         <p> <label style="font-weight:500"> {% translate "Organizer" %}: </label> {{ info_selection.topic.course.organizer }} </p>
-                        <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ info_selection.topic.course.get_type_display }} </p>
+                        <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ info_selection.topic.course.type|safe }} </p>
                         <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ info_selection.topic.course.get_faculty_display }} </p>
                         <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
                         <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.course.max_participants }} {% endif %} </p>
