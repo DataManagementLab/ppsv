@@ -12,6 +12,38 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 
 
+class CourseType(models.Model):
+    """CourseType
+
+    This model represents the types courses can have.
+
+    :attr CourseType.type: The course type
+    :type CourseType.type: CharField
+    """
+    type = models.CharField(max_length=200, verbose_name=_('type'))
+
+    class Meta:
+        """Meta options
+
+        This class handles all possible meta options that you can give to this model.
+
+        :attr Meta.verbose_name: A human-readable name for the object in singular
+        :type Meta.verbose_name: __proxy__
+        :attr Meta.verbose_name_plural: A human-readable name for the object in plural
+        :type Meta.verbose_name_plural: __proxy__
+        """
+        verbose_name = _("course Type")
+        verbose_name_plural = _("course Types")
+
+    def __str__(self):
+        """String representation
+        Returns the string representation of this object.
+        :return: the string representation of this object
+        :rtype: str
+        """
+        return self.type
+
+
 class Course(models.Model):
     """Course
 
@@ -22,7 +54,7 @@ class Course(models.Model):
     :attr Course.title: The title of the course
     :type Course.title: CharField
     :attr Course.type: The type of the course
-    :type Course.type: CharField
+    :type Course.type: ForeignKey
     :attr Course.registration_start: The start date of the registration
     :type Course.registration_start: DateTimeField
     :attr Course.registration_deadline: The end date of the registration
@@ -46,14 +78,7 @@ class Course(models.Model):
 
     """
     title = models.CharField(max_length=200, verbose_name=_("title"))
-
-    COURSE_TYPE_CHOICES = [
-        ('SE', 'Seminar'),
-        ('IN', _('Internship')),
-        ('MI', _('Miscellaneous')),
-    ]
-    type = models.CharField(max_length=2, choices=COURSE_TYPE_CHOICES, default='SE', verbose_name=_("type"))
-
+    type = models.ForeignKey(CourseType, on_delete=models.CASCADE, verbose_name=_("type"))
     registration_start = models.DateTimeField(default=timezone.now, verbose_name=_("registration Start"))
     registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
     description = models.TextField(verbose_name=_("description"))
@@ -61,7 +86,6 @@ class Course(models.Model):
     unlimited = models.BooleanField('unlimited number of participants', blank=True, default=False)
     max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
                                            validators=[MaxValueValidator(9999), MinValueValidator(0)],)
-
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
 
     COURSE_FACULTY_CHOICES = [

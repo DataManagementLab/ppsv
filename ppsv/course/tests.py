@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
-from .models import Course, Student, Group, TopicSelection, Topic
+from .models import Course, Student, Group, TopicSelection, Topic, CourseType
 
 
 class ModelTests(TestCase):
@@ -25,7 +25,8 @@ class ModelTests(TestCase):
         cls.group1.students.add(cls.student3)
         cls.group2 = Group.objects.create()
         cls.group2.students.add(cls.student1)
-        cls.course = Course.objects.create(registration_deadline=timezone.now(), cp=5)
+        cls.course_type = CourseType.objects.create(type='Testart')
+        cls.course = Course.objects.create(registration_deadline=timezone.now(), cp=5, type=cls.course_type)
         cls.topic = Topic.objects.create(course=cls.course, title='Title')
         cls.selection = TopicSelection.objects.create(group=cls.group2, topic=cls.topic)
 
