@@ -8,6 +8,10 @@ from .models import Student
 from .models import Group
 from .models import TopicSelection
 from .models import TextSaves
+from .models import CourseType
+
+
+admin.site.register(CourseType)
 
 
 class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
@@ -32,7 +36,7 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
         ]
     list_display = ('title', 'type', 'registration_deadline', 'cp', 'max_participants')
     list_filter = ['registration_deadline']
-    search_fields = ['title']
+    search_fields = ['title', 'type']
 
     class Media:
         """Media
