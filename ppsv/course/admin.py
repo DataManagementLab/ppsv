@@ -36,7 +36,7 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
         ]
     list_display = ('title', 'type', 'registration_deadline', 'cp', 'max_participants')
     list_filter = ['registration_deadline']
-    search_fields = ['title', 'type']
+    search_fields = ['title', 'type__type']
 
     class Media:
         """Media
@@ -61,7 +61,7 @@ class TopicAdmin(ImportExportMixin, admin.ModelAdmin):
     :type TopicAdmin.autocomplete_fields: tuple[str, ]
     """
     list_display = ('title', 'course', 'max_participants')
-    search_fields = ['title', 'course']
+    search_fields = ['title', 'course__title']
     autocomplete_fields = ('course', )
 
     def get_form(self, request, obj=None, **kwargs):
