@@ -52,7 +52,7 @@ def homepage(request):
             # check for a collection that has mixed course types
             for group in groups_of_student:
                 # collection 0 is allowed to have mixed types of courses
-                for collection in range(1, group.collection_count+1):
+                for collection in range(1, group.collection_count + 1):
                     # check if there are topics in the selection
                     if models.TopicSelection.objects.filter(group=group, collection_number=collection).exists():
                         topics_in_current_collection = models.TopicSelection.objects.filter(
@@ -375,7 +375,8 @@ def overview(request):
                                                            "to your selection in order to fully "
                                                            "complete your selection. You can do this on the \"My Selection\" page."))
                         else:
-                            messages.error(request, _("You already have selected a topic from the same course with a group."))
+                            messages.error(request,
+                                           _("You already have selected a topic from the same course with a group."))
 
                     # when the user selects a group with an already existing group
                     elif "select_with_chosen_group" in request.POST:
@@ -562,7 +563,8 @@ def overview(request):
                             groups_of_member = models.Group.objects.filter(students=member_of_group)
                             for group_of_member in groups_of_member:
                                 if group_of_member != group_to_select:
-                                    topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_member.id)
+                                    topic_selections_of_group = models.TopicSelection.objects.filter(
+                                        group=group_of_member.id)
                                     for selected_topic_of_group in topic_selections_of_group:
                                         if selected_topic_of_group.topic.course == course_of_chosen_topic:
                                             member_of_group_already_selected_course = True
@@ -585,11 +587,10 @@ def overview(request):
                                                    "to your selection in order to fully "
                                                    "complete your selection. You can do this on the \"My Selection\" page."))
                         else:
-                            messages.error(request, _("A member of your group has already selected this topic or a topic in this course."))
+                            messages.error(request,
+                                           _("A member of your group has already selected this topic or a topic in this course."))
 
                     args["group_to_select"] = group_to_select
-
-
 
             chosen_topic = data[0]
             chosen_course = data[1]
@@ -855,11 +856,8 @@ def your_selection(request):
             args["ask_remove_collection"] = int(data[1])
             args["open_edit_collection_for_group"] = int(data[0])
         elif "change_collection_button" in request.POST:
-            print(request.POST)
             data = str(request.POST.get("change_collection_button")).split("|")
-            data.append(str(request.POST.get("collection_input"+data[2])))
-
-            print(data)
+            data.append(str(request.POST.get("collection_input" + data[2])))
             result_change_collection = \
                 change_collection(request, data, selections_of_collections_of_groups, False)
             selections_of_collections_of_groups = result_change_collection[0]
@@ -952,7 +950,8 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
     :return: an array containing updated selections_of_collections_of_groups and a boolean for error handling
     """
     error = False
-    if len("".join(data[3]).split()) > 0:
+
+    if int(data[3]) > 0:
         for group, collections_of_group in selections_of_collections_of_groups.items():
             if group.id == int(data[0]):
                 for collection_number, selections in collections_of_group.items():
@@ -966,23 +965,24 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                 matching_exclusive_collection_number = [False, 0]
 
                                 if selection.topic.course.collection_exclusive:
-
+                                    # Find the matching collection number for the course of the given topic if a
+                                    # collection for its course already exists
                                     for group0, collections_of_group0 in selections_of_collections_of_groups.items():
                                         if group0.id == int(data[0]):
-                                            for collection_number0, selections0 in collections_of_group.items():
+                                            for collection_number0, selections0 in collections_of_group0.items():
                                                 if collection_number0 > 0 and \
                                                         collection_number0 != selection.collection_number and \
                                                         len(selections0) > 0:
                                                     if selections0[0].topic.course == selection.topic.course:
                                                         matching_exclusive_collection_number = \
                                                             [True, collection_number0]
-
+                                    # If we found a fitting collection number for the topic make sure it is put into it
                                     if matching_exclusive_collection_number[0] \
                                             and int(data[3]) != matching_exclusive_collection_number[1]:
                                         data[3] = matching_exclusive_collection_number[1]
                                         messages.info(request, "Automatically assigned \"" + str(selection.topic.title)
                                                       + "\" to a matching collection")
-
+                                    # If the course of the target collection is not the same as the course of selection
                                     if not len(collections_of_group[int(data[3])]) == 0:
                                         if not collections_of_group[int(data[3])][0].topic.course \
                                                == selection.topic.course:
@@ -993,6 +993,7 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                                                     "with topics from the same course.")
                                             error = True
                                 else:
+                                    # If given topic is not exclusive but we try to put it into an exclusive collection
                                     if not len(collections_of_group[int(data[3])]) == 0:
                                         if not collections_of_group[int(data[3])][0].topic.course \
                                                == selection.topic.course:
@@ -1006,17 +1007,82 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
 
                                 if not the_selection_is_exclusive \
                                         and not the_target_collection_has_exclusive_selections:
-                                    for selection_in_same_collection in selections:
-                                        if selection_in_same_collection.priority > selection.priority:
-                                            selection_in_same_collection.priority = \
-                                                selection_in_same_collection.priority - 1
-                                            selection_in_same_collection.save()
+                                    matching_collection_number = [False, 0]
+                                    move_more_than_one = False
+                                    # Find the matching collection number for the course of the given topic if a
+                                    # collection for its course already exists
+                                    for group1, collections_of_group1 in selections_of_collections_of_groups.items():
+                                        if group1.id == int(data[0]):
+                                            for collection_number1, selections1 in collections_of_group1.items():
+                                                if collection_number1 > 0 and \
+                                                        collection_number1 != selection.collection_number and \
+                                                        len(selections1) > 0:
+                                                    for selection1 in selections1:
+                                                        if selection1.topic.course == selection.topic.course:
+                                                            matching_collection_number = \
+                                                                [True, collection_number1]
+                                                            break
+                                                if collection_number1 == selection.collection_number:
+                                                    for selection_in_same_collection in selections1:
+                                                        if selection_in_same_collection.topic.course\
+                                                                == selection.topic.course \
+                                                                and selection_in_same_collection is not selection:
+                                                            move_more_than_one = True
+                                                            break
 
-                                    selection.collection_number = int(data[3])
-                                    selection.priority = len(collections_of_group[int(data[3])]) + 1
-                                    selection.save()
-                                    selections.remove(selection)
-                                    collections_of_group[int(data[3])].append(selection)
+
+                                    # If we found a fitting collection number for the topic make sure it is put into it
+                                    if matching_collection_number[0] \
+                                            and int(data[3]) != matching_collection_number[1]:
+                                        data[3] = matching_collection_number[1]
+                                        if move_more_than_one:
+                                            messages.info(request,
+                                                          "Automatically assigned topics from the same course"
+                                                          " to a matching collection")
+                                        else:
+                                            messages.info(request, "Automatically assigned \"" +
+                                                          str(selection.topic.title) + "\" to a matching collection")
+
+                                    if move_more_than_one:
+                                        for group1, collections_of_group1 in selections_of_collections_of_groups.items():
+                                            if group1.id == int(data[0]):
+                                                for collection_number1, selections1 in collections_of_group.items():
+                                                    if collection_number1 == int(data[1]):
+                                                        topics_to_move = []
+                                                        for selection_in_same_collection in selections1:
+                                                            if selection_in_same_collection.topic.course \
+                                                                    == selection.topic.course:
+                                                                topics_to_move.append(selection_in_same_collection)
+
+                                                        while len(topics_to_move) > 0:
+                                                            selection_in_same_collection = topics_to_move[0]
+                                                            for other_selection_in_same_collection in selections1:
+                                                                if other_selection_in_same_collection.priority >\
+                                                                        selection_in_same_collection.priority:
+                                                                    other_selection_in_same_collection.priority = \
+                                                                        other_selection_in_same_collection.priority - 1
+                                                                    other_selection_in_same_collection.save()
+
+                                                            selection_in_same_collection.collection_number = int(data[3])
+                                                            selection_in_same_collection.priority = len(
+                                                                collections_of_group[int(data[3])]) + 1
+                                                            selection_in_same_collection.save()
+                                                            topics_to_move.remove(selection_in_same_collection)
+                                                            selections1.remove(selection_in_same_collection)
+                                                            collections_of_group[int(data[3])].append(selection_in_same_collection)
+
+                                    else:
+                                        for selection_in_same_collection in selections:
+                                            if selection_in_same_collection.priority > selection.priority:
+                                                selection_in_same_collection.priority = \
+                                                    selection_in_same_collection.priority - 1
+                                                selection_in_same_collection.save()
+
+                                        selection.collection_number = int(data[3])
+                                        selection.priority = len(collections_of_group[int(data[3])]) + 1
+                                        selection.save()
+                                        selections.remove(selection)
+                                        collections_of_group[int(data[3])].append(selection)
 
                                     break
                         else:
@@ -1157,7 +1223,7 @@ def groups(request):
                 if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                     if not models.Student.objects.get(
                             tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
-                                        id=int(request.POST.get("add_student"))).students.all():
+                        id=int(request.POST.get("add_student"))).students.all():
                         new_member_student = \
                             models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                         group = models.Group.objects.get(id=int(request.POST.get("add_student")))
@@ -1175,8 +1241,8 @@ def groups(request):
 
                         if len(colliding_group) != 0:
                             messages.error(request, _("Adding {} "
-                                                    f"would make this group a duplicate  "
-                                                    "of an already existing one.").format(new_member_student))
+                                                      f"would make this group a duplicate  "
+                                                      "of an already existing one.").format(new_member_student))
                             args["error_message"] = True
                         else:
                             group.students.add(new_member_student)
