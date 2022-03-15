@@ -54,7 +54,7 @@ class Course(models.Model):
     :attr Course.title: The title of the course
     :type Course.title: CharField
     :attr Course.type: The type of the course
-    :type Course.type: CharField
+    :type Course.type: ForeignKey
     :attr Course.registration_start: The start date of the registration
     :type Course.registration_start: DateTimeField
     :attr Course.registration_deadline: The end date of the registration
