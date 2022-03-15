@@ -1032,7 +1032,8 @@ def groups(request):
             args["chosen_group_for_deletion"] = chosen_group_for_deletion
         # Confirm the group deletion
         elif "delete_group" in request.POST:
-            models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
+            if models.Group.objects.filter(id=int(request.POST.get("delete_group"))).exists():
+                models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
         # when clicking on the cog symbol to edit a group
         elif "open_edit" in request.POST:
             chosen_group_for_edit = int(request.POST.get("open_edit"))
@@ -1092,7 +1093,8 @@ def groups(request):
             leaving_student = models.Student.objects.get(tucan_id=str(data[1]))
 
             if group.size == 2:
-                group.delete()
+                if group.exists():
+                    group.delete()
             else:
                 rest_students_after_removal = []
                 for student in group.students.all():

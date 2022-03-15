@@ -395,21 +395,9 @@ class GroupsViewTests(TestCase):
         response = self.client.post(reverse('frontend:groups'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Klaus Hans')
-        # warum funktioniert das hier nicht?
-        # self.assertContains(response, 'test1@yahoo.de')
+        self.assertContains(response, 'test1@yahoo.de')
         self.assertContains(response, 'cd22eeee')
         self.assertContains(response, 'Create a new group')
-
-    # moved into the next test
-    # def test_create_new_group_ui_shows_up(self):
-    #     """
-    #     Tests if the group creation UI is displayed after clicking on 'Create a new group'.
-    #     """
-    #     data = {'open_create_new_group': ['']}
-    #     self.client.force_login(self.user1)
-    #     response = self.client.post(reverse('frontend:groups'), data=data)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertContains(response, 'id="add_student_to_new_group"')
 
     def test_create_new_group_add_user(self):
         """
@@ -511,11 +499,17 @@ class GroupsViewTests(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'A student with the TUCaN-ID xx22xxxx does not exist.')
 
-    # konnte post data nicht finden
     def test_removing_penultimate_student_from_group(self):
         """
         Tests if the group deletion message is shown when a user tries to remove the penultimate student from the group.
         """
+        group_id = self.group1.id
+        data = {'ask_remove_student': ['{}|cd22eeee'.format(group_id)], 'student_id': ['']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:groups'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'If you remove this member, your group will be too small and will be deleted.')
+        self.assertContains(response, 'name="delete_group"')
 
     def test_student_is_already_member_of_new_group(self):
         """
@@ -541,3 +535,18 @@ class GroupsViewTests(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'A student with the TUCaN-ID xx22xxxx does not exist.')
 
+    def test_parallel_group_deletion(self):
+        """
+        Tests if two users can delete the group simultaneously.
+        """
+        group_id = self.group1.id
+        data = {'delete_group': [group_id]}
+        self.client.force_login(self.user1)
+        response1 = self.client.post(reverse('frontend:groups'), data=data)
+        self.assertFalse(Group.objects.filter(id=group_id).exists())
+        self.assertEqual(response1.status_code, 200)
+        self.client.logout()
+        self.client.force_login(self.user3)
+        response2 = self.client.post(reverse('frontend:groups'), data=data)
+        self.assertEqual(response2.status_code, 200)
+        self.assertFalse(Group.objects.filter(id=group_id).exists())
