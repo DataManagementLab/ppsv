@@ -52,7 +52,7 @@ def homepage(request):
             # check for a collection that has mixed course types
             for group in groups_of_student:
                 # collection 0 is allowed to have mixed types of courses
-                for collection in range(1, group.collection_count+1):
+                for collection in range(1, group.collection_count + 1):
                     # check if there are topics in the selection
                     if models.TopicSelection.objects.filter(group=group, collection_number=collection).exists():
                         topics_in_current_collection = models.TopicSelection.objects.filter(
@@ -263,223 +263,334 @@ def overview(request):
         elif any(["choose_topic" in request.POST, "open_group_select" in request.POST,
                   "select_topic" in request.POST, "select_with_chosen_group" in request.POST,
                   "open_group_create" in request.POST, "add_student" in request.POST,
-                  "remove_student" in request.POST, "select_with_new_group" in request.POST]):
+                  "remove_student" in request.POST, "select_with_new_group" in request.POST,
+                  "select_with_existing_group" in request.POST]):
 
             if "choose_topic" in request.POST:
                 data = str(request.POST.get("choose_topic")).split("|")
             # Make sure that only authenticated users with a student profile can select topics
             if request.user.is_authenticated and hasattr(request.user, "student"):
-                # when deciding to choose a topic as a group
-                if "open_group_select" in request.POST:
-                    data = str(request.POST.get("open_group_select")).split("|")
-                    args["open_group_select"] = True
-                    args["groups"] = filter(
-                        lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
-                        models.Group.objects.filter(students=request.user.student))
+                student_id_of_user = str(request.user.student)
+                group_to_select = None
+                if "select_with_existing_group" in request.POST:
+                    data = str(request.POST.get("select_with_existing_group")).split("|")
+                if any(["choose_topic" in request.POST, "select_with_existing_group" in request.POST]):
+                    # check if no group of the user has already selected a topic in the same course
+                    course_of_chosen_topic = data[1]
+                    topics_in_chosen_course = models.Topic.objects.filter(course=course_of_chosen_topic)
 
-                # when selecting a topic alone
-                elif "select_topic" in request.POST:
-                    data = str(request.POST.get("select_topic")).split("|")
-                    student_tu_id = str(request.user.student)
+                    for group in models.Group.objects.filter(students=student_id_of_user):
+                        topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id)
+                        for selected_topic_of_group in topic_selections_of_group:
+                            if topics_in_chosen_course.filter(id=selected_topic_of_group.topic.id).exists():
+                                group_to_select = group
+                                break
+                        else:
+                            continue
+                        break
 
-                    selected_topic_id = int(data[0])
+                if group_to_select is None:
+                    args["group_to_select_is_None"] = True
+                    # when deciding to choose a topic as a group
+                    if "open_group_select" in request.POST:
+                        data = str(request.POST.get("open_group_select")).split("|")
+                        args["open_group_select"] = True
+                        args["groups"] = filter(
+                            lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                            models.Group.objects.filter(students=request.user.student))
 
-                    existing_groups = []
-                    for group in models.Group.objects.filter(students=student_tu_id):
-                        if group.size == 1:
-                            existing_groups.append(group)
-                    # check if the user has not already got a hidden group for himself
-                    if len(existing_groups) == 0:
+                    # when selecting a topic alone
+                    elif "select_topic" in request.POST:
+                        data = str(request.POST.get("select_topic")).split("|")
+                        student_tu_id = str(request.user.student)
 
-                        group_of_student = Group()
-                        group_of_student.save()
-                        group_of_student.students.add(student_tu_id)
+                        selected_topic_id = int(data[0])
 
-                        user_selection = TopicSelection()
-                        user_selection.group = group_of_student
-                        user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
-                        user_selection.collection_number = 0
-                        user_selection.save()
+                        existing_groups = []
 
-                        messages.success(request,
-                                         _("Your selection was successful! You can prioritize and edit your "
-                                            "chosen topics on the 'Your Selection' page."))
-                        if user_selection.topic.course.motivation_text:
-                            messages.warning(request,
-                                             _("You need to add a motivation text "
-                                                "to your selection in order to fully complete your selection."))
-                    # when the user already has a hidden group for himself
-                    else:
+                        # Check if other groups of the user have already selected topics from the same course
+                        group_already_selected_same_course = False
+                        course_of_chosen_topic = models.Course.objects.filter(id=data[1])[0]
 
-                        topic_selections_of_group = models.TopicSelection.objects.filter(group=existing_groups[0].id)
+                        for group_of_user in models.Group.objects.filter(students=student_tu_id):
+                            # get the hidden group of the user if it exists
+                            if group_of_user.size == 1:
+                                existing_groups.append(group_of_user)
 
-                        already_selected = False
+                        for group_of_user in models.Group.objects.filter(students=student_tu_id):
+                            if group_of_user != existing_groups[0]:
+                                topic_selections_of_group = models.TopicSelection.objects.filter(
+                                    group=group_of_user.id)
+                                for selected_topic_of_group in topic_selections_of_group:
+                                    if selected_topic_of_group.topic.course == course_of_chosen_topic:
+                                        group_already_selected_same_course = True
 
-                        for known_selection in topic_selections_of_group:
-                            if int(selected_topic_id) == int(known_selection.topic.id):
-                                already_selected = True
-                                messages.error(request, _("Selection failed! You have already selected this topic."))
+                        if not group_already_selected_same_course:
+                            # check if the user has not already got a hidden group for himself
+                            if len(existing_groups) == 0:
 
-                        if not already_selected:
-                            user_selection = TopicSelection()
-                            user_selection.group = existing_groups[0]
-                            user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
-                            user_selection.collection_number = 0
-                            user_selection.save()
-                            messages.success(request,
-                                             _("Your selection was successful! "
-                                               "You can find and edit your chosen topics on the "
-                                               "\"My Selection\" page."))
-                            if user_selection.topic.course.motivation_text:
-                                messages.warning(request,
-                                                 _("You need to add a motivation text (when required) "
-                                                    "to your selection in order to fully "
-                                                    "complete your selection. You can do this on the \"My Selection\" page."))
-                # when the user selects a group with an already existing group
-                elif "select_with_chosen_group" in request.POST:
-                    data = str(request.POST.get("select_with_chosen_group")).split("|")
-                    selected_topic_id = data[0]
-                    chosen_group_id = str(request.POST.get("group_options"))
-                    if chosen_group_id != str(-1):
-                        topic_selections_of_group = models.TopicSelection.objects.filter(group=chosen_group_id)
-                        already_selected = False
-                        for known_selection in topic_selections_of_group:
-                            if int(selected_topic_id) == int(known_selection.topic.id):
-                                already_selected = True
-                                messages.error(request, _("Selection failed! You have already selected this topic."))
+                                group_of_student = Group()
+                                group_of_student.save()
+                                group_of_student.students.add(student_tu_id)
 
-                        if not already_selected:
+                                user_selection = TopicSelection()
+                                user_selection.group = group_of_student
+                                user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                                user_selection.collection_number = 0
+                                user_selection.save()
+
+                                messages.success(request,
+                                                 _("Your selection was successful! You can prioritize and edit your "
+                                                   "chosen topics on the 'Your Selection' page."))
+                                if user_selection.topic.course.motivation_text:
+                                    messages.warning(request,
+                                                     _("You need to add a motivation text "
+                                                       "to your selection in order to fully complete your selection."))
+                            # when the user already has a hidden group for himself
+                            else:
+                                topic_selections_of_group = models.TopicSelection.objects.filter(
+                                    group=existing_groups[0].id)
+
+                                already_selected = False
+
+                                for known_selection in topic_selections_of_group:
+                                    if int(selected_topic_id) == int(known_selection.topic.id):
+                                        already_selected = True
+                                        messages.error(request,
+                                                       _("Selection failed! You have already selected this topic."))
+
+                                if not already_selected:
+                                    user_selection = TopicSelection()
+                                    user_selection.group = existing_groups[0]
+                                    user_selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                                    user_selection.collection_number = 0
+                                    user_selection.save()
+                                    messages.success(request,
+                                                     _("Your selection was successful! "
+                                                       "You can find and edit your chosen topics on the "
+                                                       "\"My Selection\" page."))
+                                    if user_selection.topic.course.motivation_text:
+                                        messages.warning(request,
+                                                         _("You need to add a motivation text (when required) "
+                                                           "to your selection in order to fully "
+                                                           "complete your selection. You can do this on the \"My Selection\" page."))
+                        else:
+                            messages.error(request,
+                                           _("You already have selected a topic from the same course with a group."))
+
+                    # when the user selects a group with an already existing group
+                    elif "select_with_chosen_group" in request.POST:
+                        data = str(request.POST.get("select_with_chosen_group")).split("|")
+                        selected_topic_id = data[0]
+                        student_tu_id = str(request.user.student)
+                        chosen_group_id = str(request.POST.get("group_options"))
+                        if chosen_group_id != str(-1):
+                            already_selected_topic = False
+
+                            for group_of_user in models.Group.objects.filter(students=student_tu_id):
+                                topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_user)
+                                for known_selection in topic_selections_of_group:
+                                    if int(selected_topic_id) == int(known_selection.topic.id):
+                                        already_selected_topic = True
+                                        messages.error(request,
+                                                       _("Selection failed! You have already selected this topic."))
+
+                            if not already_selected_topic:
+                                course_of_chosen_topic = models.Course.objects.filter(id=data[1])[0]
+                                member_of_group_already_selected_course = False
+                                members_of_group = models.Student.objects.filter(group=chosen_group_id)
+                                for member_of_group in members_of_group:
+                                    groups_of_member = models.Group.objects.filter(students=member_of_group)
+                                    for group_of_member in groups_of_member:
+                                        if group_of_member != chosen_group_id:
+                                            topic_selections_of_group = models.TopicSelection.objects.filter(
+                                                group=group_of_member.id)
+                                            for selected_topic_of_group in topic_selections_of_group:
+                                                if selected_topic_of_group.topic.course == course_of_chosen_topic:
+                                                    member_of_group_already_selected_course = True
+
+                                if not member_of_group_already_selected_course:
+                                    selection = TopicSelection()
+                                    selection.group = models.Group.objects.get(id=chosen_group_id)
+                                    selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                                    selection.collection_number = 0
+                                    selection.save()
+
+                                    messages.success(request,
+                                                     _("Your selection was successful! "
+                                                       "You can find and edit your chosen topics on the "
+                                                       "\"My Selection\" page."))
+                                    if selection.topic.course.motivation_text:
+                                        messages.warning(request,
+                                                         _("You need to add a motivation text (when required) "
+                                                           "to your selection in order to fully "
+                                                           "complete your selection. You can do this on the \"My Selection\" page."))
+                                else:
+                                    messages.error(request,
+                                                   _("A member of your group has already selected this topic or a topic in this course."))
+                        else:
+                            args["open_group_select"] = True
+                            args["groups"] = filter(
+                                lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                                models.Group.objects.filter(students=request.user.student))
+                            messages.error(request, "No group selected!")
+
+                    # when choosing to create a new group
+                    elif "open_group_create" in request.POST:
+                        data = str(request.POST.get("open_group_create")).split("|")
+                        args["members_in_new_group"] = [request.user.student.tucan_id]
+                        args["open_group_create"] = True
+                    # adding a student to the new group draft
+                    elif "add_student" in request.POST:
+                        data = str(request.POST.get("add_student")).split("|")
+
+                        members_in_new_group = []
+                        counter = 0
+                        while not (request.POST.get("member" + str(counter)) is None):
+                            members_in_new_group.append(str(request.POST.get("member" + str(counter))))
+                            counter += 1
+
+                        if "".join(request.POST.get("new_student_id").split()) != "":
+                            if members_in_new_group.count(str(request.POST.get("new_student_id"))) == 0:
+                                if models.Topic.objects.get(id=data[0]).max_participants > counter:
+                                    if models.Student.objects.filter(
+                                            tucan_id=request.POST.get("new_student_id")).exists():
+                                        members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
+                                    else:
+                                        messages.error(request, _("A student with the tucan id ") +
+                                                       request.POST.get("new_student_id") +
+                                                       _(" was not found."))
+                                else:
+                                    messages.error(request, _("Your group would be too large for ") +
+                                                   str(models.Topic.objects.get(id=data[0]).title)
+                                                   + _(". Your group can only have a maximum of ") +
+                                                   str(models.Topic.objects.get(id=data[0]).max_participants)
+                                                   + _(" members."))
+                            else:
+                                messages.error(request, _("A student with the tucan id ") +
+                                               request.POST.get("new_student_id") +
+                                               _(" is already in the group."))
+
+                        args["members_in_new_group"] = members_in_new_group
+                        args["open_group_create"] = True
+                    # remove a student from group draft
+                    elif "remove_student" in request.POST:
+                        data = str(request.POST.get("remove_student")).split("|")
+
+                        members_in_new_group = []
+                        counter = 0
+                        while not (request.POST.get("member" + str(counter)) is None):
+                            members_in_new_group.append(str(request.POST.get("member" + str(counter))))
+                            counter += 1
+
+                        members_in_new_group.remove(data[4])
+
+                        args["members_in_new_group"] = members_in_new_group
+                        args["open_group_create"] = True
+                    # when trying to select the topic and creating a new group
+                    elif "select_with_new_group" in request.POST:
+                        data = str(request.POST.get("select_with_new_group")).split("|")
+
+                        members_in_new_group = []
+                        counter = 0
+                        while not (request.POST.get("member" + str(counter)) is None):
+                            members_in_new_group.append(str(request.POST.get("member" + str(counter))))
+                            counter += 1
+
+                        existing_groups = []
+                        for member in members_in_new_group:
+                            if models.Group.objects.filter(students=member).exists():
+                                existing_groups.append(models.Group.objects.filter(students=member))
+
+                        exception = False
+
+                        if len(members_in_new_group) == 1:
+                            messages.error(request, _(f"Your group needs to contain more members than yourself!"))
+                            exception = True
+
+                        course_of_chosen_topic = models.Course.objects.filter(id=data[1])[0]
+                        for groups_of_member in existing_groups:
+                            if not exception:
+                                for group in groups_of_member:
+                                    if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
+                                            and len(members_in_new_group) == \
+                                            len("".join(group.get_display.split(",")).split()):
+                                        messages.error(request, _(f"This group already exists!"))
+                                        exception = True
+                                        break
+                                    topic_selections_of_group = models.TopicSelection.objects.filter(
+                                        group=group.id)
+                                    for selected_topic_of_group in topic_selections_of_group:
+                                        if selected_topic_of_group.topic.course == course_of_chosen_topic:
+                                            messages.error(request, _("A member of the group you are trying to create "
+                                                                      "has already selected this topic or a topic in this course."))
+                                            exception = True
+                                            break
+
+                        if not exception:
+                            group = Group()
+                            group.save()
+
+                            counter = 0
+                            while not (request.POST.get("member" + str(counter)) is None):
+                                group.students.add(
+                                    models.Student.objects.get(tucan_id=request.POST.get("member" + str(counter))))
+                                counter += 1
+
                             selection = TopicSelection()
-                            selection.group = models.Group.objects.get(id=chosen_group_id)
-                            selection.topic = models.Topic.objects.get(id=selected_topic_id)
+                            selection.group = group
+                            selection.topic = models.Topic.objects.get(id=data[0])
                             selection.collection_number = 0
                             selection.save()
 
                             messages.success(request,
                                              _("Your selection was successful! "
-                                                "You can find and edit your chosen topics on the "
-                                                "\"My Selection\" page."))
+                                               "You can find and edit your chosen topics on the "
+                                               "\"My Selection\" page."))
                             if selection.topic.course.motivation_text:
                                 messages.warning(request,
                                                  _("You need to add a motivation text (when required) "
-                                                    "to your selection in order to fully "
-                                                    "complete your selection. You can do this on the \"My Selection\" page."))
+                                                   "to your selection in order to fully "
+                                                   "complete your selection. You can do this on the \"My Selection\" page."))
+                # We have already selected a topic of this course
+                else:
+                    args["group_to_select_is_None"] = False
+                    if "select_with_existing_group" in request.POST:
+                        course_of_chosen_topic = models.Course.objects.filter(id=data[1])[0]
+                        member_of_group_already_selected_course = False
+                        members_of_group = models.Student.objects.filter(group=group_to_select.id)
+                        for member_of_group in members_of_group:
+                            groups_of_member = models.Group.objects.filter(students=member_of_group)
+                            for group_of_member in groups_of_member:
+                                if group_of_member != group_to_select:
+                                    topic_selections_of_group = models.TopicSelection.objects.filter(
+                                        group=group_of_member.id)
+                                    for selected_topic_of_group in topic_selections_of_group:
+                                        if selected_topic_of_group.topic.course == course_of_chosen_topic:
+                                            member_of_group_already_selected_course = True
 
-                    else:
-                        args["open_group_select"] = True
-                        args["groups"] = filter(
-                            lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
-                            models.Group.objects.filter(students=request.user.student))
-                        messages.error(request, "No group selected!")
+                        if not member_of_group_already_selected_course:
 
-                # when choosing to create a new group
-                elif "open_group_create" in request.POST:
-                    data = str(request.POST.get("open_group_create")).split("|")
-                    args["members_in_new_group"] = [request.user.student.tucan_id]
-                    args["open_group_create"] = True
-                # adding a student to the new group draft
-                elif "add_student" in request.POST:
-                    data = str(request.POST.get("add_student")).split("|")
+                            selection = TopicSelection()
+                            selection.group = group_to_select
+                            selection.topic = models.Topic.objects.get(id=data[0])
+                            selection.collection_number = 0
+                            selection.save()
 
-                    members_in_new_group = []
-                    counter = 0
-                    while not (request.POST.get("member" + str(counter)) is None):
-                        members_in_new_group.append(str(request.POST.get("member" + str(counter))))
-                        counter += 1
-
-                    if "".join(request.POST.get("new_student_id").split()) != "":
-                        if members_in_new_group.count(str(request.POST.get("new_student_id"))) == 0:
-                            if models.Topic.objects.get(id=data[0]).max_participants > counter:
-                                if models.Student.objects.filter(
-                                        tucan_id=request.POST.get("new_student_id")).exists():
-                                    members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
-                                else:
-                                    messages.error(request, _("A student with the tucan id ") +
-                                                   request.POST.get("new_student_id") +
-                                                   _(" was not found."))
-                            else:
-                                messages.error(request, _("Your group would be too large for ") +
-                                               str(models.Topic.objects.get(id=data[0]).title)
-                                               + _(". Your group can only have a maximum of ") +
-                                               str(models.Topic.objects.get(id=data[0]).max_participants)
-                                               + _(" members."))
+                            messages.success(request,
+                                             _("Your selection was successful! "
+                                               "You can find and edit your chosen topics on the "
+                                               "\"My Selection\" page."))
+                            if selection.topic.course.motivation_text:
+                                messages.warning(request,
+                                                 _("You need to add a motivation text (when required) "
+                                                   "to your selection in order to fully "
+                                                   "complete your selection. You can do this on the \"My Selection\" page."))
                         else:
-                            messages.error(request, _("A student with the tucan id ") +
-                                           request.POST.get("new_student_id") +
-                                           _(" is already in the group."))
+                            messages.error(request,
+                                           _("A member of your group has already selected this topic or a topic in this course."))
 
-                    args["members_in_new_group"] = members_in_new_group
-                    args["open_group_create"] = True
-                # remove a student from group draft
-                elif "remove_student" in request.POST:
-                    data = str(request.POST.get("remove_student")).split("|")
-
-                    members_in_new_group = []
-                    counter = 0
-                    while not (request.POST.get("member" + str(counter)) is None):
-                        members_in_new_group.append(str(request.POST.get("member" + str(counter))))
-                        counter += 1
-
-                    members_in_new_group.remove(data[4])
-
-                    args["members_in_new_group"] = members_in_new_group
-                    args["open_group_create"] = True
-                # when trying to select the topic and creating a new group
-                elif "select_with_new_group" in request.POST:
-                    data = str(request.POST.get("select_with_new_group")).split("|")
-
-                    members_in_new_group = []
-                    counter = 0
-                    while not (request.POST.get("member" + str(counter)) is None):
-                        members_in_new_group.append(str(request.POST.get("member" + str(counter))))
-                        counter += 1
-
-                    existing_groups = []
-                    for member in members_in_new_group:
-                        if models.Group.objects.filter(students=member).exists():
-                            existing_groups.append(models.Group.objects.filter(students=member))
-
-                    exception = False
-
-                    if len(members_in_new_group) == 1:
-                        messages.error(request, _(f"Your group needs to contain more members than yourself!"))
-                        exception = True
-
-                    for groups_of_member in existing_groups:
-                        if not exception:
-                            for group in groups_of_member:
-                                if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
-                                        and len(members_in_new_group) == \
-                                        len("".join(group.get_display.split(",")).split()):
-                                    messages.error(request, _(f"This group already exists!"))
-                                    exception = True
-                                    break
-
-                    if not exception:
-                        group = Group()
-                        group.save()
-
-                        counter = 0
-                        while not (request.POST.get("member" + str(counter)) is None):
-                            group.students.add(
-                                models.Student.objects.get(tucan_id=request.POST.get("member" + str(counter))))
-                            counter += 1
-
-                        selection = TopicSelection()
-                        selection.group = group
-                        selection.topic = models.Topic.objects.get(id=data[0])
-                        selection.collection_number = 0
-                        selection.save()
-
-                        messages.success(request,
-                                         _("Your selection was successful! "
-                                           "You can find and edit your chosen topics on the "
-                                           "\"My Selection\" page."))
-                        if selection.topic.course.motivation_text:
-                            messages.warning(request,
-                                             _("You need to add a motivation text (when required) "
-                                                "to your selection in order to fully "
-                                                "complete your selection. You can do this on the \"My Selection\" page."))
+                    args["group_to_select"] = group_to_select
 
             chosen_topic = data[0]
             chosen_course = data[1]
@@ -744,8 +855,9 @@ def your_selection(request):
             args["ask_remove_group"] = int(data[0])
             args["ask_remove_collection"] = int(data[1])
             args["open_edit_collection_for_group"] = int(data[0])
-        elif "change_collection" in request.POST:
-            data = str(request.POST.get("change_collection")).split("|")
+        elif "change_collection_button" in request.POST:
+            data = str(request.POST.get("change_collection_button")).split("|")
+            data.append(str(request.POST.get("collection_input" + data[2])))
             result_change_collection = \
                 change_collection(request, data, selections_of_collections_of_groups, False)
             selections_of_collections_of_groups = result_change_collection[0]
@@ -838,7 +950,8 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
     :return: an array containing updated selections_of_collections_of_groups and a boolean for error handling
     """
     error = False
-    if len("".join(data[3]).split()) > 0:
+
+    if int(data[3]) > 0:
         for group, collections_of_group in selections_of_collections_of_groups.items():
             if group.id == int(data[0]):
                 for collection_number, selections in collections_of_group.items():
@@ -852,23 +965,24 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                 matching_exclusive_collection_number = [False, 0]
 
                                 if selection.topic.course.collection_exclusive:
-
+                                    # Find the matching collection number for the course of the given topic if a
+                                    # collection for its course already exists
                                     for group0, collections_of_group0 in selections_of_collections_of_groups.items():
                                         if group0.id == int(data[0]):
-                                            for collection_number0, selections0 in collections_of_group.items():
+                                            for collection_number0, selections0 in collections_of_group0.items():
                                                 if collection_number0 > 0 and \
                                                         collection_number0 != selection.collection_number and \
                                                         len(selections0) > 0:
                                                     if selections0[0].topic.course == selection.topic.course:
                                                         matching_exclusive_collection_number = \
                                                             [True, collection_number0]
-
+                                    # If we found a fitting collection number for the topic make sure it is put into it
                                     if matching_exclusive_collection_number[0] \
                                             and int(data[3]) != matching_exclusive_collection_number[1]:
                                         data[3] = matching_exclusive_collection_number[1]
                                         messages.info(request, "Automatically assigned \"" + str(selection.topic.title)
                                                       + "\" to a matching collection")
-
+                                    # If the course of the target collection is not the same as the course of selection
                                     if not len(collections_of_group[int(data[3])]) == 0:
                                         if not collections_of_group[int(data[3])][0].topic.course \
                                                == selection.topic.course:
@@ -879,6 +993,7 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                                                     "with topics from the same course.")
                                             error = True
                                 else:
+                                    # If given topic is not exclusive but we try to put it into an exclusive collection
                                     if not len(collections_of_group[int(data[3])]) == 0:
                                         if not collections_of_group[int(data[3])][0].topic.course \
                                                == selection.topic.course:
@@ -892,17 +1007,82 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
 
                                 if not the_selection_is_exclusive \
                                         and not the_target_collection_has_exclusive_selections:
-                                    for selection_in_same_collection in selections:
-                                        if selection_in_same_collection.priority > selection.priority:
-                                            selection_in_same_collection.priority = \
-                                                selection_in_same_collection.priority - 1
-                                            selection_in_same_collection.save()
+                                    matching_collection_number = [False, 0]
+                                    move_more_than_one = False
+                                    # Find the matching collection number for the course of the given topic if a
+                                    # collection for its course already exists
+                                    for group1, collections_of_group1 in selections_of_collections_of_groups.items():
+                                        if group1.id == int(data[0]):
+                                            for collection_number1, selections1 in collections_of_group1.items():
+                                                if collection_number1 > 0 and \
+                                                        collection_number1 != selection.collection_number and \
+                                                        len(selections1) > 0:
+                                                    for selection1 in selections1:
+                                                        if selection1.topic.course == selection.topic.course:
+                                                            matching_collection_number = \
+                                                                [True, collection_number1]
+                                                            break
+                                                if collection_number1 == selection.collection_number:
+                                                    for selection_in_same_collection in selections1:
+                                                        if selection_in_same_collection.topic.course\
+                                                                == selection.topic.course \
+                                                                and selection_in_same_collection is not selection:
+                                                            move_more_than_one = True
+                                                            break
 
-                                    selection.collection_number = int(data[3])
-                                    selection.priority = len(collections_of_group[int(data[3])]) + 1
-                                    selection.save()
-                                    selections.remove(selection)
-                                    collections_of_group[int(data[3])].append(selection)
+
+                                    # If we found a fitting collection number for the topic make sure it is put into it
+                                    if matching_collection_number[0] \
+                                            and int(data[3]) != matching_collection_number[1]:
+                                        data[3] = matching_collection_number[1]
+                                        if move_more_than_one:
+                                            messages.info(request,
+                                                          "Automatically assigned topics from the same course"
+                                                          " to a matching collection")
+                                        else:
+                                            messages.info(request, "Automatically assigned \"" +
+                                                          str(selection.topic.title) + "\" to a matching collection")
+
+                                    if move_more_than_one:
+                                        for group1, collections_of_group1 in selections_of_collections_of_groups.items():
+                                            if group1.id == int(data[0]):
+                                                for collection_number1, selections1 in collections_of_group.items():
+                                                    if collection_number1 == int(data[1]):
+                                                        topics_to_move = []
+                                                        for selection_in_same_collection in selections1:
+                                                            if selection_in_same_collection.topic.course \
+                                                                    == selection.topic.course:
+                                                                topics_to_move.append(selection_in_same_collection)
+
+                                                        while len(topics_to_move) > 0:
+                                                            selection_in_same_collection = topics_to_move[0]
+                                                            for other_selection_in_same_collection in selections1:
+                                                                if other_selection_in_same_collection.priority >\
+                                                                        selection_in_same_collection.priority:
+                                                                    other_selection_in_same_collection.priority = \
+                                                                        other_selection_in_same_collection.priority - 1
+                                                                    other_selection_in_same_collection.save()
+
+                                                            selection_in_same_collection.collection_number = int(data[3])
+                                                            selection_in_same_collection.priority = len(
+                                                                collections_of_group[int(data[3])]) + 1
+                                                            selection_in_same_collection.save()
+                                                            topics_to_move.remove(selection_in_same_collection)
+                                                            selections1.remove(selection_in_same_collection)
+                                                            collections_of_group[int(data[3])].append(selection_in_same_collection)
+
+                                    else:
+                                        for selection_in_same_collection in selections:
+                                            if selection_in_same_collection.priority > selection.priority:
+                                                selection_in_same_collection.priority = \
+                                                    selection_in_same_collection.priority - 1
+                                                selection_in_same_collection.save()
+
+                                        selection.collection_number = int(data[3])
+                                        selection.priority = len(collections_of_group[int(data[3])]) + 1
+                                        selection.save()
+                                        selections.remove(selection)
+                                        collections_of_group[int(data[3])].append(selection)
 
                                     break
                         else:
@@ -1044,7 +1224,7 @@ def groups(request):
                 if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                     if not models.Student.objects.get(
                             tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
-                                        id=int(request.POST.get("add_student"))).students.all():
+                        id=int(request.POST.get("add_student"))).students.all():
                         new_member_student = \
                             models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                         group = models.Group.objects.get(id=int(request.POST.get("add_student")))
