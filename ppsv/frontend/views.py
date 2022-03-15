@@ -929,8 +929,8 @@ def get_selection(selections_of_groups, chosen_selection_id):
 
 
 @login_required
-@user_passes_test(check_profile, login_url='/profile/', message="Please create a student profile before "
-                                                                "selecting courses.")
+@user_passes_test(check_profile, login_url='/profile/', message=_("Please create a student profile before "
+                                                                  "accessing your groups."))
 def groups(request):
     """ View for "Your Groups" page
 
@@ -960,12 +960,12 @@ def groups(request):
                             tucan_id=request.POST.get("new_student_id")).exists():
                         members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
                     else:
-                        messages.error(request, "A student with the tucan id " +
+                        messages.error(request, "A student with the TUCaN-ID " +
                                        request.POST.get("new_student_id") +
-                                       " was not found.")
+                                       " does not exist.")
 
                 else:
-                    messages.error(request, "A student with the tucan id " +
+                    messages.error(request, "A student with the TUCaN-ID " +
                                    request.POST.get("new_student_id") +
                                    " is already in the group.")
 
@@ -1061,8 +1061,8 @@ def groups(request):
 
                         if len(colliding_group) != 0:
                             messages.error(request, _("Adding {} "
-                                                    f"would make this group a duplicate  "
-                                                    "of an already existing one.").format(new_member_student))
+                                                      f"would make this group a duplicate "
+                                                      "of an already existing one.").format(new_member_student))
                             args["error_message"] = True
                         else:
                             group.students.add(new_member_student)
@@ -1070,12 +1070,12 @@ def groups(request):
                     else:
                         student_id = str(request.POST.get("student_id"))
                         messages.error(request,
-                                       f"{student_id} is already a member of this group")
+                                       f"{student_id} is already a member of this group.")
                         args["error_message"] = True
                 else:
                     student_id = str(request.POST.get("student_id"))
                     messages.error(request,
-                                   f"A student with the Tucan ID {student_id} does not exist")
+                                   f"A student with the TUCaN-ID {student_id} does not exist.")
                     args["error_message"] = True
 
             args["chosen_group_for_edit"] = int(request.POST.get("add_student"))

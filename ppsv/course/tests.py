@@ -44,15 +44,19 @@ class ModelTests(TestCase):
         If the registration start of a course lies in the future, the status is upcoming.
         If the current time is between registration start and end, the status is open.
         If the current time is after the registration end, the status is closed.
+        If the registration start is within the next 14 days, the status is imminent.
         """
         date_past = timezone.now() - datetime.timedelta(days=30)
         date_future = timezone.now() + datetime.timedelta(days=30)
+        date_near_future = timezone.now() + datetime.timedelta(days=13)
         course_open = Course(registration_deadline=date_future, registration_start=date_past)
         self.assertEqual(course_open.get_status, 'Open')
         course_closed = Course(registration_deadline=date_past)
         self.assertEqual(course_closed.get_status, 'Closed')
         course_upcoming = Course(registration_start=date_future)
         self.assertEqual(course_upcoming.get_status, 'Upcoming')
+        course_imminent = Course(registration_start=date_near_future)
+        self.assertEqual(course_imminent.get_status, 'Imminent')
 
     def test_get_display(self):
         """
