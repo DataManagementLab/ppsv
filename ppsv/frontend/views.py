@@ -1109,8 +1109,8 @@ def get_selection(selections_of_groups, chosen_selection_id):
 
 
 @login_required
-@user_passes_test(check_profile, login_url='/profile/', message="Please create a student profile before "
-                                                                "selecting courses.")
+@user_passes_test(check_profile, login_url='/profile/', message=_("Please create a student profile before "
+                                                                  "accessing your groups."))
 def groups(request):
     """ View for "Your Groups" page
 
@@ -1140,12 +1140,12 @@ def groups(request):
                             tucan_id=request.POST.get("new_student_id")).exists():
                         members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
                     else:
-                        messages.error(request, "A student with the tucan id " +
+                        messages.error(request, "A student with the TUCaN-ID " +
                                        request.POST.get("new_student_id") +
-                                       " was not found.")
+                                       " does not exist.")
 
                 else:
-                    messages.error(request, "A student with the tucan id " +
+                    messages.error(request, "A student with the TUCaN-ID " +
                                    request.POST.get("new_student_id") +
                                    " is already in the group.")
 
@@ -1212,7 +1212,8 @@ def groups(request):
             args["chosen_group_for_deletion"] = chosen_group_for_deletion
         # Confirm the group deletion
         elif "delete_group" in request.POST:
-            models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
+            if models.Group.objects.filter(id=int(request.POST.get("delete_group"))).exists():
+                models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
         # when clicking on the cog symbol to edit a group
         elif "open_edit" in request.POST:
             chosen_group_for_edit = int(request.POST.get("open_edit"))
@@ -1241,7 +1242,7 @@ def groups(request):
 
                         if len(colliding_group) != 0:
                             messages.error(request, _("Adding {} "
-                                                      f"would make this group a duplicate  "
+                                                      f"would make this group a duplicate "
                                                       "of an already existing one.").format(new_member_student))
                             args["error_message"] = True
                         else:
@@ -1250,12 +1251,12 @@ def groups(request):
                     else:
                         student_id = str(request.POST.get("student_id"))
                         messages.error(request,
-                                       f"{student_id} is already a member of this group")
+                                       f"{student_id} is already a member of this group.")
                         args["error_message"] = True
                 else:
                     student_id = str(request.POST.get("student_id"))
                     messages.error(request,
-                                   f"A student with the Tucan ID {student_id} does not exist")
+                                   f"A student with the TUCaN-ID {student_id} does not exist.")
                     args["error_message"] = True
 
             args["chosen_group_for_edit"] = int(request.POST.get("add_student"))
@@ -1272,7 +1273,8 @@ def groups(request):
             leaving_student = models.Student.objects.get(tucan_id=str(data[1]))
 
             if group.size == 2:
-                group.delete()
+                if group.exists():
+                    group.delete()
             else:
                 rest_students_after_removal = []
                 for student in group.students.all():
