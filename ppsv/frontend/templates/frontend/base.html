@@ -88,7 +88,23 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
         {% endblock groups_page_navbar_container %}
         {% endif %}
         {# Sprache ändern #}
-        <button class="navbar-btn" style="padding-top:0.15em;padding-bottom:0.42em;"><i class="fa fa-globe fa-lg" aria-hidden="true" style="font-size:24px"> </i></button>
+        <button id="toggle-lang" class="navbar-btn" style="padding-top:0.15em;padding-bottom:0.2em;"><i class="fa fa-globe fa-lg" aria-hidden="true" style="font-size:24px"> </i></button>
+        {% get_current_language as LANGUAGE_CODE %}
+        {% get_available_languages as LANGUAGES %}
+        {% get_language_info_list for LANGUAGES as languages %}
+        <form action="{% url "set_language" %}" method="post" class="navbar-form navbar-right">
+            {% csrf_token %}
+            <div id="lang-div" style="padding-top:0.4em;padding-bottom:0.1em; display: none;">
+                <select name="language" onchange="this.form.submit()">
+                {% for language in languages %}
+                    <option value="{{ language.code }}"
+                        {% if language.code == LANGUAGE_CODE %}selected="selected"{% endif %}>
+                        {{ language.name_local }} ({{ language.code }})
+                    </option>
+                {% endfor %}
+                </select>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -110,3 +126,18 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
 </div>
 </body>
 </html>
+
+<script>
+    var button = document.getElementById('toggle-lang'); // Assumes element with id='button'
+
+    button.onclick = function() {
+        var div = document.getElementById('lang-div');
+        if (div.style.display !== 'none') {
+            div.style.display = 'none';
+        }
+        else {
+            div.style.display = 'block';
+        }
+    };
+
+</script>
