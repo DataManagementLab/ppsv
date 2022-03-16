@@ -146,13 +146,13 @@ class Course(models.Model):
         """
         if timezone.now() < self.registration_start:
             if (self.registration_start - timezone.now()).days <= 14:
-                return _("Imminent")
+                return "Imminent"
             else:
-                return _("Upcoming")
+                return "Upcoming"
         elif self.registration_start < timezone.now() < self.registration_deadline:
-            return _("Open")
+            return "Open"
         elif timezone.now() > self.registration_deadline:
-            return _("Closed")
+            return "Closed"
 
 
 def course_directory_path(instance, filename):

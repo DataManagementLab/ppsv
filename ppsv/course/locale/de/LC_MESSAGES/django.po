@@ -20,31 +20,27 @@ msgstr ""
 
 #: .\admin.py:33
 msgid "Date Information"
-msgstr ""
+msgstr "Anmeldezeitraum"
 
 #: .\admin.py:34
 msgid "Course Information"
-msgstr ""
+msgstr "Kursinformationen"
 
 #: .\admin.py:35
 msgid "Participant Number"
-msgstr ""
+msgstr "Teilnehmerzahl"
 
 #: .\models.py:23 .\models.py:81
 msgid "type"
 msgstr "Art"
 
 #: .\models.py:35
-#, fuzzy
-#| msgid "course"
 msgid "course Type"
-msgstr "Kurs"
+msgstr "Kursart"
 
 #: .\models.py:36
-#, fuzzy
-#| msgid "courses"
 msgid "course Types"
-msgstr "Kurse"
+msgstr "Kursarten"
 
 #: .\models.py:80 .\models.py:184
 msgid "title"
@@ -52,7 +48,7 @@ msgstr "Titel"
 
 #: .\models.py:82
 msgid "registration Start"
-msgstr "Registrierungsbeginn"
+msgstr "Anmeldebeginn"
 
 #: .\models.py:83
 msgid "registration Deadline"
@@ -64,13 +60,11 @@ msgstr "Beschreibung"
 
 #: .\models.py:85
 msgid "collection exclusive"
-msgstr ""
+msgstr "exklusiv in einer collection"
 
 #: .\models.py:86
-#, fuzzy
-#| msgid "maximum Participants"
 msgid "unlimited number of participants"
-msgstr "maximale Teilnehmeranzahl"
+msgstr "unbegrenzte Teilnehmeranzahl"
 
 #: .\models.py:87 .\models.py:186
 msgid "maximum Participants"
@@ -133,10 +127,8 @@ msgid "faculty"
 msgstr "Fachbereich"
 
 #: .\models.py:107
-#, fuzzy
-#| msgid "motivation Text"
 msgid "motivation texts are required"
-msgstr "Motivationstext"
+msgstr "Motivationstexte werden benötigt"
 
 #: .\models.py:109
 msgid "organizer"
@@ -158,19 +150,19 @@ msgstr ""
 
 #: .\models.py:149
 msgid "Imminent"
-msgstr ""
+msgstr "In Kürze"
 
 #: .\models.py:151
 msgid "Upcoming"
-msgstr ""
+msgstr "Bald"
 
 #: .\models.py:153
 msgid "Open"
-msgstr ""
+msgstr "Offen"
 
 #: .\models.py:155
 msgid "Closed"
-msgstr ""
+msgstr "Geschlossen"
 
 #: .\models.py:190
 msgid "file"
@@ -206,7 +198,7 @@ msgstr "Studierende"
 
 #: .\models.py:278
 msgid "number of collections"
-msgstr ""
+msgstr "Anzahl an collections"
 
 #: .\models.py:291
 msgid "group Size"
@@ -231,7 +223,7 @@ msgstr "Priorität"
 
 #: .\models.py:352
 msgid "collection number"
-msgstr ""
+msgstr "collection Nummer"
 
 #: .\models.py:378
 msgid "topic Selection"
