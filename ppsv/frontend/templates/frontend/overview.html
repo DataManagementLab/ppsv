@@ -243,12 +243,12 @@
                 {% if courses != "No_Courses" %}
                     <div class="table-info">
                     <div style="display:flex;justify-content: space-around;">
-                        <div style="flex-basis:100%"> {% translate "Title" %} </div>
-                        <div style="flex-basis:100%"> {% translate "Type" %} </div>
-                        <div style="flex-basis:100%"> {% translate "Status" %} </div>
-                        <div style="flex-basis:100%"> {% translate "Registration End" %} </div>
-                        <div style="flex-basis:100%"> {% translate "Max Participants" %} </div>
-                        <div style="flex-basis:100%"> CP </div>
+                        <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|title|{% if not dsc and sortBy == "title" %}dsc{% else %}asc{% endif %}"> {% translate "Title" %} <i class="{% if not dsc and sortBy == "title" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
+                        <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|type|{% if not dsc and sortBy == "type" %}dsc{% else %}asc{% endif %}"> {% translate "Type" %} <i class="{% if not dsc and sortBy == "type" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
+                        <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|status|{% if not dsc and sortBy == "status" %}dsc{% else %}asc{% endif %}"> {% translate "Status" %} <i class="{% if not dsc and sortBy == "status" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
+                        <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|registration_deadline|{% if not dsc and sortBy == "registration_deadline" %}dsc{% else %}asc{% endif %}"> {% translate "Registration End" %} <i class="{% if not dsc and sortBy == "registration_deadline" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
+                        <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|max_participants|{% if not dsc and sortBy == "max_participants" %}dsc{% else %}asc{% endif %}"> {% translate "Max Participants" %} <i class="{% if not dsc and sortBy == "max_participants" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
+                        <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|cp|{% if not dsc and sortBy == "cp" %}dsc{% else %}asc{% endif %}"> CP </button> <i class="{% if not dsc and sortBy == "cp" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </div>
                     </div>
                     </div>
                     {% for course in courses %}
