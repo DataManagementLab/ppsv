@@ -341,7 +341,7 @@ def overview(request):
 
                                 messages.success(request,
                                                  _("Your selection was successful! You can prioritize and edit your "
-                                                   "chosen topics on the 'Your Selection' page."))
+                                                   "chosen topics on the 'My Selection' page."))
                                 if user_selection.topic.course.motivation_text:
                                     messages.warning(request,
                                                      _("You need to add a motivation text "

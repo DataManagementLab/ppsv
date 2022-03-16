@@ -26,7 +26,7 @@
                 </button>
                 {% endif %}
 {#				The text of the header changes according to which page the user is on#}
-                <div>{% if chosen_topic %} {% translate "Select my Topic" %} {% elif courses %}  {% translate "Choose a Course" %} {% elif topics %} {% translate "Choose a Topic" %} {% else %} {% translate "Choose a Faculty" %} {% endif %} </div>
+                <div>{% if chosen_topic %} {% translate "Select Topic" %} {% elif courses %}  {% translate "Choose a Course" %} {% elif topics %} {% translate "Choose a Topic" %} {% else %} {% translate "Choose a Faculty" %} {% endif %} </div>
             </li>
 
             {% if topics %}
@@ -110,7 +110,7 @@
                                     <div style="background-color:rgba(10,61,98,1);height:2px;width:40%;position:absolute;top:13px;right:15px;"></div>
                                 </label>
                                 <select name="group_options" style="text-align: center; height:25px;margin-left:5px;margin-right:5px;">
-                                    <option value="-1"> {% translate "Choose my group" %} </option>
+                                    <option value="-1"> {% translate "Choose a group" %} </option>
                                     {% for group in groups %}
                                      <option value="{{ group.id }}"> {{ group.get_display }} </option>
                                     {% endfor %}
@@ -186,7 +186,7 @@
                                                                 <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
                                                                     <div style="display:grid;width:100%;position:relative">
                                                                         <label style="position:absolute;top:0%;left:0%;text-align:center">
-                                                                            <label style="color:red;margin:0px;font-size:25px;"> {% translate "The group you use for this course is too big for this topic." %} </label>
+                                                                            <label style="color:red;margin:0px;font-size:25px;"> {% translate "Your group for this course is too big for this topic." %} </label>
                                                                         </label>
                                                                     </div>
                                                                 </div>
@@ -199,7 +199,7 @@
                                                     <div style="display:grid;width:40%;position:relative">
                                                         <label style="position:absolute;top:20%;left:25%;text-align:center">
                                                             <label style="color:#14cc52;margin:0px;font-size:25px;"> {% translate "selected" %} <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
-                                                            <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
+                                                            <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "View My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
                                                         </label>
                                                     </div>
                                                 {% endif %}
