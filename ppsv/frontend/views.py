@@ -140,8 +140,32 @@ def overview(request):
         # when a faculty is chosen show its courses
         elif "choose_faculty" in request.POST:
 
-            chosen_faculty = str(request.POST.get("choose_faculty"))
+            if "|" in str(request.POST.get("choose_faculty")):
+                data = str(request.POST.get("choose_faculty")).split("|")
+                chosen_faculty = data[0]
+                args["sortBy"] = data[1]
+                if "dsc" in data[2]:
+                    args["dsc"] = True
+                else:
+                    args["dsc"] = False
+            else:
+                chosen_faculty = str(request.POST.get("choose_faculty"))
+
             courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty)
+
+            # sorts "courses_in_chosen_faculty"
+            if "|" in str(request.POST.get("choose_faculty")):
+                if "status" in data[1]:
+                    if "dsc" in data[2]:
+                        courses_in_chosen_faculty = \
+                            sorted(courses_in_chosen_faculty, key=lambda x: x.get_status)[::-1]
+                    else:
+                        courses_in_chosen_faculty = sorted(courses_in_chosen_faculty, key=lambda x: x.get_status)
+                else:
+                    if "dsc" in data[2]:
+                        courses_in_chosen_faculty = list(courses_in_chosen_faculty.order_by("-"+data[1]))
+                    else:
+                        courses_in_chosen_faculty = list(courses_in_chosen_faculty.order_by(data[1]))
 
             args["chosen_faculty"] = chosen_faculty
             if len(courses_in_chosen_faculty) != 0:

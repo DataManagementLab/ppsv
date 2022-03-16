@@ -230,11 +230,8 @@ class YourSelectionViewTests(TestCase):
         """
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
         cls.user_no_student = User.objects.create_user(username='testuser2', password='12345')
-        # cls.user3 = User.objects.create_user(username='testuser3', password='12345')
         cls.student1 = Student.objects.create(user=cls.user1, tucan_id='ab12eeee')
-        # cls.student2 = Student.objects.create(user=cls.user2, tucan_id='bc22eeee')
-        # cls.student3 = Student.objects.create(user=cls.user3, tucan_id='cd33eeee')
-        cls.group1 = Group.objects.create()
+        cls.group1 = Group.objects.create(collection_count=2)
         cls.group1.students.add(cls.student1)
         cls.date_future = timezone.now() + datetime.timedelta(days=30)
         cls.course_type = CourseType.objects.create(type='Testtype')
@@ -242,21 +239,30 @@ class YourSelectionViewTests(TestCase):
                                            cp=5, motivation_text=True, faculty='FB01', title='TestCourse',
                                            type=cls.course_type, description='Test description',
                                            collection_exclusive=False)
+        cls.course1 = Course.objects.create(registration_deadline=cls.date_future, registration_start=timezone.now(),
+                                            cp=5, motivation_text=True, faculty='FB01', title='TestCourse1',
+                                            type=cls.course_type, description='Test description 1',
+                                            collection_exclusive=False)
         cls.course_exclusive = Course.objects.create(registration_deadline=cls.date_future,
                                                      registration_start=timezone.now(), cp=6, motivation_text=True,
-                                                     faculty='FB02', title='TestCourse1', type=cls.course_type,
-                                                     description='Test description', collection_exclusive=True)
-        cls.topic_col0 = Topic.objects.create(course=cls.course, title='Unassigned Topic', description='Testing')
-        cls.topic_col1_0 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Topic 0')
-        cls.topic_col1_1 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Topic 1')
-        cls.topic_selection_col0 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_col0,
-                                                                 collection_number=0)
-        cls.topic_selection_col1_0 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_col1_0,
-                                                                   collection_number=1)
-        cls.topic_selection_col1_1 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_col1_1,
-                                                                   collection_number=1)
-        # cls.course_mix1 = Course.objects.create(registration_deadline=timezone.now(), cp=5, type='IN')
-        # cls.course_mix2 = Course.objects.create(registration_deadline=timezone.now(), cp=5, type='SE')
+                                                     faculty='FB02', title='TestCourse exklusiv', type=cls.course_type,
+                                                     description='Test description exklusiv', collection_exclusive=True)
+        cls.topic_unassigned0 = Topic.objects.create(course=cls.course, title='Unassigned Topic 0',
+                                                     description='Testing unassigned 0')
+        cls.topic_unassigned1 = Topic.objects.create(course=cls.course, title='Unassigned Topic 1',
+                                                     description='Testing unassigned 1')
+        cls.topic_col1_exclusive0 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 0')
+        cls.topic_col1_exclusive1 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 1')
+        cls.topic_selection_unassigned0 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_unassigned0,
+                                                                        collection_number=0)
+        cls.topic_selection_unassigned1 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_unassigned1,
+                                                                        collection_number=0)
+        cls.topic_selection_exclusive0 = TopicSelection.objects.create(group=cls.group1,
+                                                                       topic=cls.topic_col1_exclusive0,
+                                                                       collection_number=1)
+        cls.topic_selection_exclusive1 = TopicSelection.objects.create(group=cls.group1,
+                                                                       topic=cls.topic_col1_exclusive1,
+                                                                       collection_number=1)
 
     def test_view_url_exists_at_correct_location(self):
         """
@@ -275,7 +281,7 @@ class YourSelectionViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'frontend/your_selection.html')
 
-    def test_redirect_for_anonymous_user_or_user_without_student(self):
+    def test_redirect_for_anonymous_user(self):
         """
         Tests if an anonymous user is redirected to the login page when trying to access the your_selection view.
         """
@@ -317,81 +323,143 @@ class YourSelectionViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Edit Motivation Text')
         self.assertContains(response, 'exclusive for topics of course')
+        self.assertContains(response, 'Assigned Excl. Topic 0')
 
     def test_information_panel(self):
         """
         Tests if the information panel works and displays the topic & course information.
         """
-        data = {'open_selection_info': ['1'], 'open_course_info': ['False'], 'selection': [' False |1 '],
-                'course_info_button': ['']}
+        selection_id = self.topic_selection_unassigned0.id
+        data = {'open_selection_info': ['{}'.format(selection_id)], 'open_course_info': ['False'],
+                'selection': [' False |{} '.format(selection_id)], 'course_info_button': ['']}
         self.client.force_login(self.user1)
         response = self.client.post(reverse('frontend:your_selection'), data=data)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Test description')
-        self.assertContains(response, 'Testing')
+        self.assertContains(response, 'Testing unassigned 0')
 
-    def test_remove_unassigned_topic(self):
+    def test_remove_topic(self):
         """
         Tests if a topic is correctly removed from collection 0.
         """
-        selection_id = self.topic_selection_col0.id
+        selection_id = self.topic_selection_unassigned0.id
         data = {'collection_input{}'.format(selection_id): ['0'], 'remove_topic_button': ['{}|0'.format(selection_id)]}
         self.client.force_login(self.user1)
         response = self.client.post(reverse('frontend:your_selection'), data=data)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(TopicSelection.objects.filter(id=selection_id).exists())
-        self.assertNotContains(response, 'Assign these topics to your desired collections')
 
-        # 'collection_input414': ['0'], 'remove_topic_button': ['414|0']}>remove_topic_button
-
-    def test_moving_topic_to_selection(self):
+    def test_moving_topic_to_collection(self):
         """
         Tests if a topic is moved to the correct collection when confirming the selected collection choice.
         """
-        # moved 1 topic to a collection
-        # 'collection_input413': ['1'], 'change_collection_button': ['63|0|413']
-        # moved 3 topics to a collection
-        #'collection_input410': ['2'], 'change_collection_button': ['63|0|410'], 'collection_input411': ['0'], 'collection_input412': ['0']}>change_collection
+        selection_id = self.topic_selection_unassigned0.id
+        group_id = self.group1.id
+        data = {'collection_input{}'.format(selection_id): ['2'],
+                'change_collection_button': ['{}|0|{}'.format(group_id, selection_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(TopicSelection.objects.get(id=selection_id).collection_number, 2)
 
-
-    def test_remove_assigned_topic(self):
+    def test_assigned_multiple_topics_of_the_same_course_to_selection(self):
         """
-        Tests if a topic is correctly removed from a collection and the priorities of the other topics are
-        changed properly.
+        Tests if multiple unassigned topics of the same course are moved to the correct collection when confirming
+        the selected collection choice.
         """
-        #'collection_input407': ['1'], 'remove_topic_button': ['407|1'], 'collection_input410': ['2'], 'collection_input411': ['2'], 'collection_input412': ['2']}>remove_topic_button
-
+        selection_id0 = self.topic_selection_unassigned0.id
+        selection_id1 = self.topic_selection_unassigned1.id
+        group_id = self.group1.id
+        data = {'collection_input{}'.format(selection_id0): ['2'], 'collection_input{}'.format(selection_id1): ['2'],
+                'change_collection_button': ['{}|0|{}'.format(group_id, selection_id0)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(TopicSelection.objects.get(id=selection_id0).collection_number, 2)
+        self.assertEqual(TopicSelection.objects.get(id=selection_id1).collection_number, 2)
 
     def test_editing_collection(self):
         """
-        Tests if the buttons to remove and add collections are displayed when editing a collection.
+        Tests if all buttons are displayed when editing a collection.
         """
-        # 'open_edit_collection': ['63']}>edit_collection
+        group_id = self.group1.id
+        data = {'open_edit_collection': ['{}'.format(group_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="add_collection"')
+        self.assertContains(response, 'spinning-icon')
+        self.assertContains(response, 'name="remove_collection"')
 
-    def test_removing_collection(self):
+    def test_ask_remove_collection(self):
+        """
+        Tests if a message is displayed correctly when a user is trying to delete a filled collection.
+        """
+        selection_id0 = self.topic_selection_exclusive0.id
+        selection_id1 = self.topic_selection_exclusive1.id
+        group_id = self.group1.id
+        data = {'ask_remove_collection': ['{}|1'.format(group_id)], 'collection_input{}'.format(selection_id0): ['1'],
+                'collection_input{}'.format(selection_id1): ['1']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'If you delete this collection, all the selections will be deleted as well.')
+        self.assertContains(response, 'name="remove_collection"')
+
+    def test_remove_collection(self):
         """
         Tests if a collection is correctly deleted.
         """
-        # 'remove_collection': ['63|1'], 'collection_input410': ['2'], 'collection_input411': ['2'], 'collection_input412': ['2']}>remove_collection
+        selection_id0 = self.topic_selection_exclusive0.id
+        selection_id1 = self.topic_selection_exclusive1.id
+        group_id = self.group1.id
+        data = {'remove_collection': ['{}|1'.format(group_id)], 'collection_input{}'.format(selection_id0): ['1'],
+                'collection_input{}'.format(selection_id1): ['1']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Assigned Excl. Topic 0')
+        self.assertFalse(TopicSelection.objects.filter(topic=self.topic_col1_exclusive0).exists())
 
     def test_adding_collection(self):
         """
         Tests if a collection is correctly added.
         """
-        # 'collection_input410': ['1'], 'collection_input411': ['1'], 'collection_input412': ['1'], 'add_collection': ['63']}>add_collection
+        group_id = self.group1.id
+        data = {'add_collection': ['{}'.format(group_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Collection 4')
 
     def test_edit_motivation_text(self):
         """
         Tests if the field for the motivation text and the corresponding buttons are displayed when the user wants to
         edit the motivation text.
         """
-        # 'collection_input410': ['1'], 'edit_motivation_text_button': ['410'], 'collection_input411': ['1'], 'collection_input412': ['1']}>edit_text
+        selection_id = self.topic_selection_exclusive0.id
+        data = {'edit_motivation_text_button': ['{}'.format(selection_id)],
+                'collection_input{}'.format(selection_id): ['1']
+                }
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="save_motivation_text_button"')
+        self.assertContains(response, 'name="cancel_motivation_save"')
 
     def test_save_motivation_text(self):
         """
         Tests if the motivation text is correctly saved.
         """
-        # 'open_motivation_text_for_selection': ['410'], 'motivation_text': ['Ja, ich will'], 'save_motivation_text_button': ['410']
+        selection_id = self.topic_selection_exclusive0.id
+        data = {'save_motivation_text_button': ['{}'.format(selection_id)],
+                'collection_input{}'.format(selection_id): ['1'],
+                'motivation_text': ['Test Text']
+                }
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(TopicSelection.objects.filter(motivation='Test Text').exists())
 
 
 class GroupsViewTests(TestCase):
