@@ -234,7 +234,9 @@
                 <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
                         <label style="font-weight:500"> {% translate "Description" %} </label>
                         <p> {{ chosen_topic.description }} </p>
+                        {% if chosen_topic.file %}
                         <p> <a href="{{ BASE_DIR }}/media/{{ chosen_topic.file }}">information file</a> </p>
+                        {% endif %}
                     </div>
                 {% endif %}
             {% endif %}
