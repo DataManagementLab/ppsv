@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-16 13:10+0100\n"
+"POT-Creation-Date: 2022-03-16 16:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -148,22 +148,6 @@ msgstr ""
 "Die Deadline zur Registrierung darf nicht vor dem Start der Registrierung "
 "liegen."
 
-#: .\models.py:149
-msgid "Imminent"
-msgstr "In Kürze"
-
-#: .\models.py:151
-msgid "Upcoming"
-msgstr "Bald"
-
-#: .\models.py:153
-msgid "Open"
-msgstr "Offen"
-
-#: .\models.py:155
-msgid "Closed"
-msgstr "Geschlossen"
-
 #: .\models.py:190
 msgid "file"
 msgstr "Datei"
@@ -240,6 +224,18 @@ msgstr "gespeicherter Text"
 #: .\models.py:418
 msgid "text Saves"
 msgstr "gespeicherte Texte"
+
+#~ msgid "Imminent"
+#~ msgstr "In Kürze"
+
+#~ msgid "Upcoming"
+#~ msgstr "Bald"
+
+#~ msgid "Open"
+#~ msgstr "Offen"
+
+#~ msgid "Closed"
+#~ msgstr "Geschlossen"
 
 #~ msgid "Internship"
 #~ msgstr "Praktikum"

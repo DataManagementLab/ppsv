@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-16 13:11+0100\n"
+"POT-Creation-Date: 2022-03-16 16:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -88,7 +88,7 @@ msgstr "Neue Gruppe erstellen"
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: .\templates\frontend\groups.html:60
+#: .\templates\frontend\groups.html:60 .\templates\frontend\overview.html:106
 msgid "Create new group"
 msgstr "Neue Gruppe erstellen"
 
@@ -123,7 +123,8 @@ msgid ""
 "Duplicates are not allowed! If you remove this member, another group will "
 "have the same members as this group."
 msgstr ""
-"Identische Gruppen sind nicht erlaubt! Wenn du dieses Mitglied entfernst, ist diese Gruppe identisch zu einer anderen."
+"Identische Gruppen sind nicht erlaubt! Wenn du dieses Mitglied entfernst, "
+"ist diese Gruppe identisch zu einer anderen."
 
 #: .\templates\frontend\groups.html:176
 msgid "Delete this group"
@@ -150,6 +151,15 @@ msgstr "Registrieren"
 #: .\templates\frontend\homepage.html:57
 msgid "Welcome"
 msgstr "Willkommen"
+
+#: .\templates\frontend\homepage.html:58
+msgid ""
+"This website serves as a platform for registering for seminars, internships "
+"and other courses. You can select topics and prioritize them across multiple "
+"courses."
+msgstr ""
+"Diese Website dient als Plattform zur Anmeldung für Seminare, Praktika und andere Veranstaltungen. "
+"Hier kannst Du Themen wählen und über mehrere Veranstaltungen hinweg priorisieren."
 
 #: .\templates\frontend\overview.html:29
 msgid "Select Topic"
@@ -228,12 +238,12 @@ msgid "Select all remaining topics of this course"
 msgstr "Wähle alle übrigen Themen dieses Kurses"
 
 #: .\templates\frontend\overview.html:74 .\templates\frontend\overview.html:93
-#: .\templates\frontend\overview.html:245
+#: .\templates\frontend\overview.html:247
 msgid "Title"
 msgstr "Name"
 
 #: .\templates\frontend\overview.html:75 .\templates\frontend\overview.html:94
-#: .\templates\frontend\overview.html:249
+#: .\templates\frontend\overview.html:251
 msgid "Max Participants"
 msgstr "Max Teilnehmerzahl"
 
@@ -246,6 +256,10 @@ msgstr "oder"
 msgid "Choose a group"
 msgstr "Wähle eine Gruppe"
 
+#: .\templates\frontend\overview.html:118
+msgid "Select topic with chosen group"
+msgstr "Mit ausgewählter Gruppe wählen"
+
 #: .\templates\frontend\overview.html:126
 msgid "Select with group"
 msgstr "Mit Gruppe auswählen"
@@ -253,8 +267,7 @@ msgstr "Mit Gruppe auswählen"
 #: .\templates\frontend\overview.html:153
 msgid ""
 "You cannot choose this topic yet. The registration for this topic starts on"
-msgstr ""
-"Du kannst dieses Thema noch nicht wählen. Die Anmeldung beginnt am"
+msgstr "Du kannst dieses Thema noch nicht wählen. Die Anmeldung beginnt am"
 
 #: .\templates\frontend\overview.html:160
 msgid "You cannot choose this topic anymore."
@@ -265,8 +278,6 @@ msgid " Select with a group"
 msgstr "Mit Gruppe wählen"
 
 #: .\templates\frontend\overview.html:169
-#, fuzzy
-#| msgid "Select with group"
 msgid "Select without a group"
 msgstr "Alleine wählen"
 
@@ -311,19 +322,35 @@ msgstr "In diesem Kurs gibt es keine verfügbaren Themen."
 msgid "Information for Topic"
 msgstr "Themeninformationen"
 
-#: .\templates\frontend\overview.html:246
+#: .\templates\frontend\overview.html:248
 msgid "Type"
 msgstr "Art"
 
-#: .\templates\frontend\overview.html:247
+#: .\templates\frontend\overview.html:249
 msgid "Status"
 msgstr "Status"
 
-#: .\templates\frontend\overview.html:248
+#: .\templates\frontend\overview.html:250
 msgid "Registration End"
 msgstr "Anmeldeschluss"
 
-#: .\templates\frontend\overview.html:270
+#: .\templates\frontend\overview.html:262
+msgid "Open"
+msgstr "Offen"
+
+#: .\templates\frontend\overview.html:263
+msgid "Imminent"
+msgstr "In Kürze"
+
+#: .\templates\frontend\overview.html:264
+msgid "Upcoming"
+msgstr "Bald"
+
+#: .\templates\frontend\overview.html:265
+msgid "Closed"
+msgstr "Geschlossen"
+
+#: .\templates\frontend\overview.html:277
 msgid "There are no courses in this faculty right now."
 msgstr "In diesem Fachbereich gibt es momentan keine verfügbaren Kurse."
 
@@ -341,8 +368,6 @@ msgstr "Dieses Thema muss noch einer Collection zugewiesen werden."
 
 #: .\templates\frontend\your_selection.html:79
 #: .\templates\frontend\your_selection.html:145
-#, fuzzy
-#| msgid "Choose a Faculty"
 msgid "Choose collection"
 msgstr "Collection wählen"
 
@@ -368,7 +393,8 @@ msgstr "Collection löschen"
 msgid ""
 "You need to set the priority for this topic and write a motivation text."
 msgstr ""
-"Für dieses Thema muss noch eine Priorität und ein Motivationstext gesetzt werden."
+"Für dieses Thema muss noch eine Priorität und ein Motivationstext gesetzt "
+"werden."
 
 #: .\templates\frontend\your_selection.html:125
 msgid "You need to set the priority for this topic."
@@ -400,7 +426,8 @@ msgid ""
 "If you delete this collection, all selections in this collection will be "
 "deleted"
 msgstr ""
-"Wenn du diese Collection löschst, werden alle gewählten Themen darin entfernt."
+"Wenn du diese Collection löschst, werden alle gewählten Themen darin "
+"entfernt."
 
 #: .\templates\frontend\your_selection.html:234
 msgid "Delete Collection"
@@ -460,7 +487,8 @@ msgstr "Du hast noch keine Themen gewählt!"
 
 #: .\views.py:100
 msgid "You can view and manage your selected topics and collections here:"
-msgstr "Hier kannst Du deine gewählten Themen und Collections sehen und verwalten:"
+msgstr ""
+"Hier kannst Du deine gewählten Themen und Collections sehen und verwalten:"
 
 #: .\views.py:106
 msgid "You can create a group here:"
@@ -483,7 +511,8 @@ msgid ""
 "There was at least one topic that could not be selected because it does not "
 "have enough space for your group."
 msgstr ""
-"Es gab mind. ein Thema, das nicht gewählt werden konnte, da es nicht genug Platz für deine Gruppe hat."
+"Es gab mind. ein Thema, das nicht gewählt werden konnte, da es nicht genug "
+"Platz für deine Gruppe hat."
 
 #: .\views.py:343
 msgid ""
@@ -498,9 +527,8 @@ msgid ""
 "You need to add a motivation text to your selection in order to fully "
 "complete your selection."
 msgstr ""
-"Du musst noch einen Motivationstext zum ausgewählten Thema "
-"hinzufügen, um die Wahl abzuschließen. Dies kannst du unter \"Meine Auswahl\" "
-"tun."
+"Du musst noch einen Motivationstext zum ausgewählten Thema hinzufügen, um "
+"die Wahl abzuschließen. Dies kannst du unter \"Meine Auswahl\" tun."
 
 #: .\views.py:360 .\views.py:396
 msgid "Selection failed! You have already selected this topic."
@@ -518,27 +546,28 @@ msgstr ""
 
 #: .\views.py:379
 msgid "You already have selected a topic from the same course with a group."
-msgstr "Du hast bereits ein Thema aus dem gleichen Kurs mit einer Gruppe gewählt."
+msgstr ""
+"Du hast bereits ein Thema aus dem gleichen Kurs mit einer Gruppe gewählt."
 
 #: .\views.py:430 .\views.py:591
 msgid ""
 "A member of your group has already selected this topic or a topic in this "
 "course."
 msgstr ""
+"Ein Mitglied deiner Gruppe hat bereits dieses Thema gewählt oder mit einer "
+"anderen Gruppe diesen Kurs gewählt."
 
-#: .\views.py:460 .\views.py:470
-msgid "A student with the tucan id "
+#: .\views.py:460 .\views.py:470 .\views.py:1136 .\views.py:1141
+msgid "A student with the TUCaN-ID "
 msgstr "Ein:e Student:in mit der TUCaN-ID "
 
 #: .\views.py:462
-#, fuzzy
-#| msgid " not found."
 msgid " was not found."
 msgstr " konnte nicht gefunden werden."
 
 #: .\views.py:464
 msgid "Your group would be too large for "
-msgstr "Deine Gruppe ist zu groß für "
+msgstr "Deine Gruppe wäre zu groß für "
 
 #: .\views.py:466
 msgid ". Your group can only have a maximum of "
@@ -565,10 +594,14 @@ msgid ""
 "A member of the group you are trying to create has already selected this "
 "topic or a topic in this course."
 msgstr ""
+"Ein Mitglied der Gruppe hat bereits dieses Thema oder ein anderes Thema in "
+"dem Kurs gewählt."
 
 #: .\views.py:644
 msgid "Please create a student profile before selecting courses."
 msgstr ""
+"Bitte erstelle zunächst ein Studierendenprofil, bevor Du mit deiner Wahl "
+"beginnst."
 
 #: .\views.py:764
 msgid "Your motivation text has been saved."
@@ -576,11 +609,11 @@ msgstr "Dein Motivationstext wurde gespeichert."
 
 #: .\views.py:975 .\views.py:1034
 msgid "Automatically assigned \""
-msgstr ""
+msgstr "Das Thema \""
 
 #: .\views.py:976 .\views.py:1035
 msgid "\" to a matching collection"
-msgstr ""
+msgstr "\" wurde der passenden Collection zugewiesen"
 
 #: .\views.py:982
 msgid ""
@@ -588,47 +621,43 @@ msgid ""
 "you are trying to assign can only be in a collection with topics from the "
 "same course."
 msgstr ""
+"Die Zielcollection enthält bereits Themen aus einem anderen Kurs. Das Thema, "
+"das Du zuweisen möchtest, kann nur in einer Collection mit Themen aus "
+"demselben Kurs sein."
 
 #: .\views.py:994
 msgid "The target collection exclusively allows topics of course \""
-msgstr ""
+msgstr "Die Zielcollection erlaubt ausnahmslos Themen aus dem Kurs \""
 
 #: .\views.py:1031
 msgid ""
 "Automatically assigned topics from the same course to a matching collection"
 msgstr ""
+"Alle Themen aus demselben Kurs wurden automatisch in die passende Collection "
+"verschoben"
 
 #: .\views.py:1105
 msgid "Please create a student profile before accessing your groups."
 msgstr ""
-
-#: .\views.py:1136 .\views.py:1141
-#, fuzzy
-#| msgid "A student with the tucan id "
-msgid "A student with the TUCaN-ID "
-msgstr "Ein:e Student:in mit der TUCaN-ID "
+"Bitte erstelle ein Studierendenprofil, bevor du auf deine Gruppen zugreifst."
 
 #: .\views.py:1138
 msgid " does not exist."
-msgstr ""
+msgstr "existiert nicht."
 
 #: .\views.py:1198
 msgid "Group has been created."
-msgstr ""
+msgstr "Die Gruppe wurde erstellt."
 
 #: .\views.py:1237
-msgid "Adding {} "
-msgstr ""
+msgid "Adding {} would make this group a duplicate of an already existing one."
+msgstr "Hinzufügen von {} würde die Gruppe zu einem Duplikat machen."
 
 #: .\views.py:1247
-#, fuzzy
-#| msgid " is already in the group."
 msgid "{} is already a member of this group."
-msgstr " ist bereits in deiner Gruppe."
+msgstr "{} ist bereits in deiner Gruppe."
 
 #: .\views.py:1252
-#, fuzzy
-#| msgid "A student with the tucan id "
 msgid "A student with the TUCaN-ID {} does not exist."
 msgstr "Ein:e Student:in mit der TUCaN-ID "
 
@@ -674,7 +703,3 @@ msgstr "Speichern fehlgeschlagen. Ungültige Angaben."
 
 #~ msgid "Registration Start"
 #~ msgstr "Registrierungsstart"
-
-#~ msgid ""
-#~ "Adding {} would make this group a duplicate of an already existing one."
-#~ msgstr "Hinzufügen von {} würde die Gruppe zu einem Duplikat machen."

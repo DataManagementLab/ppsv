@@ -457,7 +457,7 @@ def overview(request):
                                             tucan_id=request.POST.get("new_student_id")).exists():
                                         members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
                                     else:
-                                        messages.error(request, _("A student with the tucan id ") +
+                                        messages.error(request, _("A student with the TUCaN-ID ") +
                                                        request.POST.get("new_student_id") +
                                                        _(" was not found."))
                                 else:
@@ -467,7 +467,7 @@ def overview(request):
                                                    str(models.Topic.objects.get(id=data[0]).max_participants)
                                                    + _(" members."))
                             else:
-                                messages.error(request, _("A student with the tucan id ") +
+                                messages.error(request, _("A student with the TUCaN-ID ") +
                                                request.POST.get("new_student_id") +
                                                _(" is already in the group."))
 
@@ -1235,7 +1235,7 @@ def groups(request):
 
                         if len(colliding_group) != 0:
                             messages.error(request, _("Adding {} "
-                                                      f"would make this group a duplicate "
+                                                      "would make this group a duplicate "
                                                       "of an already existing one.").format(new_member_student))
                             args["error_message"] = True
                         else:
