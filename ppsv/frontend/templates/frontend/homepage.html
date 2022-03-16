@@ -16,7 +16,7 @@
   <div style="display: flex;justify-content: center;position:relative;margin-top:20px">
     <div style="display: flex;justify-content: center; flex-direction: column;border: 3px solid rgba(10,61,98,1);border-radius:3px;padding: 15px 30px;padding-top:-15px;margin-top:5px;width:50%;min-width:500px;">
         <div style="position:relative;z-index:2;background-color:white; border: 2px solid rgba(10,61,98,1); top: -45px; left: 10px;padding: 2px 10px;width:220px;margin-bottom: -35px">
-            <h2 style="margin:0px"> What to do next</h2>
+            <h2 style="margin:0px"> {% translate "What to do next" %}</h2>
         </div>
         {% for msg, link in recommendations.items %}
             <div style="display:flex; flex-direction:row;font-size:18px;margin-bottom:5px">
@@ -48,15 +48,15 @@
                     <div style="background-color: #0a3d62;height: 2px;width: 48%;margin-top: 10px;margin-left: 2%"></div>
                     </div>
                 <div class="row-cols-sm-1" style="text-align: center">
-                    <h6>You do not have an account yet?</h6>
-                    <button class="sub-btn form-control" style="width: 100%" onclick="location.href='{% url 'frontend:register' %}'" type="button">Register</button>
+                    <h6>{% translate "You do not have an account yet?" %}</h6>
+                    <button class="sub-btn form-control" style="width: 100%" onclick="location.href='{% url 'frontend:register' %}'" type="button">{% translate "Register" %}</button>
                 </div>
             </div>
         </div>
         <div style="display: flex;justify-content: center;border: 3px solid rgba(10,61,98,1);border-radius:3px;padding: 15px 30px;margin-top:5px;text-align:center;">
-            <label style="font-size:40px"> Willkommen <br>
-                <label style="font-size:18px"> Diese Website dient als Plattform zur Anmeldung für Seminare, Praktika und andere Veranstaltungen.
-                Hier kannst kannst Du Themen wählen und über mehrere Veranstaltungen hinweg priorisieren. </label>
+            <label style="font-size:40px"> {% translate "Welcome" %} <br>
+                <label style="font-size:18px"> {% translate "This website serves as a platform for registering for seminars, internships and other courses.
+                You can select topics and prioritize them across multiple courses." %} </label>
             </label>
         </div>
     </div>

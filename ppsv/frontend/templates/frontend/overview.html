@@ -47,7 +47,7 @@
                         <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_participants }} {% endif %} </p>
                         <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
                         <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
-                        <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} required {% else %} not required {% endif %}</p>
+                        <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} {% translate "required" %} {% else %} {% translate "not required" %} {% endif %}</p>
                     </div>
                     <div style="width: 50%; float:right; display: inline-block;">
                         <label style="font-weight:500"> {% translate "Description" %}: </label>
@@ -64,7 +64,7 @@
                     {% if not chosen_course.get_status == "Imminent" and not chosen_course.get_status == "Closed" %}
                     {% if show_select_remaining_topics_button %}
                     <div style="display:flex;justify-content:center;padding:10px;width:100%;margin-bottom:8px;position:relative">
-                    <button name="select_all_remaining_topics" type="submit" value="{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;padding:10px;padding-left: 50px;padding-right: 50px;"> Select all remaining topics of this course </button>
+                    <button name="select_all_remaining_topics" type="submit" value="{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;padding:10px;padding-left: 50px;padding-right: 50px;"> {% translate "Select all remaining topics of this course" %} </button>
                     </div>
                     {% endif %}
                     {% endif %}
@@ -165,8 +165,8 @@
                                                     {% if group_to_select_is_None %}
                                                         <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
                                                             {# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
-                                                            {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>  Select with a group </button> {% endif %}
-                                                            <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                                            {% if chosen_topic.max_participants > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i> {% translate " Select with a group" %} </button> {% endif %}
+                                                            <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} {% translate "Select without a group" %} {% else %} {% translate "Select topic" %} {% endif %} </button>
                                                         </div>
                                                     {% else %}
 
@@ -180,8 +180,7 @@
                                                                     <div style="display:grid;padding:5px;width:40%;margin-bottom:10px;position:relative">
                                                                         <div style="text-align:center"> {% translate "Group members:" %} {{ group_to_select.get_display }}</div>
                                                                         <button name="select_with_existing_group" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn"
-                                                                                style="background-color:#2a8538;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true"
-                                                                                                                                                               style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>{% translate "Select with this group" %}</button>
+                                                                                style="background-color:#2a8538;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i>{% translate "Select with this group" %}</button>
                                                                     </div>
                                                                 {% else %}
                                                                 <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
@@ -199,7 +198,7 @@
                                                 {% else %}
                                                     <div style="display:grid;width:40%;position:relative">
                                                         <label style="position:absolute;top:20%;left:25%;text-align:center">
-                                                            <label style="color:#14cc52;margin:0px;font-size:25px;"> selected <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
+                                                            <label style="color:#14cc52;margin:0px;font-size:25px;"> {% translate "selected" %} <i class="fa fa-check-square-o" aria-hidden="true"></i> </label> <br>
                                                             <a href="{% url 'frontend:your_selection' %}" style="font-size:20px"> {% translate "See My Selection" %}  <i class="fa fa-link" aria-hidden="true"></i></a>
                                                         </label>
                                                     </div>

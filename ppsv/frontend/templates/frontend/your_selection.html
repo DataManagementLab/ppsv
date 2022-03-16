@@ -17,13 +17,8 @@
         <ul class="responsive-table" style="margin:0px;padding:0px;{% if info_selection %} flex:5; {% else %} width:60%;min-width:580px {% endif %}">
             {% for group_of_student, selections_of_collections in selections_of_collections_of_groups.items %}
             {# possible extension for automatic collection assignment #}
-            <!--
-            <button class="undecorated-btn" type="submit" name="assign_exclusives_to_matching_exclusive" value="{{ group_of_student.id }}">
-                    <i class="fa fa-cog" aria-hidden="true" style="color:black;font-size:20px"></i>
-            </button>
-            -->
             <li class="table-header" style="padding: 15px;text-align:center;position:relative; margin-bottom: 20px;">
-                <button class="undecorated-btn" type="submit" {% if not open_edit_collection_for_group == group_of_student.id  %} name="open_edit_collection" value="{{ group_of_student.id }}" {% endif %} style="position:absolute;left:15px;top:15px;" title="Edit Collections">
+                <button class="undecorated-btn" type="submit" {% if not open_edit_collection_for_group == group_of_student.id  %} name="open_edit_collection" value="{{ group_of_student.id }}" {% endif %} style="position:absolute;left:15px;top:15px;" title="{% translate "Edit Collections" %}">
                     <i class="fa fa-cog {% if open_edit_collection_for_group == group_of_student.id %} spinning-icon {% endif %}" aria-hidden="true" style="color:white;font-size:20px"></i>
                 </button>
                 {# The cog icon will spin if it is pressed #}
@@ -53,7 +48,7 @@
                     {{ group_of_student.get_display }}
                 </div>
                 {% if group_of_student.size > 1 %}
-                <i class="fa fa-users" aria-hidden="true" title="Group Overview" style="font-size:24px;position:absolute;z-index:2;right:20px;top:15px"></i>
+                <i class="fa fa-users" aria-hidden="true" style="font-size:24px;position:absolute;z-index:2;right:20px;top:15px"></i>
                 {% endif %}
             </li>
             <div style="display: flex; flex-direction: column; margin-bottom: 30px">
@@ -61,13 +56,13 @@
                 {% if collection_number == 0 %}
                     {% if selections|length > 0 %}
                     <span style="position:relative">
-                        Assign these topics to your desired collections
+                        {% translate "Assign these topics to your desired collections" %}
                     </span>
                     <div style="border: 3px solid rgba(94, 94, 94, 1); border-style: solid none solid none; padding: 20px 0px;margin-bottom:20px">
                         {% for selection in selections %}
                         <li class="table-row" style="position:relative;padding-top:20px;padding-bottom:14px;{% if selections|last == selection %} margin-bottom: 0px; {% endif %}">
                                 <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:-30px"
-                                   title="You need to assign this topic to a collection">
+                                   title="{% translate "You need to assign this topic to a collection" %}">
                                 </i>
                                 <div style="background-color:white;padding-left:5px;
                                         padding-right:5px;margin-left:20px;
@@ -88,10 +83,10 @@
                                         {% endfor %}
                                         {% endwith %}
                                     </select>
-                                    <button name="change_collection_button" value="{{ group_of_student.id }}|{{ collection_number }}|{{ selection.id }}" type="submit" title="Move to selected collection" style="background-color:transparent; outline:none; border: none;height:25px;width:25px;padding:0px"> <i class="fa fa-check-square" aria-hidden="true" style="position:relative; font-size:22px;color:green"></i> </button>
+                                    <button name="change_collection_button" value="{{ group_of_student.id }}|{{ collection_number }}|{{ selection.id }}" type="submit" title="{% translate "Move to selected collection" %}" style="background-color:transparent; outline:none; border: none;height:25px;width:25px;padding:0px"> <i class="fa fa-check-square" aria-hidden="true" style="position:relative; font-size:22px;color:green"></i> </button>
                                 </div>
                                 <div class="col-3">
-                                        <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> Remove Topic </button>
+                                        <button name="remove_topic_button" value="{{ selection.id }}|{{ collection_number }}" style="white-space:nowrap; background-color:red; color:white; border:none; border-radius:5px" type="submit"> {% translate "Remove Topic" %} </button>
                                 </div>
                         </li>
                         {% endfor %}
@@ -99,9 +94,9 @@
                     {% endif %}
                 {% else %}
                 <span style="position:relative">
-                    Collection {{ collection_number }}  {% if selections|length > 0 and selections.0.topic.course.collection_exclusive %} exclusive for topics of course "{{ selections.0.topic.course.title }}" {% endif %}
+                    Collection {{ collection_number }}  {% if selections|length > 0 and selections.0.topic.course.collection_exclusive %} {% translate "exclusive for topics of course" %} "{{ selections.0.topic.course.title }}" {% endif %}
                     {% if open_edit_collection_for_group == group_of_student.id and selections_of_collections.items|length > 2 %}
-                    <button class="undecorated-btn" type="submit" {% if selections|length > 0 %} name="ask_remove_collection" value="{{ open_edit_collection_for_group }}|{{ collection_number }}" {% else %} name="remove_collection" value="{{ open_edit_collection_for_group }}|{{ collection_number }}" {% endif %} title="Remove collection" style="position:absolute;top:2px;margin-left:5px" >
+                    <button class="undecorated-btn" type="submit" {% if selections|length > 0 %} name="ask_remove_collection" value="{{ open_edit_collection_for_group }}|{{ collection_number }}" {% else %} name="remove_collection" value="{{ open_edit_collection_for_group }}|{{ collection_number }}" {% endif %} title="{% translate "Delete collection" %}" style="position:absolute;top:2px;margin-left:5px" >
                         <i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:18px"> </i>
                     </button>
                     {% endif %}
@@ -125,11 +120,11 @@
                             {% if not selection.priority or not selection.motivation and selection.topic.course.motivation_text %}
                                 <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size:20px;color:orange;position:absolute;z-index:2;left:-30px "
                                    {% if not selection.priority and not selection.motivation and selection.topic.course.motivation_text %}
-                                       title="You need to set the priority for this topic and write a motivation text."
+                                       title="{% translate "You need to set the priority for this topic and write a motivation text." %}"
                                        {% elif not selection.priority %}
-                                       title="You need to set the priority for this topic."
+                                       title="{% translate "You need to set the priority for this topic." %}"
                                        {% elif not selection.motivation and selection.topic.course.motivation_text %}
-                                       title="You need to write a motivation text."
+                                       title="{% translate "You need to write a motivation text." %}"
                                    {% endif %} >
                                 </i>
                             {% endif %}
@@ -154,7 +149,7 @@
                                         {% endfor %}
                                         {% endwith %}
                                     </select>
-                                    <button name="change_collection_button" value="{{ group_of_student.id }}|{{ collection_number }}|{{ selection.id }}" type="submit" title="Move to selected collection" style="background-color:transparent; outline:none; border: none;height:25px;width:25px;padding:0px"> <i class="fa fa-check-square" aria-hidden="true" style="position:relative; font-size:22px;color:green"></i> </button>
+                                    <button name="change_collection_button" value="{{ group_of_student.id }}|{{ collection_number }}|{{ selection.id }}" type="submit" title="{% translate "Move to selected collection" %}" style="background-color:transparent; outline:none; border: none;height:25px;width:25px;padding:0px"> <i class="fa fa-check-square" aria-hidden="true" style="position:relative; font-size:22px;color:green"></i> </button>
                                 </div>
                                 {% endif %}
                             {% endif %}
@@ -184,7 +179,7 @@
                                 <button name="{% if not info_selection.id == selection.id%}info_button{% else %}close_info_button{% endif %}" value="{{ selection.id }}" type="submit" style="background-color:transparent; outline:none; border: none;height:30px;width:30px;padding:0px">
                                     <i class="fa fa-info-circle fa-1x icon-cog color" style="bottom:3px; position:relative; font-size:30px;color:rgba(94, 94, 94, 1)"
                                        aria-hidden="true"
-                                       title="Show Details">
+                                       title="{% translate "Show Details" %}">
                                     </i>
                                 </button>
                             </div>
@@ -197,11 +192,11 @@
                                 <div style="display: flex; flex-direction: row; width: 100%;">
                                     <button class="button" name="cancel_motivation_save"
                                         type="submit" style="width: 50%; margin:3px ;white-space:nowrap; background-color:grey; color:white; border:none; border-radius:5px;">
-                                        Discard Changes
+                                        {% translate "Discard Changes" %}
                                     </button>
                                     <button class="button" name="save_motivation_text_button" value="{{ selection.id }}"
                                         type="submit" style="width: 50%; margin:3px ;white-space:nowrap; background-color:green; color:white; border:none; border-radius:5px;">
-                                        Save Motivation Text
+                                        {% translate "Save Motivation Text" %}
                                     </button>
                                 </div>
                              </div>
@@ -233,18 +228,18 @@
                 {% if ask_remove_group == group_of_student.id and ask_remove_collection == collection_number %}
                 <div class="alert-warning alert-dismissible" role="alert" style="margin-bottom:25px;display:flex; justify-content:center;padding:10px">
                         <label style="display:flex;font-weight:800;margin-bottom:0px;justify-content:center;padding:5px" >
-                            If you delete this collection, all the selections will be deleted as well.
+                            {% translate "If you delete this collection, all selections in this collection will be deleted" %}
                         </label>
                         <button name="remove_collection" value="{{ ask_remove_group }}|{{ ask_remove_collection }}" style="border:none;outline:none;color:white;background-color:red;padding: 3px 10px">
-                            Delete Collection
+                            {% translate "Delete Collection" %}
                         </button>
                 </div>
                 {% endif %}
                 {% endfor %}
                 {% if open_edit_collection_for_group == group_of_student.id %}
                     <span style="position:relative;color:#ffa826" >
-                        Add Collection {{selections_of_collections.items|length}}
-                        <button class="undecorated-btn" type="submit" name="add_collection" value="{{ open_edit_collection_for_group }}" title="Add new collection" style="position:absolute;top:2px;margin-left:5px" >
+                        {% translate "Add Collection" %} {{selections_of_collections.items|length}}
+                        <button class="undecorated-btn" type="submit" name="add_collection" value="{{ open_edit_collection_for_group }}" title="{% translate "Add new collection" %}" style="position:absolute;top:2px;margin-left:5px" >
                             <i class="fa fa-plus-square" aria-hidden="true" style="color:green;font-size:18px"> </i>
                         </button>
                     </span>
@@ -280,7 +275,7 @@
                         <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.course.max_participants }} {% endif %} </p>
                         <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ info_selection.topic.course.registration_start }} - {{ info_selection.topic.course.registration_deadline }} </p>
                         <p> <label style="font-weight:500"> CP: </label> {{ info_selection.topic.course.cp }} </p>
-                        <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if info_selection.topic.course.motivation_text %} required {% else %} not required {% endif %}</p>
+                        <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if info_selection.topic.course.motivation_text %} {% translate "required" %} {% else %} {% translate "not required" %} {% endif %}</p>
                         <label style="font-weight:500"> {% translate "Description" %} </label>
                         <p> {{ info_selection.topic.course.description }} </p>
                     </div>
@@ -290,8 +285,8 @@
                     <i class="fa fa-caret-down" aria-hidden="true" style="font-size:24px; position:absolute; z-index:2;left:10px;top:5px" hidden></i>
                 </li>
                 <div style="margin-left:10px;margin-right:10px;background-color: transparent;box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.2);justify-content: flex-start; padding:5px">
-                    <p> <label style="font-weight:500"> Min. | Max. Participants: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.max_participants }} {% endif %} </p>
-                    <label style="font-weight:500"> Description </label>
+                    <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if info_selection.topic.course.unlimited %} - | - {% else %} - | {{ info_selection.topic.max_participants }} {% endif %} </p>
+                    <label style="font-weight:500"> {% translate "Description" %} </label>
                     <p> {{ info_selection.topic.description }} </p>
                     <p> {% if info_selection.topic.file %} <a href="{{ BASE_DIR }}/media/{{ info_selection.topic.file }}">information file</a> {% endif %} </p>
                 </div>
