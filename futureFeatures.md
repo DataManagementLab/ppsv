@@ -10,5 +10,8 @@
 + Ansicht für Mobilgeräte
 + Es wäre auch denkbar den "Select all remaining topics" button nur anzuzeigen, wenn es noch möglich ist durch
 Anklicken des Buttons neue Themen zu wählen.
++ Beim Aufrufen von "your_selection" direkt nach dem Registrieren könnte 
+beispielsweise eine kurze Erklärung stehen, wie Themen gewählt werden können.
+Aktuell wird dort in diesem Fall noch nichts angezeigt.
 
 

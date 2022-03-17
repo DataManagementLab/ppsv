@@ -447,7 +447,7 @@ msgstr "Ich habe keinen Account."
 
 #: .\templates\registration\profile.html:12
 msgid "Create your student profile"
-msgstr "Erstellung eines Studentenprofils"
+msgstr "Erstellung eines Studierendenprofils"
 
 #: .\templates\registration\profile.html:13
 msgid "This information cannot be changed later!"
