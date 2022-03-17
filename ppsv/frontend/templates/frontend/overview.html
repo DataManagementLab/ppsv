@@ -169,11 +169,10 @@
                                                             <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} {% translate "Select without a group" %} {% else %} {% translate "Select topic" %} {% endif %} </button>
                                                         </div>
                                                     {% else %}
-
                                                             {# If the size of group_to_select is 1, only the option to select the topic alone will be shown #}
                                                             {% if group_to_select.size == 1 %}
                                                             <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
-                                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} Select without a group {% else %} Select topic {% endif %} </button>
+                                                                <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_participants > 1 %} {% translate "Select without a group" %} {% else %} {% translate "Select topic" %} {% endif %} </button>
                                                             </div>
                                                             {% else %}
                                                                 {% if chosen_topic.max_participants >= group_to_select.size %}
