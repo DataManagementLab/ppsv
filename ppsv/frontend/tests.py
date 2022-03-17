@@ -188,7 +188,7 @@ class OverviewViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'frontend/overview.html')
 
-    def test_overview_faculties(self):
+    def test_display_faculties(self):
         """
         Tests if the overview view displays a faculty which contains a course.
         """
@@ -197,11 +197,7 @@ class OverviewViewTests(TestCase):
         self.assertContains(response, 'FB01')
         self.assertNotContains(response, 'FB02')
 
-    # 'choose_faculty': ['FB20']
-    # 'choose_course': ['7|FB20|True']
-    # 'choose_topic': ['3|7|FB20|False']
-
-    def test_overview_courses_of_faculty(self):
+    def test_display_courses_of_faculty(self):
         """
         Tests if the overview view displays the courses of a faculty.
         """
@@ -209,8 +205,9 @@ class OverviewViewTests(TestCase):
         response = self.client.post(reverse('frontend:overview'), data=data)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'TestCourse')
+        # 'choose_faculty': ['FB01']
 
-    def test_overview_topics_and_information_of_course(self):
+    def test_display_topics_and_information_of_course(self):
         """
         Tests if the overview view displays the topics of a course.
         """
@@ -219,7 +216,87 @@ class OverviewViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'TestTopic')
         self.assertContains(response, 'Test description')
-    # to do: tests for choosing a course after merge and clean up setup method
+        # 'choose_course': ['7|FB01|True']
+
+    def test_display_topic_information_with_select_buttons(self):
+        """
+        Tests if the topic information and selection buttons are displayed correctly.
+        """
+        # 'choose_topic': ['22|7|FB01|False']
+
+    def test_course_info_panel_in_topic(self):
+        """
+        Tests if the course info panel displays the information correctly if opened.
+        """
+        # 'choose_topic': ['22|7|FB01|True']
+
+    def test_select_topic_without_group(self):
+        """
+        Tests if a topic selection without a group is working as intended.
+        """
+        # 'select_topic': ['22|7|FB01|open_course_info']}>select_topic alone
+
+    def test_display_of_select_all_remaining_topic_button(self):
+        """
+        Tests if the button to select all remaining topics shows up after selecting one topic of a course.
+        """
+        # 'choose_course': ['7|FB01|False'] same as topics of course but with one topic selected and containing the button
+
+    def test_select_all_remaining_topics(self):
+        """
+        Tests if all other topics of a course are correctly selected after selecting all remaining topics.
+        """
+        # 'select_all_remaining_topics': ['7|FB01|open_course_info']
+
+    def test_select_all_remaining_topics(self):
+        """
+        Tests if the faculty view works properly after going back.
+        """
+        # 'faculty_view': ['']
+
+    def test_sorting(self):
+        """
+        Tests if the sort function while displaying courses of a faculty works correctly.
+        """
+        # how? idk
+        # 'choose_faculty': ['FB02|cp|dsc']
+
+    def test_select_topic_as_group(self):
+        """
+        Tests if the options to create a new group and to select the topic with an existing group are presented after
+        clicking select topic as a group.
+        """
+        # 'open_group_select': ['15|4|FB20|open_course_info']}>open_group_select, choosing topic as a group
+
+    def test_create_new_group_ui(self):
+        """
+        Tests if the UI for creating a new group is displayed.
+        """
+        # 'open_group_create': ['15|4|FB20|False'], 'group_options': ['-1']}>open_group_create create a new group
+
+    def test_adding_student_to_group(self):
+        """
+        Tests if a student is properly added to the new group.
+        """
+        # 'new_student_id': ['bcbcbcbc'], 'add_student': ['15|4|FB20|open_course_info'], 'member0': ['abcdabcd']}>add_student to new group draft
+
+    def test_adding_student_to_group_draft(self):
+        """
+        Tests if a student is properly added to the group draft.
+        """
+        # 'new_student_id': ['bcbcbcbc'], 'add_student': ['15|4|FB20|open_course_info'], 'member0': ['abcdabcd']}>add_student to new group draft
+
+    def test_removing_student_from_group_draft(self):
+        """
+        Tests if a student is properly removed from the group draft.
+        """
+        # 'new_student_id': [''], 'remove_student': ['15|4|FB20|open_course_info|bcbcbcbc'], 'member0': ['bcbcbcbc'], 'member1': ['abcdabcd']}>remove_student from group draft
+
+    def test_select_topic_with_new_group(self):
+        """
+        Tests if topic is correctly selected when selecting with a newly created group.
+        """
+        # 'new_student_id': [''], 'select_with_new_group': ['15|4|FB20|open_course_info'], 'member0': ['bcbcbcbc'], 'member1': ['abcdabcd']}>select_with_new_group
 
 
 class YourSelectionViewTests(TestCase):
