@@ -1,4 +1,4 @@
-# Seminarplatzvergabe
+# Plattform zur Praktika- & Seminarplatzvergabe 
 
 Bachelor Praktikum Thema 06 Seminarplatzvergabe
 
