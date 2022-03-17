@@ -60,7 +60,7 @@ msgstr "Beschreibung"
 
 #: .\models.py:85
 msgid "collection exclusive"
-msgstr "exklusiv in einer collection"
+msgstr "exklusiv in einer Collection"
 
 #: .\models.py:86
 msgid "unlimited number of participants"

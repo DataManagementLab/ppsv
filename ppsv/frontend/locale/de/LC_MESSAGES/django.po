@@ -98,7 +98,7 @@ msgstr "Bist du sicher,"
 
 #: .\templates\frontend\groups.html:78
 msgid "you want to delete this group?"
-msgstr "dass du diese Gruppe löschen möchtest"
+msgstr "dass du diese Gruppe löschen möchtest?"
 
 #: .\templates\frontend\groups.html:81
 msgid "Delete"
