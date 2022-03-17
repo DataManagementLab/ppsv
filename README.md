@@ -1,6 +1,6 @@
 # Plattform zur Praktika- & Seminarplatzvergabe 
 
-Bachelor Praktikum Thema 06 Seminarplatzvergabe
+Diese Django-Webanwendung wurde im Rahmen des Bachelor Praktikums 2021/22 entwickelt.
 
 # PPSV
 
