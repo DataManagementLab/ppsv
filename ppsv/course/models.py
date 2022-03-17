@@ -83,7 +83,7 @@ class Course(models.Model):
     registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
     description = models.TextField(verbose_name=_("description"))
     collection_exclusive = models.BooleanField(_("collection exclusive"), blank=True, default=False)
-    unlimited = models.BooleanField('unlimited number of participants', blank=True, default=False)
+    unlimited = models.BooleanField(_("unlimited number of participants"), blank=True, default=False)
     max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
                                            validators=[MaxValueValidator(9999), MinValueValidator(0)],)
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
@@ -104,7 +104,7 @@ class Course(models.Model):
         ('FB20', _('Dept. 20 - Computer Science')),
     ]
     faculty = models.CharField(max_length=4, choices=COURSE_FACULTY_CHOICES, verbose_name=_("faculty"))
-    motivation_text = models.BooleanField('Do you want motivation texts for this course', default=False)
+    motivation_text = models.BooleanField(_("motivation texts are required"), default=False)
 
     organizer = models.CharField(max_length=200, verbose_name=_("organizer"))
 

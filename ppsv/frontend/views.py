@@ -74,36 +74,36 @@ def homepage(request):
 
             # Pins message to board if motivation texts are missing for selections
             if need_to_assign_topics_to_collection:
-                msg = "You still need to assign at least one topic to a collection!"
+                msg = _("You still need to assign at least one topic to a collection!")
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if motivation texts are missing for selections
             if selections_need_motivation:
-                msg = "You still need to write one or more motivation texts!"
+                msg = _("You still need to write one or more motivation texts!")
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if the user has mixed course types in a collection
             if collection_has_mixed_course_types:
-                msg = "There is at least one collection that has mixed course types!"
+                msg = _("There is at least one collection that has mixed course types!")
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if no selections were made
             if not selections_exist:
-                msg = "You have not selected any topics yet!"
+                msg = _("You have not selected any topics yet!")
                 link = "frontend:overview"
                 recommendations[msg] = link
             # Otherwise show where they can be managed
             else:
-                msg = "You can view and manage your selected topics and collections here:"
+                msg = _("You can view and manage your selected topics and collections here:")
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
             # Pins message to board if no group was created
             if len(models.Group.objects.filter(students=request.user.student)) <= 1:
-                msg = "You can create a group here"
+                msg = _("You can create a group here:")
                 link = "frontend:groups"
                 recommendations[msg] = link
 
@@ -365,7 +365,7 @@ def overview(request):
 
                                 messages.success(request,
                                                  _("Your selection was successful! You can prioritize and edit your "
-                                                   "chosen topics on the 'Your Selection' page."))
+                                                   "chosen topics on the 'My Selection' page."))
                                 if user_selection.topic.course.motivation_text:
                                     messages.warning(request,
                                                      _("You need to add a motivation text "
@@ -481,7 +481,7 @@ def overview(request):
                                             tucan_id=request.POST.get("new_student_id")).exists():
                                         members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
                                     else:
-                                        messages.error(request, _("A student with the tucan id ") +
+                                        messages.error(request, _("A student with the TUCaN-ID ") +
                                                        request.POST.get("new_student_id") +
                                                        _(" was not found."))
                                 else:
@@ -491,7 +491,7 @@ def overview(request):
                                                    str(models.Topic.objects.get(id=data[0]).max_participants)
                                                    + _(" members."))
                             else:
-                                messages.error(request, _("A student with the tucan id ") +
+                                messages.error(request, _("A student with the TUCaN-ID ") +
                                                request.POST.get("new_student_id") +
                                                _(" is already in the group."))
 
@@ -665,8 +665,8 @@ def check_profile(user):
 
 
 @login_required
-@user_passes_test(check_profile, login_url='/profile/', message="Please create a student profile before "
-                                                                "selecting courses.")
+@user_passes_test(check_profile, login_url='/profile/', message=_("Please create a student profile before "
+                                                                  "selecting courses."))
 def your_selection(request):
     """ View for "Your selection" page
 
@@ -883,17 +883,10 @@ def your_selection(request):
             data = str(request.POST.get("change_collection_button")).split("|")
             data.append(str(request.POST.get("collection_input" + data[2])))
             result_change_collection = \
-                change_collection(request, data, selections_of_collections_of_groups, False)
+                change_collection(request, data, selections_of_collections_of_groups)
             selections_of_collections_of_groups = result_change_collection[0]
             args["error_message"] = result_change_collection[1]
             args["open_edit_collection_for_group"] = int(data[0])
-        elif "assign_exclusives_to_matching_exclusive" in request.POST:
-            """group = models.Group.objects.get(id=int(request.POST.get("assign_exclusives_to_matching_exclusive")))
-            for selection in (selections_of_collections_of_groups[group])[0]:
-                data = [(request.POST.get("assign_exclusives_to_matching_exclusive")), 0, selection.id, str(0)]
-                selections_of_collections_of_groups = \
-                    change_collection(request, data, selections_of_collections_of_groups, True)
-            args["open_edit_collection_for_group"] = int(data[0])"""
 
     sorted_selections_of_groups = []
     # sort selected topics by priority
@@ -964,13 +957,12 @@ def your_selection(request):
 
 
 # Help functions of your_selection
-def change_collection(request, data, selections_of_collections_of_groups, exclusive_matching):
+def change_collection(request, data, selections_of_collections_of_groups):
     """ Tries to change the collection of a given selection if allowed
 
     :param request: The given request
     :param data: an array containing the group id, collection_number, selection id and target collection_number
     :param selections_of_collections_of_groups: the current state of selections
-    :param exclusive_matching: boolean whether this function should try to match exclusives automatically
     :return: an array containing updated selections_of_collections_of_groups and a boolean for error handling
     """
     error = False
@@ -982,8 +974,7 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                     if collection_number == int(data[1]):
                         for selection in selections:
                             if selection.id == int(data[2]) \
-                                    and (selection.collection_number != int("".join(data[3]).split()[0])
-                                         or exclusive_matching):
+                                    and (selection.collection_number != int("".join(data[3]).split()[0])):
                                 the_selection_is_exclusive = False
                                 the_target_collection_has_exclusive_selections = False
                                 matching_exclusive_collection_number = [False, 0]
@@ -1004,17 +995,18 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                     if matching_exclusive_collection_number[0] \
                                             and int(data[3]) != matching_exclusive_collection_number[1]:
                                         data[3] = matching_exclusive_collection_number[1]
-                                        messages.info(request, "Automatically assigned \"" + str(selection.topic.title)
-                                                      + "\" to a matching collection")
+                                        messages.info(request,
+                                                      _("Automatically assigned \"") + str(selection.topic.title)
+                                                      + _("\" to a matching collection"))
                                     # If the course of the target collection is not the same as the course of selection
                                     if not len(collections_of_group[int(data[3])]) == 0:
                                         if not collections_of_group[int(data[3])][0].topic.course \
                                                == selection.topic.course:
                                             the_selection_is_exclusive = True
-                                            messages.error(request, "The target collection already has topics "
-                                                                    "from a different course. The topic you are "
-                                                                    "trying to assign can only be in a collection "
-                                                                    "with topics from the same course.")
+                                            messages.error(request, _("The target collection already has topics "
+                                                                      "from a different course. The topic you are "
+                                                                      "trying to assign can only be in a collection "
+                                                                      "with topics from the same course."))
                                             error = True
                                 else:
                                     # If given topic is not exclusive but we try to put it into an exclusive collection
@@ -1023,8 +1015,8 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                                == selection.topic.course:
                                             if collections_of_group[int(data[3])][0].topic.course.collection_exclusive:
                                                 the_target_collection_has_exclusive_selections = True
-                                                messages.error(request, "The target collection exclusively "
-                                                                        "allows topics of course \""
+                                                messages.error(request, _("The target collection exclusively "
+                                                                          "allows topics of course \"")
                                                                + str(collections_of_group[int(data[3])][0].topic.course)
                                                                + "\".")
                                                 error = True
@@ -1048,12 +1040,11 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                                             break
                                                 if collection_number1 == selection.collection_number:
                                                     for selection_in_same_collection in selections1:
-                                                        if selection_in_same_collection.topic.course\
+                                                        if selection_in_same_collection.topic.course \
                                                                 == selection.topic.course \
                                                                 and selection_in_same_collection is not selection:
                                                             move_more_than_one = True
                                                             break
-
 
                                     # If we found a fitting collection number for the topic make sure it is put into it
                                     if matching_collection_number[0] \
@@ -1061,11 +1052,11 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                         data[3] = matching_collection_number[1]
                                         if move_more_than_one:
                                             messages.info(request,
-                                                          "Automatically assigned topics from the same course"
-                                                          " to a matching collection")
+                                                          _("Automatically assigned topics from the same course"
+                                                            " to a matching collection"))
                                         else:
-                                            messages.info(request, "Automatically assigned \"" +
-                                                          str(selection.topic.title) + "\" to a matching collection")
+                                            messages.info(request, _("Automatically assigned \"") +
+                                                          str(selection.topic.title) + _("\" to a matching collection"))
 
                                     if move_more_than_one:
                                         for group1, collections_of_group1 in selections_of_collections_of_groups.items():
@@ -1081,19 +1072,21 @@ def change_collection(request, data, selections_of_collections_of_groups, exclus
                                                         while len(topics_to_move) > 0:
                                                             selection_in_same_collection = topics_to_move[0]
                                                             for other_selection_in_same_collection in selections1:
-                                                                if other_selection_in_same_collection.priority >\
+                                                                if other_selection_in_same_collection.priority > \
                                                                         selection_in_same_collection.priority:
                                                                     other_selection_in_same_collection.priority = \
                                                                         other_selection_in_same_collection.priority - 1
                                                                     other_selection_in_same_collection.save()
 
-                                                            selection_in_same_collection.collection_number = int(data[3])
+                                                            selection_in_same_collection.collection_number = int(
+                                                                data[3])
                                                             selection_in_same_collection.priority = len(
                                                                 collections_of_group[int(data[3])]) + 1
                                                             selection_in_same_collection.save()
                                                             topics_to_move.remove(selection_in_same_collection)
                                                             selections1.remove(selection_in_same_collection)
-                                                            collections_of_group[int(data[3])].append(selection_in_same_collection)
+                                                            collections_of_group[int(data[3])].append(
+                                                                selection_in_same_collection)
 
                                     else:
                                         for selection_in_same_collection in selections:
@@ -1164,14 +1157,14 @@ def groups(request):
                             tucan_id=request.POST.get("new_student_id")).exists():
                         members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
                     else:
-                        messages.error(request, "A student with the TUCaN-ID " +
+                        messages.error(request, _("A student with the TUCaN-ID ") +
                                        request.POST.get("new_student_id") +
-                                       " does not exist.")
+                                       _(" does not exist."))
 
                 else:
-                    messages.error(request, "A student with the TUCaN-ID " +
+                    messages.error(request, _("A student with the TUCaN-ID ") +
                                    request.POST.get("new_student_id") +
-                                   " is already in the group.")
+                                   _(" is already in the group."))
 
             args["members_in_new_group"] = members_in_new_group
             args["open_group_create"] = True
@@ -1203,7 +1196,7 @@ def groups(request):
             error = False
 
             if len(members_in_new_group) == 1:
-                messages.error(request, f"Your group needs to contain more members than yourself!")
+                messages.error(request, _(f"Your group needs to contain more members than yourself!"))
                 error = True
 
             for groups_of_member in existing_groups:
@@ -1212,7 +1205,7 @@ def groups(request):
                         if set(members_in_new_group).issubset("".join(group.get_display.split(",")).split()) \
                                 and len(members_in_new_group) == \
                                 len("".join(group.get_display.split(",")).split()):
-                            messages.error(request, f"This group already exists!")
+                            messages.error(request, _(f"This group already exists!"))
                             error = True
                             break
 
@@ -1226,7 +1219,7 @@ def groups(request):
                         models.Student.objects.get(tucan_id=request.POST.get("member" + str(counter))))
                     counter += 1
 
-                messages.success(request, "Group has been created.")
+                messages.success(request, _("Group has been created."))
             else:
                 args["open_group_create"] = True
                 args["members_in_new_group"] = members_in_new_group
@@ -1248,7 +1241,7 @@ def groups(request):
                 if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                     if not models.Student.objects.get(
                             tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
-                        id=int(request.POST.get("add_student"))).students.all():
+                                id=int(request.POST.get("add_student"))).students.all():
                         new_member_student = \
                             models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
                         group = models.Group.objects.get(id=int(request.POST.get("add_student")))
@@ -1266,7 +1259,7 @@ def groups(request):
 
                         if len(colliding_group) != 0:
                             messages.error(request, _("Adding {} "
-                                                      f"would make this group a duplicate "
+                                                      "would make this group a duplicate "
                                                       "of an already existing one.").format(new_member_student))
                             args["error_message"] = True
                         else:
@@ -1275,12 +1268,12 @@ def groups(request):
                     else:
                         student_id = str(request.POST.get("student_id"))
                         messages.error(request,
-                                       f"{student_id} is already a member of this group.")
+                                       _("{} is already a member of this group.").format(student_id))
                         args["error_message"] = True
                 else:
                     student_id = str(request.POST.get("student_id"))
                     messages.error(request,
-                                   f"A student with the TUCaN-ID {student_id} does not exist.")
+                                   _("A student with the TUCaN-ID {} does not exist.").format(student_id))
                     args["error_message"] = True
 
             args["chosen_group_for_edit"] = int(request.POST.get("add_student"))
