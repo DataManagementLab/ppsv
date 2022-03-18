@@ -1,6 +1,3 @@
-# Possible Future Features
-## Mögliche zukünftige Features 
-
 ## Ideen für weitere Entwicklung
 + SSO-Login
 + Mail-Benachrichtigungen
