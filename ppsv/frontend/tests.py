@@ -767,3 +767,223 @@ class GroupsViewTests(TestCase):
         response2 = self.client.post(reverse('frontend:groups'), data=data)
         self.assertEqual(response2.status_code, 200)
         self.assertFalse(Group.objects.filter(id=group_id).exists())
+
+class LoginViewTests(TestCase):
+
+    def test_view_url_exists_at_correct_location(self):
+        """
+        Tests if the URL of the login view exists at the correct location.
+        """
+
+        response = self.client.get('/login/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_template(self):
+        """
+        Tests if the login view uses the correct template login.html.
+        """
+        response = self.client.get(reverse('frontend:login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/login.html')
+
+    def test_login_interface(self):
+        """
+        Tests if the login view displays the correct interface to either login or register
+        """
+        response = self.client.get(reverse('frontend:login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Login')
+        self.assertContains(response, 'Register')
+        self.assertContains(response, 'username')
+        self.assertContains(response, 'password')
+        self.assertContains(response, 'I don\'t have an account.')
+
+
+class RegisterViewTests(TestCase):
+
+    def test_view_url_exists_at_correct_location(self):
+        """
+        Tests if the URL of the register view exists at the correct location.
+        """
+
+        response = self.client.get('/register/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_template(self):
+        """
+        Tests if the register view uses the correct template register.html.
+        """
+        response = self.client.get(reverse('frontend:register'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/register.html')
+
+    def test_register_interface(self):
+        """
+        Tests if the register view displays the correct interface to create an account
+        """
+        response = self.client.get(reverse('frontend:register'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Create an account')
+        self.assertContains(response, 'The password must not contain any personal information.')
+        self.assertContains(response, 'If you already have an account')
+
+class ProfileViewTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Sets up test data.
+        """
+        cls.user1 = User.objects.create_user(username='testuser1', password='12345')
+
+    def test_view_url_exists_at_correct_location(self):
+        """
+        Tests if the URL of the profile view exists at the correct location.
+        """
+        self.client.force_login(self.user1)
+        response = self.client.get('/profile/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_template(self):
+        """
+        Tests if the profile view uses the correct template profile.html.
+        """
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse('frontend:profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/profile.html')
+
+    def test_register_interface(self):
+        """
+        Tests if the profile view displays the correct interface to create a profile / student account
+        """
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse('frontend:profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Create your student profile')
+        self.assertContains(response, 'This information cannot be changed later!')
+        self.assertContains(response, 'Save profile permanently')
+
+    def test_redirect_for_anonymous_user(self):
+        """
+        Tests if an anonymous user is redirected to the login page when trying to access the profile view.
+        """
+        response = self.client.get(reverse('frontend:profile'), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/login/?next=/profile/')
+
+
+class LoginViewTests(TestCase):
+
+    def test_view_url_exists_at_correct_location(self):
+        """
+        Tests if the URL of the login view exists at the correct location.
+        """
+
+        response = self.client.get('/login/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_template(self):
+        """
+        Tests if the login view uses the correct template login.html.
+        """
+        response = self.client.get(reverse('frontend:login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/login.html')
+
+    def test_login_interface(self):
+        """
+        Tests if the login view displays the correct interface to either login or register.
+        """
+        response = self.client.get(reverse('frontend:login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Login')
+        self.assertContains(response, 'Register')
+        self.assertContains(response, 'username')
+        self.assertContains(response, 'password')
+        self.assertContains(response, 'I don\'t have an account.')
+
+
+class RegisterViewTests(TestCase):
+
+    def test_view_url_exists_at_correct_location(self):
+        """
+        Tests if the URL of the register view exists at the correct location.
+        """
+
+        response = self.client.get('/register/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_template(self):
+        """
+        Tests if the register view uses the correct template register.html.
+        """
+        response = self.client.get(reverse('frontend:register'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/register.html')
+
+    def test_register_interface(self):
+        """
+        Tests if the register view displays the correct interface to create an account.
+        """
+        response = self.client.get(reverse('frontend:register'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Create an account')
+        self.assertContains(response, 'The password must not contain any personal information.')
+        self.assertContains(response, 'If you already have an account')
+
+
+class ProfileViewTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Sets up test data.
+        """
+        cls.user1 = User.objects.create_user(username='testuser1', password='12345')
+
+    def test_view_url_exists_at_correct_location(self):
+        """
+        Tests if the URL of the profile view exists at the correct location.
+        """
+        self.client.force_login(self.user1)
+        response = self.client.get('/profile/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_template(self):
+        """
+        Tests if the profile view uses the correct template profile.html.
+        """
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse('frontend:profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/profile.html')
+
+    def test_register_interface(self):
+        """
+        Tests if the profile view displays the correct interface to create a profile / student account.
+        """
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse('frontend:profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Create your student profile')
+        self.assertContains(response, 'This information cannot be changed later!')
+        self.assertContains(response, 'Save profile permanently')
+
+    def test_redirect_for_anonymous_user(self):
+        """
+        Tests if an anonymous user is redirected to the login page when trying to access the profile view.
+        """
+        response = self.client.get(reverse('frontend:profile'), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, '/login/?next=/profile/')
+
+
+
+
+
+
+
+
+
+
