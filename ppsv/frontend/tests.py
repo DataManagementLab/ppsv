@@ -190,8 +190,8 @@ class OverviewViewTests(TestCase):
 
         cls.date_near_future = timezone.now() + datetime.timedelta(days=2)
         cls.course_type_sorting = CourseType.objects.create(type='Sorting')
-        cls.course_sorting = Course.objects.create(registration_deadline=cls.date_near_future, motivation_text=True,
-                                                   registration_start=timezone.now(), cp=10, faculty='FB01',
+        cls.course_sorting = Course.objects.create(registration_deadline=cls.date_future, motivation_text=True,
+                                                   registration_start=cls.date_near_future, cp=10, faculty='FB01',
                                                    title='Sorting', type=cls.course_type_sorting,
                                                    description='Test course description sorting')
 
@@ -464,6 +464,26 @@ class OverviewViewTests(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Your group would be too large for Test topic max part group. '
                                            'Your group can only have a maximum of 2 members.')
+
+    def test_sorting_in_overview(self):
+        """
+        Tests if the correct order of courses is displayed when trying to sort courses by different keywords.
+        """
+        data = {'choose_faculty': ['FB01|cp|asc']}
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(str(response.context['courses']), '[<Course: Test Course unselected>, <Course: Sorting>]')
+
+        data = {'choose_faculty': ['FB01|cp|dsc']}
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(str(response.context['courses']), '[<Course: Sorting>, <Course: Test Course unselected>]')
+
+        data = {'choose_faculty': ['FB01|status|asc']}
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(str(response.context['courses']), '[<Course: Sorting>, <Course: Test Course unselected>]')
+
+        data = {'choose_faculty': ['FB01|status|dsc']}
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(str(response.context['courses']), '[<Course: Test Course unselected>, <Course: Sorting>]')
 
 
 class YourSelectionViewTests(TestCase):
