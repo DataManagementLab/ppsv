@@ -74,7 +74,7 @@ def homepage(request):
 
             # Pins message to board if motivation texts are missing for selections
             if need_to_assign_topics_to_collection:
-                msg = _("You still need to assign at least one topic to a collection!")
+                msg = "You still need to assign at least one topic to a collection!"
                 link = "frontend:your_selection"
                 recommendations[msg] = link
 
@@ -351,6 +351,15 @@ def overview(request):
                             if group_of_user.size == 1:
                                 existing_groups.append(group_of_user)
 
+                        # if there is no hidden group for the user, create one
+                        created_hidden_group = False
+                        if len(existing_groups) == 0:
+                            group_of_student = Group()
+                            group_of_student.save()
+                            group_of_student.students.add(student_tu_id)
+                            existing_groups.append(group_of_student)
+                            created_hidden_group = True
+
                         for group_of_user in models.Group.objects.filter(students=student_tu_id):
                             if group_of_user != existing_groups[0]:
                                 topic_selections_of_group = models.TopicSelection.objects.filter(
@@ -361,11 +370,7 @@ def overview(request):
 
                         if not group_already_selected_same_course:
                             # check if the user has not already got a hidden group for himself
-                            if len(existing_groups) == 0:
-
-                                group_of_student = Group()
-                                group_of_student.save()
-                                group_of_student.students.add(student_tu_id)
+                            if created_hidden_group:
 
                                 user_selection = TopicSelection()
                                 user_selection.group = group_of_student

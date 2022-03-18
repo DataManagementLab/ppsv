@@ -117,7 +117,7 @@ class HomepageViewTests(TestCase):
         Tests if an anonymous user is presented the login form and the welcome text on the homepage.
         """
         response = self.client.get(reverse('frontend:homepage'))
-        self.assertContains(response, 'Willkommen')
+        self.assertContains(response, 'Welcome')
         self.assertContains(response, '<div class="row-cols-sm-1" id="col_1">')
 
     def test_view_for_logged_in_user_with_selection(self):
@@ -139,6 +139,7 @@ class HomepageViewTests(TestCase):
         self.client.force_login(self.user2)
         response = self.client.get(reverse('frontend:homepage'))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'What to do next')
         self.assertContains(response, 'You have not selected any topics yet!')
         self.assertContains(response, 'You can create a group here')
 
@@ -149,29 +150,50 @@ class OverviewViewTests(TestCase):
         """
         Sets up test data.
         """
-        # cls.user1 = User.objects.create_user(username='testuser1', password='12345')
-        # cls.user2 = User.objects.create_user(username='testuser2', password='12345')
-        # cls.user3 = User.objects.create_user(username='testuser3', password='12345')
-        # cls.student1 = Student.objects.create(user=cls.user1, tucan_id='ab12eeee')
-        # cls.student2 = Student.objects.create(user=cls.user2, tucan_id='bc22eeee')
-        # cls.student3 = Student.objects.create(user=cls.user3, tucan_id='cd33eeee')
-        # cls.group1 = Group.objects.create()
-        # cls.group1.students.add(cls.student1)
+        cls.user1 = User.objects.create_user(username='testuser1', password='12345')
+        cls.user2 = User.objects.create_user(username='testuser2', password='12345')
+        cls.user3 = User.objects.create_user(username='testuser3', password='12345')
+        cls.student1 = Student.objects.create(user=cls.user1, tucan_id='ab22eeee')
+        cls.student2 = Student.objects.create(user=cls.user2, tucan_id='bc22eeee')
+        cls.student3 = Student.objects.create(user=cls.user3, tucan_id='cd22eeee')
+
+        cls.group1 = Group.objects.create()
+        cls.group1.students.add(cls.student1)
+        cls.group1.students.add(cls.student2)
+
         cls.date_future = timezone.now() + datetime.timedelta(days=30)
         cls.course_type = CourseType.objects.create(type='Testtype')
-        cls.course = Course.objects.create(registration_deadline=cls.date_future, registration_start=timezone.now(),
-                                           cp=5, motivation_text=True, faculty='FB01', title='TestCourse',
-                                           type=cls.course_type, description='Test description')
-        cls.topic = Topic.objects.create(course=cls.course, title='TestTopic')
-        # cls.topic_selection = TopicSelection.objects.create(group=cls.group1, topic=cls.topic, collection_number=0)
-        # cls.course_mix1 = Course.objects.create(registration_deadline=timezone.now(), cp=5, type='IN')
-        # cls.course_mix2 = Course.objects.create(registration_deadline=timezone.now(), cp=5, type='SE')
-        # cls.topic_mix1 = Topic.objects.create(course=cls.course_mix1, title='Mix1')
-        # cls.topic_mix2 = Topic.objects.create(course=cls.course_mix2, title='Mix2')
-        # cls.topic_selection_mix1 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_mix1,
-        #                                                          collection_number=1)
-        # cls.topic_selection_mix2 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_mix2,
-        #                                                          collection_number=1)
+
+        cls.course_unselected = Course.objects.create(registration_deadline=cls.date_future, motivation_text=True,
+                                                      registration_start=timezone.now(), cp=5, faculty='FB01',
+                                                      title='Test Course unselected', type=cls.course_type,
+                                                      description='Test course description unselected')
+        cls.topic_unselected = Topic.objects.create(course=cls.course_unselected, title='Test topic unselected',
+                                                    description='Test topic description unselected')
+        cls.topic_max_part_alone = Topic.objects.create(course=cls.course_unselected, title='Test topic max part alone',
+                                                        description='Test topic description max part alone',
+                                                        max_participants=1)
+        cls.topic_max_part_group = Topic.objects.create(course=cls.course_unselected, title='Test topic max part group',
+                                                        description='Test topic description max part group',
+                                                        max_participants=2)
+
+        cls.course_selected = Course.objects.create(registration_deadline=cls.date_future, cp=5, motivation_text=True,
+                                                    registration_start=timezone.now(), type=cls.course_type,
+                                                    faculty='FB03', title='Test Course selected',
+                                                    description='Test course description selected')
+        cls.topic_remaining = Topic.objects.create(course=cls.course_selected, title='Test topic remaining',
+                                                   description='Test topic description remaining')
+        cls.topic_selected = Topic.objects.create(course=cls.course_selected, title='Test topic selected',
+                                                  description='Test topic description selected')
+        cls.topic_selection = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_selected,
+                                                            collection_number=0)
+
+        cls.date_near_future = timezone.now() + datetime.timedelta(days=2)
+        cls.course_type_sorting = CourseType.objects.create(type='Sorting')
+        cls.course_sorting = Course.objects.create(registration_deadline=cls.date_near_future, motivation_text=True,
+                                                   registration_start=timezone.now(), cp=10, faculty='FB01',
+                                                   title='Sorting', type=cls.course_type_sorting,
+                                                   description='Test course description sorting')
 
     def test_view_url_exists_at_correct_location(self):
         """
@@ -204,99 +226,244 @@ class OverviewViewTests(TestCase):
         data = {'choose_faculty': ['FB01']}
         response = self.client.post(reverse('frontend:overview'), data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'TestCourse')
-        # 'choose_faculty': ['FB01']
+        self.assertContains(response, 'Test Course unselected')
 
     def test_display_topics_and_information_of_course(self):
         """
         Tests if the overview view displays the topics of a course.
         """
-        data = {'choose_course': ['1|FB20|True']}
+        course_id = self.course_unselected.id
+        data = {'choose_course': ['{}|FB01|True'.format(course_id)]}
         response = self.client.post(reverse('frontend:overview'), data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'TestTopic')
-        self.assertContains(response, 'Test description')
-        # 'choose_course': ['7|FB01|True']
+        self.assertContains(response, 'Test topic unselected')
+        self.assertContains(response, 'Test course description unselected')
 
     def test_display_topic_information_with_select_buttons(self):
         """
         Tests if the topic information and selection buttons are displayed correctly.
         """
-        # 'choose_topic': ['22|7|FB01|False']
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'choose_topic': ['{}|{}|FB01|False'.format(topic_id, course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="open_group_select"')
+        self.assertContains(response, 'name="select_topic"')
+        self.assertContains(response, 'Test topic description unselected')
+        self.assertContains(response, 'Test topic unselected')
+        self.assertNotContains(response, 'Test course description unselected')
 
     def test_course_info_panel_in_topic(self):
         """
         Tests if the course info panel displays the information correctly if opened.
         """
-        # 'choose_topic': ['22|7|FB01|True']
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'choose_topic': ['{}|{}|FB01|True'.format(topic_id, course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="open_group_select"')
+        self.assertContains(response, 'name="select_topic"')
+        self.assertContains(response, 'Test topic description unselected')
+        self.assertContains(response, 'Test topic unselected')
+        self.assertContains(response, 'Test course description unselected')
 
     def test_select_topic_without_group(self):
         """
         Tests if a topic selection without a group is working as intended.
         """
-        # 'select_topic': ['22|7|FB01|open_course_info']}>select_topic alone
+        topic_to_select_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'select_topic': ['{}|{}|FB01|open_course_info'.format(topic_to_select_id, course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="')
+        self.assertTrue(TopicSelection.objects.filter(topic=topic_to_select_id).exists())
+        topic_selection = TopicSelection.objects.get(topic=topic_to_select_id)
+        self.assertTrue(Group.objects.filter(topicselection=topic_selection).exists())
 
     def test_display_of_select_all_remaining_topic_button(self):
         """
         Tests if the button to select all remaining topics shows up after selecting one topic of a course.
         """
-        # 'choose_course': ['7|FB01|False'] same as topics of course but with one topic selected and containing the button
+        course_id = self.course_selected.id
+        data = {'choose_course': ['{}|FB01|False'.format(course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="select_all_remaining_topics"')
 
     def test_select_all_remaining_topics(self):
         """
         Tests if all other topics of a course are correctly selected after selecting all remaining topics.
         """
-        # 'select_all_remaining_topics': ['7|FB01|open_course_info']
+        course_id = self.course_selected.id
+        remaining_topic_id = self.topic_remaining.id
+        data = {'select_all_remaining_topics': ['{}|FB01|open_course_info'.format(course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(TopicSelection.objects.filter(topic=remaining_topic_id).exists())
 
-    def test_select_all_remaining_topics(self):
+    def test_back_to_faculty_view(self):
         """
         Tests if the faculty view works properly after going back.
         """
-        # 'faculty_view': ['']
-
-    def test_sorting(self):
-        """
-        Tests if the sort function while displaying courses of a faculty works correctly.
-        """
-        # how? idk
-        # 'choose_faculty': ['FB02|cp|dsc']
+        data = {'faculty_view': ['']}
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'FB01')
+        self.assertNotContains(response, 'FB02')
 
     def test_select_topic_as_group(self):
         """
         Tests if the options to create a new group and to select the topic with an existing group are presented after
         clicking select topic as a group.
         """
-        # 'open_group_select': ['15|4|FB20|open_course_info']}>open_group_select, choosing topic as a group
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'open_group_select': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="open_group_create"')
+        self.assertContains(response, 'name="group_options"')
+        self.assertContains(response, 'name="select_with_chosen_group"')
 
     def test_create_new_group_ui(self):
         """
         Tests if the UI for creating a new group is displayed.
         """
-        # 'open_group_create': ['15|4|FB20|False'], 'group_options': ['-1']}>open_group_create create a new group
-
-    def test_adding_student_to_group(self):
-        """
-        Tests if a student is properly added to the new group.
-        """
-        # 'new_student_id': ['bcbcbcbc'], 'add_student': ['15|4|FB20|open_course_info'], 'member0': ['abcdabcd']}>add_student to new group draft
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'open_group_create': ['{}|{}|FB01|False'.format(topic_id, course_id)], 'group_options': ['-1']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="add_student"')
+        self.assertContains(response, 'name="new_student_id"')
+        self.assertContains(response, 'name="select_with_new_group"')
+        self.assertContains(response, 'ab22eeee')
 
     def test_adding_student_to_group_draft(self):
         """
         Tests if a student is properly added to the group draft.
         """
-        # 'new_student_id': ['bcbcbcbc'], 'add_student': ['15|4|FB20|open_course_info'], 'member0': ['abcdabcd']}>add_student to new group draft
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': ['cd22eeee'],
+                'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)], 'member0': ['ab22eeee']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'cd22eeee')
 
     def test_removing_student_from_group_draft(self):
         """
         Tests if a student is properly removed from the group draft.
         """
-        # 'new_student_id': [''], 'remove_student': ['15|4|FB20|open_course_info|bcbcbcbc'], 'member0': ['bcbcbcbc'], 'member1': ['abcdabcd']}>remove_student from group draft
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': [''],
+                'remove_student': ['{}|{}|FB01|open_course_info|cd22eeee'.format(topic_id, course_id)],
+                'member0': ['ab22eeee'], 'member1': ['cd22eeee']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'cd22eeee')
 
     def test_select_topic_with_new_group(self):
         """
-        Tests if topic is correctly selected when selecting with a newly created group.
+        Tests if the topic is correctly selected when selecting with a newly created group.
         """
-        # 'new_student_id': [''], 'select_with_new_group': ['15|4|FB20|open_course_info'], 'member0': ['bcbcbcbc'], 'member1': ['abcdabcd']}>select_with_new_group
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': [''], 'member0': ['ab22eeee'], 'member1': ['cd22eeee'],
+                'select_with_new_group': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        topic_selection = TopicSelection.objects.get(topic=topic_id)
+        self.assertTrue(Group.objects.filter(topicselection=topic_selection).exists())
+
+    def test_select_topic_with_existing_group(self):
+        """
+        Tests if the topic is correctly selected with the chosen existing group.
+        """
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        group_id = self.group1.id
+        data = {'group_options': ['{}'.format(group_id)],
+                'select_with_chosen_group': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(TopicSelection.objects.filter(topic=topic_id, group=group_id).exists())
+
+    def test_group_creation_student_not_found(self):
+        """
+        Tests the correct message is displayed when the user tries to add a non-existent student to the group.
+        """
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': ['xxxxxxxx'],
+                'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)], 'member0': ['ab22eeee']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'A student with the TUCaN-ID xxxxxxxx was not found.')
+
+    def test_group_creation_student_already_in_group(self):
+        """
+        Tests the correct message is displayed when the user tries to add a non-existent student to the group.
+        """
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': ['ab22eeee'],
+                'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)], 'member0': ['ab22eeee']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'A student with the TUCaN-ID ab22eeee is already in the group.')
+
+    def test_no_select_with_group_option(self):
+        """
+        Tests if the correct option is displayed (=only the select topic (alone) button) when the user clicks on
+        a topic with max_participants = 1.
+        """
+        topic_id = self.topic_max_part_alone.id
+        course_id = self.course_unselected.id
+        data = {'choose_topic': ['{}|{}|FB01|False'.format(topic_id, course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="open_group_select"')
+
+    def test_creating_larger_group_than_suited_for_topic(self):
+        """
+        Tests if the correct error message is displayed when trying to add a student to a group which would make the
+        group too larger than max_participants of the topic.
+        """
+        topic_id = self.topic_max_part_group.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': ['bc22eeee'],
+                'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)],
+                'member0': ['ab22eeee'], 'member1': ['cd22eeee']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Your group would be too large for Test topic max part group. '
+                                           'Your group can only have a maximum of 2 members.')
 
 
 class YourSelectionViewTests(TestCase):
@@ -310,8 +477,10 @@ class YourSelectionViewTests(TestCase):
         cls.student1 = Student.objects.create(user=cls.user1, tucan_id='ab12eeee')
         cls.group1 = Group.objects.create(collection_count=2)
         cls.group1.students.add(cls.student1)
+
         cls.date_future = timezone.now() + datetime.timedelta(days=30)
         cls.course_type = CourseType.objects.create(type='Testtype')
+
         cls.course = Course.objects.create(registration_deadline=cls.date_future, registration_start=timezone.now(),
                                            cp=5, motivation_text=True, faculty='FB01', title='TestCourse',
                                            type=cls.course_type, description='Test description',
@@ -324,22 +493,28 @@ class YourSelectionViewTests(TestCase):
                                                      registration_start=timezone.now(), cp=6, motivation_text=True,
                                                      faculty='FB02', title='TestCourse exklusiv', type=cls.course_type,
                                                      description='Test description exklusiv', collection_exclusive=True)
+
         cls.topic_unassigned0 = Topic.objects.create(course=cls.course, title='Unassigned Topic 0',
                                                      description='Testing unassigned 0')
         cls.topic_unassigned1 = Topic.objects.create(course=cls.course, title='Unassigned Topic 1',
                                                      description='Testing unassigned 1')
+        cls.topic_assigned0 = Topic.objects.create(course=cls.course1, title='Assigned Topic 0',
+                                                   description='Testing assigned 0')
         cls.topic_col1_exclusive0 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 0')
         cls.topic_col1_exclusive1 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 1')
+
         cls.topic_selection_unassigned0 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_unassigned0,
                                                                         collection_number=0)
         cls.topic_selection_unassigned1 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_unassigned1,
                                                                         collection_number=0)
         cls.topic_selection_exclusive0 = TopicSelection.objects.create(group=cls.group1,
                                                                        topic=cls.topic_col1_exclusive0,
-                                                                       collection_number=1)
+                                                                       collection_number=1, priority=1)
         cls.topic_selection_exclusive1 = TopicSelection.objects.create(group=cls.group1,
                                                                        topic=cls.topic_col1_exclusive1,
-                                                                       collection_number=1)
+                                                                       collection_number=1, priority=2)
+        cls.topic_selection_assigned0 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_assigned0,
+                                                                      collection_number=2)
 
     def test_view_url_exists_at_correct_location(self):
         """
@@ -417,9 +592,9 @@ class YourSelectionViewTests(TestCase):
 
     def test_remove_topic(self):
         """
-        Tests if a topic is correctly removed from collection 0.
+        Tests if a topic is correctly removed from a collection.
         """
-        selection_id = self.topic_selection_unassigned0.id
+        selection_id = self.topic_selection_exclusive0.id
         data = {'collection_input{}'.format(selection_id): ['0'], 'remove_topic_button': ['{}|0'.format(selection_id)]}
         self.client.force_login(self.user1)
         response = self.client.post(reverse('frontend:your_selection'), data=data)
@@ -428,32 +603,22 @@ class YourSelectionViewTests(TestCase):
 
     def test_moving_topic_to_collection(self):
         """
-        Tests if a topic is moved to the correct collection when confirming the selected collection choice.
+        Tests if a topic is moved to the correct collection and the priorities are properly set
+        when confirming the selected collection choice.
         """
-        selection_id = self.topic_selection_unassigned0.id
+        selection_assigned_id0 = self.topic_selection_assigned0.id
+        selection0_id = self.topic_selection_unassigned0.id
+        selection1_id = self.topic_selection_unassigned1.id
         group_id = self.group1.id
-        data = {'collection_input{}'.format(selection_id): ['2'],
-                'change_collection_button': ['{}|0|{}'.format(group_id, selection_id)]}
+        data = {'collection_input{}'.format(selection0_id): ['2'],
+                'change_collection_button': ['{}|0|{}'.format(group_id, selection0_id)]}
         self.client.force_login(self.user1)
         response = self.client.post(reverse('frontend:your_selection'), data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(TopicSelection.objects.get(id=selection_id).collection_number, 2)
-
-    def test_assigned_multiple_topics_of_the_same_course_to_selection(self):
-        """
-        Tests if multiple unassigned topics of the same course are moved to the correct collection when confirming
-        the selected collection choice.
-        """
-        selection_id0 = self.topic_selection_unassigned0.id
-        selection_id1 = self.topic_selection_unassigned1.id
-        group_id = self.group1.id
-        data = {'collection_input{}'.format(selection_id0): ['2'], 'collection_input{}'.format(selection_id1): ['2'],
-                'change_collection_button': ['{}|0|{}'.format(group_id, selection_id0)]}
-        self.client.force_login(self.user1)
-        response = self.client.post(reverse('frontend:your_selection'), data=data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(TopicSelection.objects.get(id=selection_id0).collection_number, 2)
-        self.assertEqual(TopicSelection.objects.get(id=selection_id1).collection_number, 2)
+        self.assertEqual(len(TopicSelection.objects.filter(collection_number=2)), 3)
+        self.assertEqual(TopicSelection.objects.get(id=selection_assigned_id0).priority, 1)
+        self.assertEqual(TopicSelection.objects.get(id=selection0_id).priority, 2)
+        self.assertEqual(TopicSelection.objects.get(id=selection1_id).priority, 3)
 
     def test_editing_collection(self):
         """
@@ -466,7 +631,7 @@ class YourSelectionViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="add_collection"')
         self.assertContains(response, 'spinning-icon')
-        self.assertContains(response, 'name="remove_collection"')
+        self.assertContains(response, 'name="ask_remove_collection"')
 
     def test_ask_remove_collection(self):
         """
@@ -480,7 +645,7 @@ class YourSelectionViewTests(TestCase):
         self.client.force_login(self.user1)
         response = self.client.post(reverse('frontend:your_selection'), data=data)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'If you delete this collection, all the selections will be deleted as well.')
+        self.assertContains(response, 'If you delete this collection, all selections in this collection will be deleted')
         self.assertContains(response, 'name="remove_collection"')
 
     def test_remove_collection(self):
@@ -538,6 +703,30 @@ class YourSelectionViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(TopicSelection.objects.filter(motivation='Test Text').exists())
 
+    def test_up_priority(self):
+        """
+        Tests if the priority is correctly changed after raising it.
+        """
+        selection_id_down = self.topic_selection_exclusive0.id
+        selection_id_up = self.topic_selection_exclusive1.id
+        data = {'up_priority': ['{}|1'.format(selection_id_up)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(TopicSelection.objects.get(id=selection_id_up).priority, 1)
+        self.assertEqual(TopicSelection.objects.get(id=selection_id_down).priority, 2)
+
+    def test_down_priority(self):
+        """
+        Tests if the priority is correctly changed after lowering it.
+        """
+        selection_id = self.topic_selection_exclusive0.id
+        data = {'down_priority': ['{}|1'.format(selection_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:your_selection'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(TopicSelection.objects.get(id=selection_id).priority, 2)
+
 
 class GroupsViewTests(TestCase):
     @classmethod
@@ -550,6 +739,7 @@ class GroupsViewTests(TestCase):
         cls.user3 = User.objects.create_user(username='testuser3', password='12345')
         cls.user4 = User.objects.create_user(username='testuser4', password='12345')
         cls.user_no_student = User.objects.create_user(username='user_no_student', password='12345')
+
         cls.student1 = Student.objects.create(user=cls.user1, tucan_id='ab22eeee', firstname='Klaus', lastname='Hans',
                                               email='test1@yahoo.de')
         cls.student2 = Student.objects.create(user=cls.user2, tucan_id='bc22eeee', firstname='John', lastname='Smith',
@@ -558,9 +748,11 @@ class GroupsViewTests(TestCase):
                                               lastname='Bruckner', email='test@aol.com')
         cls.student4 = Student.objects.create(user=cls.user4, tucan_id='de22eeee', firstname='Lisa', lastname='Müller',
                                               email='test4@gmx.de')
+
         cls.group1 = Group.objects.create()
         cls.group1.students.add(cls.student1)
         cls.group1.students.add(cls.student3)
+
         cls.group2 = Group.objects.create()
         cls.group2.students.add(cls.student1)
         cls.group2.students.add(cls.student3)
@@ -768,13 +960,13 @@ class GroupsViewTests(TestCase):
         self.assertEqual(response2.status_code, 200)
         self.assertFalse(Group.objects.filter(id=group_id).exists())
 
+
 class LoginViewTests(TestCase):
 
     def test_view_url_exists_at_correct_location(self):
         """
         Tests if the URL of the login view exists at the correct location.
         """
-
         response = self.client.get('/login/')
         self.assertEqual(response.status_code, 200)
 
@@ -805,7 +997,6 @@ class RegisterViewTests(TestCase):
         """
         Tests if the URL of the register view exists at the correct location.
         """
-
         response = self.client.get('/register/')
         self.assertEqual(response.status_code, 200)
 
@@ -826,6 +1017,7 @@ class RegisterViewTests(TestCase):
         self.assertContains(response, 'Create an account')
         self.assertContains(response, 'The password must not contain any personal information.')
         self.assertContains(response, 'If you already have an account')
+
 
 class ProfileViewTests(TestCase):
 
@@ -871,119 +1063,3 @@ class ProfileViewTests(TestCase):
         response = self.client.get(reverse('frontend:profile'), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/login/?next=/profile/')
-
-
-class LoginViewTests(TestCase):
-
-    def test_view_url_exists_at_correct_location(self):
-        """
-        Tests if the URL of the login view exists at the correct location.
-        """
-
-        response = self.client.get('/login/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_view_template(self):
-        """
-        Tests if the login view uses the correct template login.html.
-        """
-        response = self.client.get(reverse('frontend:login'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/login.html')
-
-    def test_login_interface(self):
-        """
-        Tests if the login view displays the correct interface to either login or register.
-        """
-        response = self.client.get(reverse('frontend:login'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Login')
-        self.assertContains(response, 'Register')
-        self.assertContains(response, 'username')
-        self.assertContains(response, 'password')
-        self.assertContains(response, 'I don\'t have an account.')
-
-
-class RegisterViewTests(TestCase):
-
-    def test_view_url_exists_at_correct_location(self):
-        """
-        Tests if the URL of the register view exists at the correct location.
-        """
-
-        response = self.client.get('/register/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_view_template(self):
-        """
-        Tests if the register view uses the correct template register.html.
-        """
-        response = self.client.get(reverse('frontend:register'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/register.html')
-
-    def test_register_interface(self):
-        """
-        Tests if the register view displays the correct interface to create an account.
-        """
-        response = self.client.get(reverse('frontend:register'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Create an account')
-        self.assertContains(response, 'The password must not contain any personal information.')
-        self.assertContains(response, 'If you already have an account')
-
-
-class ProfileViewTests(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        """
-        Sets up test data.
-        """
-        cls.user1 = User.objects.create_user(username='testuser1', password='12345')
-
-    def test_view_url_exists_at_correct_location(self):
-        """
-        Tests if the URL of the profile view exists at the correct location.
-        """
-        self.client.force_login(self.user1)
-        response = self.client.get('/profile/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_view_template(self):
-        """
-        Tests if the profile view uses the correct template profile.html.
-        """
-        self.client.force_login(self.user1)
-        response = self.client.get(reverse('frontend:profile'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/profile.html')
-
-    def test_register_interface(self):
-        """
-        Tests if the profile view displays the correct interface to create a profile / student account.
-        """
-        self.client.force_login(self.user1)
-        response = self.client.get(reverse('frontend:profile'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Create your student profile')
-        self.assertContains(response, 'This information cannot be changed later!')
-        self.assertContains(response, 'Save profile permanently')
-
-    def test_redirect_for_anonymous_user(self):
-        """
-        Tests if an anonymous user is redirected to the login page when trying to access the profile view.
-        """
-        response = self.client.get(reverse('frontend:profile'), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/login/?next=/profile/')
-
-
-
-
-
-
-
-
-
-
