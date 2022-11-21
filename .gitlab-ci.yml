@@ -1,25 +1,16 @@
 stages:
   - test
-  - deploy
 
 custom-tests:
   stage: test
-  image: none
+  tags:
+    - pi
   script:
     - python3 -m pip install --upgrade pip
     - pip3 install -r requirements.txt
-    - python3 ppsv/manage.py check
-    - python3 ppsv/manage.py makemigrations --check
-    - chmod +x tests/test.sh
-    - ./tests/test.sh -save
+    - cd ppsv/
+    - python3 manage.py check
+    - python3 manage.py makemigrations
+    - python3 manage.py migrate
+    - python manage.py test --parallel 4 --timing -v 3
 
-deploy-prod:
-  stage: deploy
-  image: none
-  only:
-    refs:
-        - master
-  script:
-    - echo "Building docker images and start containers ..."
-    - chmod +x start-production.sh
-    - ./start-production.sh
