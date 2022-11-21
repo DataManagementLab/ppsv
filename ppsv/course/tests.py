@@ -7,7 +7,7 @@ from django.utils import timezone
 from .models import Course, Student, Group, TopicSelection, Topic, CourseType
 
 
-class ModelTests(TestCase):
+class test_ModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         """
