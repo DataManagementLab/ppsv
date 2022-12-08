@@ -11,14 +11,18 @@ Structure
 - [ ] Are there any blocks of repeated code that could be condensed into a single procedure?
 - [ ] Are symbolics used rather than “magic number” constants or string constants?
 - [ ] Are all variables properly defined with meaningful, consistent, and clear names?
+- [ ] Are we separating the css style section from the rest of the html script instead of inline css?
+- [ ] Are there any code blocks, that are commented out?
+- [ ] Are there any unused imports?
 
 Documentation
 - [ ] Is the code clearly and adequately documented with an easy-to-maintain commenting style?
 - [ ] Are all comments consistent with the code?
+- [ ] Is every method documented?
 
 <br>
 
-<h3>Nicht wichtig für Wartbarkeit, Rest der beiden Fragebögen</h3>
+<h3>Weitere Punkte, Nicht wichtig für Wartbarkeit</h3>
 
 Loops and Branches
 - [ ] Are all loops, branches, and logic constructs complete, correct, and properly nested?
@@ -32,18 +36,19 @@ Loops and Branches
 - [ ] Does the code in the loop avoid manipulating the index variable or using it upon exit from the loop?
 
 Defensive Programming
-- [ ] Are indexes, pointers, and subscripts tested against array, record, or file bounds?
+- [ ] Are indexes and subscripts tested against array, record, or file bounds?
 - [ ] Are imported data and input arguments tested for validity and completeness?
 - [ ] Are all output variables assigned?
 - [ ] Are the correct data operated on in each statement?
 - [ ] Are timeouts or error traps used for external device accesses?
 - [ ] Are files checked for existence before attempting to access them?
 - [ ] Are all files and devices are left in the correct state upon program termination?
-- [ ] Do we have test case or unit tests written?
 
 Django
-- [ ] Are we storing contents of email outside code?
-- [ ] Are we importing specific Classes/Functions from modules from accounts_manager.models import AccountsManager as opposed to from accounts_manager.models import *?
-- [ ] Do we have singular application and model names? (E.g. accounts_manager as opposed to accountsmanager)
+- [ ] Are we importing specific classes rather than the whole documents (E.g. from accounts\_manager.models import * → from accounts\_manager.models import AccountsManager)
+- [ ] Do we have singular application and model names? (E.g. accounts_manager as opposed to accountsManager)
+- [ ] Use lazy queries as long as possible instead of nesting for loops
+- [ ] Use unique POST request for each functionality
+- [ ] Are translations used for every text shown in non-admin pages?
 
 
