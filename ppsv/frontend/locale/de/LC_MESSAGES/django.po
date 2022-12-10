@@ -695,6 +695,10 @@ msgstr ""
 msgid "Saving unsuccessful. Invalid information."
 msgstr "Speichern fehlgeschlagen. Ungültige Angaben."
 
+#: .\templates\backend\assignment.html:192
+msgid "Topic assignment"
+msgstr "Themenzuweisung"
+
 #~ msgid "Hi"
 #~ msgstr "Hallo"
 

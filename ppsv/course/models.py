@@ -4,6 +4,7 @@ This file describes or defines the basic structure of the PPSV.
 A class that extends the models.Model class may represent a Model
 of the platform and can be registered in admin.py.
 """
+from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
@@ -65,8 +66,8 @@ class Course(models.Model):
     :type Course.collection_exclusive: BooleanField
     :attr Course.unlimited: if the number of participants is unlimited
     :type Course.unlimited: BooleanField
-    :attr Course.max_participants: the maximum number of participants
-    :type Course.max_participants: IntegerField
+    :attr Course.max_slots: the maximum number of participants
+    :type Course.max_slots: IntegerField
     :attr Course.cp: the CP of the Course
     :type Course.cp: IntegerField
     :attr Course.faculty: The faculty of the course
@@ -82,11 +83,8 @@ class Course(models.Model):
     registration_start = models.DateTimeField(default=timezone.now, verbose_name=_("registration Start"))
     registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
     description = models.TextField(verbose_name=_("description"))
-    collection_exclusive = models.BooleanField(_("collection exclusive"), blank=True, default=False)
-    unlimited = models.BooleanField(_("unlimited number of participants"), blank=True, default=False)
-    max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
-                                           validators=[MaxValueValidator(9999), MinValueValidator(0)],)
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     COURSE_FACULTY_CHOICES = [
         ('FB01', _('Dept. 01 - Law and Economics')),
@@ -163,8 +161,9 @@ def course_directory_path(instance, filename):
 class Topic(models.Model):
     """Topic
 
-    This model represents a topic on the platform. A Topic contains a title, the maximum number of participants and a
-    description. It can contain a file.
+    This model represents a topic on the platform. A Topic contains a title, the maximum number of slots
+    (how many distinct assignments for this topic will be created at most), the min and max size of a topic
+    (how many students can work together on the topic) and a description. It can contain a file.
 
     Multiple topics can be part of one course.
 
@@ -172,22 +171,42 @@ class Topic(models.Model):
     :type Topic.title: CharField
     :attr Topic.description: The description of the topic
     :type Topic.description: TextField
-    :attr Topic.max_participants: The maximum number of participants
-    :type Topic.max_participants: IntegerField
+    :attr Topic.max_slots: The maximum number of slots of the topic
+    :type Topic.max_slots: IntegerField
+    :attr Topic.min_slot_size: The minimum number of a slot
+    :type Topic.min_slot_size: PositiveIntegerField
+    :attr Topic.max_slot_size: The maximum number of a slot
+    :type Topic.max_slot_size: PositiveIntegerField
     :attr Topic.file: A file containing information about the topic
     :type Topic.file: FileField
     :attr Topic.course: The course containing the topic
     :type Topic.course: ForeignKey - Course
 
     """
+
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name=_("course"))
     title = models.CharField(max_length=200, verbose_name=_("title"))
-
-    max_participants = models.IntegerField(verbose_name=_("maximum Participants"), default=9999,
-                                           validators=[MaxValueValidator(9999), MinValueValidator(1)])
-
+    max_slots = models.PositiveIntegerField(verbose_name=_("max slot count"), default=1,
+                                                   validators=[MinValueValidator(1)])
+    min_slot_size = models.PositiveIntegerField(verbose_name=_("min GroupSize"), default=1,
+                                                validators=[MinValueValidator(1)])
+    max_slot_size = models.PositiveIntegerField(verbose_name=_("max GroupSize"), default=1,
+                                                validators=[MinValueValidator(1)])
     description = models.TextField(verbose_name=_("description"))
     file = models.FileField(verbose_name=_("file"), upload_to=course_directory_path, blank=True)
+
+    @property
+    def is_group_topic(self):
+        """Is group topic
+        :return: true, if multiple studens can work together on this topic
+        :rtype: boolean
+        """
+        return self.max_slot_size > 1
+
+
+    def clean(self):
+        if self.min_slot_size > self.max_slot_size:
+            raise ValidationError("min group size is bigger than max group size")
 
     class Meta:
         """Meta options
@@ -265,8 +284,8 @@ class Group(models.Model):
 
     :attr Group.students: The students in a group
     :type Group.students: ManyToManyField - Student
-    :attr Group.assignments: The assignments of a group
-    :type Group.assignments: ManyToManyField - Topic
+    :attr Group.applications: The applications of a group
+    :type Group.applications: ManyToManyField - Topic
     :property Group.size: The size of a group
     :type Group.size: int
     :property Group.get_display: The tucan_id of the students separated with commas
@@ -274,8 +293,16 @@ class Group(models.Model):
 
     """
     students = models.ManyToManyField(Student, verbose_name=_("students"))
-    assignments = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
+    # applications = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
     collection_count = models.IntegerField(verbose_name=_("number of collections"), default=1)
+
+    @property
+    def members(self):
+        """members of this group
+        :return: a list containing the members of this group
+        :rtype: list
+        """
+        return self.students.all()
 
     @property
     def size(self):
@@ -362,6 +389,17 @@ class TopicSelection(models.Model):
             return 'Empty'
         studs = self.group.students.all()
         return ', '.join(str(stud) for stud in studs)
+
+    @property
+    def get_all_applications_in_collection(self):
+        """
+        :return: all applications of the group of this application that are in the same collection
+        :rtype: QuerySet
+        """
+        return TopicSelection.objects.filter(group=self.group, collection_number=self.collection_number)
+
+
+
 
     get_display.fget.short_description = _("group")
 

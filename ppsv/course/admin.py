@@ -29,12 +29,11 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
     :type CourseAdmin.search_fields: list[str]
     """
     fieldsets = [
-        (None, {'fields': ['title', 'type', 'collection_exclusive']}),
-        (_('Date Information'), {'fields': ['registration_start', 'registration_deadline']}),
-        (_('Course Information'), {'fields': ['description', 'motivation_text', 'cp', 'faculty', 'organizer']}),
-        (_('Participant Number'), {'fields': ['unlimited', 'max_participants']}),
-        ]
-    list_display = ('title', 'type', 'registration_deadline', 'cp', 'max_participants')
+        (None, {'fields': ['title', 'type']}),
+        ('Date Information', {'fields': ['registration_start', 'registration_deadline']}),
+        ('Course Information', {'fields': ['description', 'motivation_text', 'cp', 'faculty', 'organizer']}),
+    ]
+    list_display = ('title', 'type', 'registration_deadline', 'cp')
     list_filter = ['registration_deadline']
     search_fields = ['title', 'type__type']
 
@@ -60,7 +59,7 @@ class TopicAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr TopicAdmin.autocomplete_fields: allows searching for courses while editing/creating topics
     :type TopicAdmin.autocomplete_fields: tuple[str, ]
     """
-    list_display = ('title', 'course', 'max_participants')
+    list_display = ('title', 'course', 'max_slots')
     search_fields = ['title', 'course__title']
     autocomplete_fields = ('course', )
 
@@ -74,6 +73,11 @@ class TopicAdmin(ImportExportMixin, admin.ModelAdmin):
         # disable course creation during topic creation and editing
         form.base_fields['course'].widget.can_add_related = False
         return form
+
+    class Media:
+        js = (
+            "/static/admin/js/TopicAdmin.js",
+        )
 
 
 admin.site.register(Topic, TopicAdmin)
@@ -113,7 +117,7 @@ class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('get_display', 'size')
     readonly_fields = ('get_display', 'size',)
     fieldsets = [
-        (None, {'fields': ['students', 'size', 'assignments', 'collection_count']}),
+        (None, {'fields': ['students', 'size', 'collection_count']}),
     ]
     filter_horizontal = ('students', )
 
