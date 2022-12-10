@@ -269,7 +269,7 @@ def overview(request):
                     # Don't select topics that have already been selected by the group
                     if not topic_selections_of_group.filter(topic=topic_to_select.id).exists():
                         # Only select topics that can fit the group
-                        if group_to_select.size <= topic_to_select.max_participants:
+                        if group_to_select.size <= topic_to_select.max_slots:
                             user_selection = TopicSelection()
                             user_selection.group = group_to_select
                             user_selection.topic = models.Topic.objects.get(id=topic_to_select.id)
@@ -330,7 +330,7 @@ def overview(request):
                         data = str(request.POST.get("open_group_select")).split("|")
                         args["open_group_select"] = True
                         args["groups"] = filter(
-                            lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                            lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_slots,
                             models.Group.objects.filter(students=request.user.student))
 
                     # when selecting a topic alone
@@ -481,7 +481,7 @@ def overview(request):
                         else:
                             args["open_group_select"] = True
                             args["groups"] = filter(
-                                lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_participants,
+                                lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0]).max_slots,
                                 models.Group.objects.filter(students=request.user.student))
                             messages.error(request, "No group selected!")
 
@@ -502,7 +502,7 @@ def overview(request):
 
                         if "".join(request.POST.get("new_student_id").split()) != "":
                             if members_in_new_group.count(str(request.POST.get("new_student_id"))) == 0:
-                                if models.Topic.objects.get(id=data[0]).max_participants > counter:
+                                if models.Topic.objects.get(id=data[0]).max_slots > counter:
                                     if models.Student.objects.filter(
                                             tucan_id=request.POST.get("new_student_id")).exists():
                                         members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
@@ -514,7 +514,7 @@ def overview(request):
                                     messages.error(request, _("Your group would be too large for ") +
                                                    str(models.Topic.objects.get(id=data[0]).title)
                                                    + _(". Your group can only have a maximum of ") +
-                                                   str(models.Topic.objects.get(id=data[0]).max_participants)
+                                                   str(models.Topic.objects.get(id=data[0]).max_slots)
                                                    + _(" members."))
                             else:
                                 messages.error(request, _("A student with the TUCaN-ID ") +
@@ -788,7 +788,6 @@ def your_selection(request):
                                     selections_of_collections[collection_number_it] = sorted(selections_of_collection,
                                                                                              key=lambda x: x.priority)
                     selections_of_collections_of_groups[group] = selections_of_collections
-
                 # move up the remaining selection priorities to fill the gap left by the removed topic
                 if priority_of_removed_topic != 0 and collection_number != 0:
                     selections_in_same_collection = (selections_of_collections_of_groups[group_of_selection])[
@@ -799,7 +798,6 @@ def your_selection(request):
                             selection.save()
                     selections_of_collections_of_groups[group_of_selection][collection_number] = sorted(
                         selections_in_same_collection, key=lambda x: x.priority)
-
         # when pressing the button for editing the motivation text
         elif "edit_motivation_text_button" in request.POST:
             open_motivation_text_for_selection = int(request.POST.get("edit_motivation_text_button"))
@@ -814,7 +812,6 @@ def your_selection(request):
                 break
 
             args["open_motivation_text_for_selection"] = open_motivation_text_for_selection
-
         # when saving the motivation text after editing it
         elif "save_motivation_text_button" in request.POST:
             save_motivation_text_for = int(request.POST.get("save_motivation_text_button"))
@@ -848,7 +845,6 @@ def your_selection(request):
                             break
                 selections_of_collections_of_groups[chosen_selection.group][collection_number] = sorted(
                     selections_in_same_collection, key=lambda x: x.priority)
-
         # when choosing to decrease the priority of a selected topic
         elif "down_priority" in request.POST:
             data = str(request.POST.get("down_priority")).split("|")
@@ -870,7 +866,6 @@ def your_selection(request):
                             break
                 selections_of_collections_of_groups[chosen_selection.group][collection_number] = sorted(
                     selections_in_same_collection, key=lambda x: x.priority)
-
         elif "open_edit_collection" in request.POST:
             open_edit_collection_for_group = int(request.POST.get("open_edit_collection"))
             args["open_edit_collection_for_group"] = open_edit_collection_for_group
@@ -1024,47 +1019,47 @@ def change_collection(request, data, selections_of_collections_of_groups):
                                 the_target_collection_has_exclusive_selections = False
                                 matching_exclusive_collection_number = [False, 0]
 
-                                if selection.topic.course.collection_exclusive:
-                                    # Find the matching collection number for the course of the given topic if a
-                                    # collection for its course already exists
-                                    for group0, collections_of_group0 in selections_of_collections_of_groups.items():
-                                        if group0.id == int(data[0]):
-                                            for collection_number0, selections0 in collections_of_group0.items():
-                                                if collection_number0 > 0 and \
-                                                        collection_number0 != selection.collection_number and \
-                                                        len(selections0) > 0:
-                                                    if selections0[0].topic.course == selection.topic.course:
-                                                        matching_exclusive_collection_number = \
-                                                            [True, collection_number0]
-                                    # If we found a fitting collection number for the topic make sure it is put into it
-                                    if matching_exclusive_collection_number[0] \
-                                            and int(data[3]) != matching_exclusive_collection_number[1]:
-                                        data[3] = matching_exclusive_collection_number[1]
-                                        messages.info(request,
-                                                      _("Automatically assigned \"") + str(selection.topic.title)
-                                                      + _("\" to a matching collection"))
-                                    # If the course of the target collection is not the same as the course of selection
-                                    if not len(collections_of_group[int(data[3])]) == 0:
-                                        if not collections_of_group[int(data[3])][0].topic.course \
-                                               == selection.topic.course:
-                                            the_selection_is_exclusive = True
-                                            messages.error(request, _("The target collection already has topics "
-                                                                      "from a different course. The topic you are "
-                                                                      "trying to assign can only be in a collection "
-                                                                      "with topics from the same course."))
-                                            error = True
-                                else:
+                                # if selection.topic.course.collection_exclusive:
+                                # Find the matching collection number for the course of the given topic if a
+                                # collection for its course already exists
+                                # for group0, collections_of_group0 in selections_of_collections_of_groups.items():
+                                #     if group0.id == int(data[0]):
+                                #         for collection_number0, selections0 in collections_of_group0.items():
+                                #             if collection_number0 > 0 and \
+                                #                     collection_number0 != selection.collection_number and \
+                                #                     len(selections0) > 0:
+                                #                 if selections0[0].topic.course == selection.topic.course:
+                                #                     matching_exclusive_collection_number = \
+                                #                         [True, collection_number0]
+                                # # If we found a fitting collection number for the topic make sure it is put into it
+                                # if matching_exclusive_collection_number[0] \
+                                #         and int(data[3]) != matching_exclusive_collection_number[1]:
+                                #     data[3] = matching_exclusive_collection_number[1]
+                                #     messages.info(request,
+                                #                   _("Automatically assigned \"") + str(selection.topic.title)
+                                #                   + _("\" to a matching collection"))
+                                # # If the course of the target collection is not the same as the course of selection
+                                # if not len(collections_of_group[int(data[3])]) == 0:
+                                #     if not collections_of_group[int(data[3])][0].topic.course \
+                                #            == selection.topic.course:
+                                #         the_selection_is_exclusive = True
+                                #         messages.error(request, _("The target collection already has topics "
+                                #                                   "from a different course. The topic you are "
+                                #                                   "trying to assign can only be in a collection "
+                                #                                   "with topics from the same course."))
+                                #         error = True
+                                # else:
                                     # If given topic is not exclusive but we try to put it into an exclusive collection
-                                    if not len(collections_of_group[int(data[3])]) == 0:
-                                        if not collections_of_group[int(data[3])][0].topic.course \
-                                               == selection.topic.course:
-                                            if collections_of_group[int(data[3])][0].topic.course.collection_exclusive:
-                                                the_target_collection_has_exclusive_selections = True
-                                                messages.error(request, _("The target collection exclusively "
-                                                                          "allows topics of course \"")
-                                                               + str(collections_of_group[int(data[3])][0].topic.course)
-                                                               + "\".")
-                                                error = True
+                                # if not len(collections_of_group[int(data[3])]) == 0:
+                                #     if not collections_of_group[int(data[3])][0].topic.course \
+                                #            == selection.topic.course:
+                                #         if collections_of_group[int(data[3])][0].topic.course.collection_exclusive:
+                                #             the_target_collection_has_exclusive_selections = True
+                                #             messages.error(request, _("The target collection exclusively "
+                                #                                       "allows topics of course \"")
+                                #                            + str(collections_of_group[int(data[3])][0].topic.course)
+                                #                            + "\".")
+                                #             error = True
 
                                 if not the_selection_is_exclusive \
                                         and not the_target_collection_has_exclusive_selections:

@@ -1,16 +1,42 @@
 stages:
+  - build
   - test
+  - deploy
+
+setup:
+  stage: build
+  tags:
+    - docker
+  script:
+    - echo "Testing installation of dependencies"
+    - apt update && apt upgrade -y && apt install -y python3 python3-pip
+    - python3 -m pip install --upgrade pip
+    - pip3 install -r requirements.txt
+
 
 custom-tests:
   stage: test
   tags:
-    - pi
+    - docker
   script:
+    - apt update && apt upgrade -y && apt install -y python3 python3-pip
     - python3 -m pip install --upgrade pip
     - pip3 install -r requirements.txt
-    - cd ppsv/
+    - echo "Running tests"
+    - cd ppsv
     - python3 manage.py check
     - python3 manage.py makemigrations
     - python3 manage.py migrate
-    - python manage.py test --parallel 4 --timing -v 3
+    - python3 manage.py test --parallel 2 -v 3
 
+deploy-prod:
+  stage: deploy
+  tags:
+    - docker
+  only:
+    refs:
+        - master
+  script:
+    - echo "Building docker images and start containers ..."
+    - chmod +x start-production.sh
+    - ./start-production.sh
