@@ -18,7 +18,7 @@ def homepage(request):
     :param request: The given request
     :return: HttpRequest
     """
-    template_name = 'frontend/home.html'
+    template_name = 'frontend/homepage.html'
 
     if request.user.is_authenticated:
         if hasattr(request.user, "student"):

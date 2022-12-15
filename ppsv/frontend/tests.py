@@ -110,11 +110,11 @@ class HomepageViewTests(TestCase):
 
     def test_view_template(self):
         """
-        Tests if the homepage view uses the correct template home.html.
+        Tests if the homepage view uses the correct template homepage.html.
         """
         response = self.client.get(reverse('frontend:homepage'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'frontend/home.html')
+        self.assertTemplateUsed(response, 'frontend/homepage.html')
 
     def test_view_for_anonymous_user(self):
         """
@@ -213,7 +213,7 @@ class OverviewViewTests(TestCase):
 
     def test_view_template(self):
         """
-        Tests if the homepage view uses the correct template home.html.
+        Tests if the homepage view uses the correct template homepage.html.
         """
         response = self.client.get(reverse('frontend:overview'))
         self.assertEqual(response.status_code, 200)
