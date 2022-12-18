@@ -13,6 +13,232 @@
 {% endblock title %}
 
 {% block content %}
+
+    <style>
+        :root {
+            --blue: #0a3d62ff;
+            --lightblue: #83c5beff;
+            --purple: #9191e9ff;
+            --darkgreen: #1e441eff;
+            --lightgreen: #2a7221ff;
+        }
+
+        #assignment-topBar {
+            height: 40px;
+            display: flex;
+            justify-content: space-between;
+            gap: 3px;
+        }
+
+        #user-feedback {
+            align-self: flex-end;
+            width: fit-content;
+            text-align: end;
+            font-size: 1rem;
+            color: var(--blue);
+            border-radius: 3px;
+            padding-right: 3px;
+            padding-left: 3px;
+        }
+
+        #user-feedback.bad {
+            background-color: lightcoral;
+            animation-name: user-feedback-fade-out;
+            animation-delay: 5s;
+            animation-duration: 1s;
+            animation-fill-mode: forwards
+        }
+
+        #user-feedback.good {
+            background-color: lightgreen;
+            animation-name: user-feedback-fade-out;
+            animation-delay: 5s;
+            animation-duration: 1s;
+            animation-fill-mode: forwards
+        }
+
+        #user-feedback.wait {
+            background-color: white;
+            animation-name: user-feedback-fade-out;
+            animation-delay: 5s;
+            animation-duration: 1s;
+            animation-fill-mode: forwards
+        }
+
+        @keyframes user-feedback-fade-out {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        {#Design der Searchbar#}
+        #searchbar {
+            height: 40px;
+            font-size: 18px;
+            min-width: 400px;
+            width: 30%;
+            border: 1px solid black;
+            padding: 9px 4px 9px 40px;
+            border-radius: 3px;
+            background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E") no-repeat 13px center;
+        }
+
+        #searchbar:focus-visible {
+            outline: 0;
+            border: 2px solid dodgerblue;
+            padding: 9px 4px 9px 39px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E") no-repeat 12px center;
+        }
+
+        {#Eine "Spalte" Content die umrandet wird#}
+        .section {
+            height: 100%;
+            border: solid black 1px;
+            border-radius: 3px;
+            display: flex;
+            width: 100%;
+        }
+
+        {# Inhalte einer Section #}
+        .section-inner {
+            padding: 6px;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-flow: column;
+            width: 100%;
+
+        }
+
+        {#Eine scrollable liste. Nur diese sollte einen Overflow haben#}
+        .inner-list {
+            overflow-y: scroll;
+            overflow-x: hidden;
+            min-width: 200px;
+            width: 100%;
+            margin-top: 3px;
+            padding-right: 3px;
+            border-radius: 3px;
+        }
+
+        .inner-list .inner-list-item {
+            overflow: hidden;
+            border-radius: 3px;
+            margin-bottom: 3px;
+            padding-left: 3px;
+            background: var(--blue);
+            color: #ffffff;
+        }
+
+
+        .inner-list .inner-list-item .field {
+            background: aliceblue;
+            color: #000000;
+            border-left: 9px solid var(--blue);
+            border-bottom: 1px solid var(--blue);
+        }
+
+        #topics .field:hover {
+            cursor: pointer;
+        }
+
+        .inner-list .inner-list-item .field.selected {
+            background-color: var(--lightblue);
+        }
+
+        {#The main content of this page#}
+        #assignment-content {
+            padding-top: 20px;
+            display: flex;
+            gap: 3px;
+            flex-flow: row;
+            font-size: 20px;
+            height: calc(100% - 60px);
+        }
+
+        #assignment-content #applications {
+            height: 100%;
+        }
+
+        #assignment-content #topics {
+            min-width: 400px;
+            max-width: 400px;
+        }
+
+
+        #assignment-content span {
+            border-bottom: 1px solid black;
+        }
+
+        #assignment-content .field {
+            padding: 3px;
+            width: 100%;
+        }
+
+        #assignments-div {
+            width: 40%;
+            min-width: 300px;
+        }
+
+        #applications-div {
+            background: aliceblue;
+            width: 60%;
+            height: 100%;
+            min-width: 300px;
+        }
+
+        #assignment-content .application {
+            padding-left: 3px;
+            padding-right: 3px;
+            word-break: break-word;
+            background-color: #cdcdcd;
+            border-radius: 3px;
+            margin: 3px;
+            cursor: pointer;
+        }
+
+        #assignment-content .application:hover {
+            opacity: 0.7;
+        }
+
+        .inner-list-item .status {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .inner-list-item .status .fa {
+            margin-right: 5px;
+        }
+
+
+        /* --- Scrollbar --- */
+        /* width */
+        ::-webkit-scrollbar {
+            width: 6px;
+            border-radius: 3px;
+        }
+
+        /* Track */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+        }
+
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+    </style>
+
     <div id="assignment-topBar">
         <label>
             <input id="searchbar" type="text" placeholder="{% translate "Search course/topic" %}">
@@ -25,7 +251,7 @@
             <div class="section-inner">
                 <span>Topics</span>
                 <div class="inner-list">
-                    {# wenn false werden keine kurse mehr angezeigt sonder nur noch topics #}
+                    {# wenn false werden keine kurse mehr angezeigt sondern nur noch topics #}
                     {% if show_course %}
                         {% for topics_of_course in topics_of_courses %}
                             <div class="topics_of_course inner-list-item"
@@ -49,7 +275,7 @@
                 </div>
             </div>
         </div>
-        <div class="section">
+        <div id="assignment-application" class="section">
             <div class="section-inner" id="assignments-div">
                 <span id="topicSpan">Assignments</span>
                 <div id="assignments" class="inner-list">
@@ -70,44 +296,112 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
     <script>
-        let slots = []
+        const slots = new Map();
+        const applications = new Map();
 
-        //Defines one slot of the assignments
+        /**
+         * A class representing a slot
+         */
         class Slot {
             constructor(slotID, minSlotSize, maxSlotSize) {
-                this.slotID = slotID;
+                this.id = slotID;
                 this.minSlotSize = minSlotSize;
                 this.maxSlotSize = maxSlotSize;
                 this.nowAssignedSize = 0;
-                this.applications = [];
-                this.div = $('<div id="slot-' + this.slotID + '" class="slot"> t </div>');
+                this.applications = new Map();
+                this.div = $('<div id="slot' + this.id + '" class="inner-list-item droppable"></div>');
+                this.div.droppable({
+                    accept: ".application",
+                    hoverClass: "drop-hover",
+                    drop: (event, ui) => this.handleDrop(event, ui)
+                })
+                this.updateDiv()
                 $('#assignments').append(this.div);
-                this.updateDiv();
-            }
-
-            toString() {
-                return "Slot " +
-                    "slotID: " + this.slotID + "\n" +
-                    "minSlotSize " + this.minSlotSize + "\n" +
-                    "maxSlotSize " + this.maxSlotSize + "\n" +
-                    "nowAssignedSize " + this.nowAssignedSize + "\n" +
-                    "applications " + this.applications
             }
 
             /**
-             * Creates a function that handles when an application is dropped on a slot, and it wasn't assigned before
-             * @param drag the draggable application html object
-             * @param slot the new assigned slot
-             * @returns the created function
+             * Handles a drop on this slot
+             * @param event the drop event
+             * @param ui the ui
              */
-            handleDropServerResponseNew(drag, slot) {
+            handleDrop(event, ui) {
+                console.log("dropping into " + this.id);
+                const drag = ui.draggable;
+
+                let application = applications.get(parseInt(drag.attr('id').substring(11)));
+                let oldSlotID = application.slotID;
+
+                if (oldSlotID === this.id)
+                    return;
+
+                infoPopup("wait", "Waiting for server response");
+
+                if (oldSlotID !== -1) {
+                    //switch from slot to another
+                    console.log("Switch from slot " + oldSlotID + " to " + this.id)
+                    $.ajax({
+                            data: {
+                                csrfmiddlewaretoken: "{{ csrf_token }}",
+                                action: "changeAssignment",
+                                applicationID: application.id,
+                                oldSlotID: oldSlotID,
+                                newSlotID: this.id
+                            },
+                            method: "POST",
+                            dataType: "json",
+                            success: this.handelDropServerResponseChange(application)
+                        }
+                    );
+                } else {
+                    //new assignment
+                    console.log("Creating new assignment for slot " + this.id)
+                    $.ajax({
+                            data: {
+                                csrfmiddlewaretoken: "{{ csrf_token }}",
+                                action: "newAssignment",
+                                applicationID: application.id,
+                                slotID: this.id
+                            },
+                            method: "POST",
+                            dataType: "json",
+                            success: this.handleDropServerResponseNew(application)
+                        }
+                    );
+                }
+            }
+
+            /**
+             * The handler for a drop when the application was previously in another slot
+             * @param application The application
+             * @return {(function(*): void)|*} the ajax success handler
+             */
+            handelDropServerResponseChange(application) {
+                const slot = this
                 return function (data) {
                     const applicationAccepted = data["requestStatus"];
                     const applicationAcceptedText = data["text"];
 
                     if (applicationAccepted) {
-                        slot.addApplication(drag);
-                        drag.attr("slot", slot.slotID)
+                        slots.get(application.slotID).removeApplication(application);
+                        slot.addApplication(application);
+                        infoPopup("good", applicationAcceptedText)
+                    } else
+                        infoPopup("bad", applicationAcceptedText)
+                };
+            }
+
+            /**
+             * The handler for a drop when the application was previously not assigned
+             * @param application The application
+             * @return {(function(*): void)|*} the ajax success handler
+             */
+            handleDropServerResponseNew(application) {
+                const slot = this
+                return function (data) {
+                    const applicationAccepted = data["requestStatus"];
+                    const applicationAcceptedText = data["text"];
+                    if (applicationAccepted) {
+                        slot.addApplication(application);
                         infoPopup("good", applicationAcceptedText);
                     } else
                         infoPopup("bad", applicationAcceptedText);
@@ -115,229 +409,160 @@
             }
 
             /**
-             * Creates a function that handles when an application is dropped on a slot, and it was assigned before
-             * @param drag the draggable application html object
-             * @param slot the new assigned slot
-             * @param oldSlotID the old assigned slot
-             * @returns the created function
-             */
-            handleDropServerResponseChange(drag, slot, oldSlotID) {
-                return function (data) {
-                    const applicationAccepted = data["requestStatus"];
-                    const applicationAcceptedText = data["text"];
-
-                    if (applicationAccepted) {
-                        slots[oldSlotID - 1].removeApplication(drag);
-                        slot.addApplication(drag);
-                        infoPopup("good", applicationAcceptedText)
-                    } else
-                        infoPopup("bad", applicationAcceptedText)
-
-                };
-            }
-
-            /**
-             * Creates a function that handles when that handles every drop into a slot
-             * @param slot the handled slot
-             * @returns the created slot
-             */
-            dropInto(slot) {
-                return function (e, ui) {
-                    const drag = ui.draggable;
-
-                    let applicationID = parseInt(drag.attr("data-applicationid"));
-                    let oldSlotID = parseInt(drag.attr('data-slot'))
-
-                    infoPopup("info", "Waiting for server response")
-
-                    if (drag.parent().hasClass("slot")) {
-                        //switch from slot to another
-                        $.ajax({
-                                data: {
-                                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                                    action: "changeAssignment",
-                                    applicationID: applicationID,
-                                    oldSlotID: oldSlotID,
-                                    newSlotID: slot.slotID
-                                },
-                                method: "POST",
-                                dataType: "json",
-                                success: slot.handleDropServerResponseChange(drag, slot, oldSlotID)
-                            }
-                        );
-                    } else {
-                        //new assignment
-                        $.ajax({
-                                data: {
-                                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                                    action: "newAssignment",
-                                    applicationID: applicationID,
-                                    slotID: slot.slotID
-                                },
-                                method: "POST",
-                                dataType: "json",
-                                success: slot.handleDropServerResponseNew(drag, slot)
-                            }
-                        );
-                    }
-                };
-            }
-
-            /**
-             * Updates the div associated to this slot
-             */
-            updateDiv() {
-                let html = $('<div id="slot-' + this.slotID + '" class="slot assignment inner-list-item" data-min_slot_size="' + this.minSlotSize + '" data-max_slot_size="' + this.maxSlotSize + '" data-actual_slot_size="0"> Slot ' + this.slotID + '</div>')
-
-                for (let application of this.applications) {
-                    html.append(application)
-                }
-                for (let i = this.nowAssignedSize + 1; i <= this.maxSlotSize; i++) {
-                    if (i > this.minSlotSize)
-                        html.append($('<div class="placeholder field" style="background: lightgreen"> place ' + i + '</div>'))
-                    else
-                        html.append($('<div class="placeholder field" style="background: lightcoral "> place ' + i + '</div>'))
-                }
-
-                $('#slot-' + this.slotID).replaceWith(html.droppable({
-                    accept: ".application",
-                    hoverClass: "drop-hover",
-                    drop: this.dropInto(this)
-                }));
-                this.div = html
-            }
-
-            /**
-             * Updates the div associated to this slot and adds a temporary item
-             * @param app the temporary item
-             */
-            updateDivTempItem(app) {
-                let html = $('<div id="slot-' + this.slotID + '" class="slot assignment inner-list-item" data-min_slot_size="' + this.minSlotSize + '" data-max_slot_size="' + this.maxSlotSize + '" data-actual_slot_size="0"> Slot ' + this.slotID + '</div>')
-                for (let application of this.applications) {
-                    html.append(application)
-                }
-                for (let i = this.nowAssignedSize + 1; i <= this.maxSlotSize; i++) {
-                    if (i > this.minSlotSize)
-                        html.append($('<div class="placeholder field" style="background: lightgreen"> place ' + i + '</div>'))
-                    else
-                        html.append($('<div class="placeholder field" style="background: lightcoral "> place ' + i + '</div>'))
-                }
-
-                html.append(app)
-                $('#slot-' + this.slotID).replaceWith(html.droppable({
-                    accept: ".application",
-                    hoverClass: "drop-hover",
-                    drop: this.dropInto(this)
-                }));
-            }
-
-            /**
-             * Adds an application to this slot
-             * @param application the added application
+             * Adds an application to this slot and updates the application accordingly. This does not check for any regulations
+             * @param application the application to add
              */
             addApplication(application) {
-                this.applications.push(application);
-                this.nowAssignedSize += parseInt(application.attr('data-student-size'))
-                application.attr("data-slot", this.slotID)
+                console.log("Adding application " + application.id + " to slot " + this.id);
+                this.applications.set(application.id, application);
+                this.nowAssignedSize += application.size;
+                application.slotID = this.id;
                 this.updateDiv();
             }
 
             /**
-             * Removes an application from this Slot
-             * @param application the removed application
+             * Removes an application from this slot and updates the application accordingly. This does not check for any regulations
+             * @param application the application to remove
              */
             removeApplication(application) {
-                const index = this.applications.indexOf(application);
-                if (index > -1) {
-                    this.applications.splice(index, 1);
+                console.log("Removing application " + application.id + " to slot " + this.id);
+                this.applications.delete(application.id);
+                this.nowAssignedSize -= application.size;
+                application.slotID = -1;
+                this.updateDiv();
+            }
+
+            /**
+             * Updates the div of this slot. Consist of a status (name + icon), current assignments and placeholders
+             */
+            updateDiv() {
+                console.log("Updating slot " + this.id + " new size= " + this.nowAssignedSize);
+                $('#slot' + this.id + ' .field').detach();
+                $('#slot' + this.id + ' .status').remove();
+
+                let status = '<div class="status"> Slot ' + this.id;
+                if (this.nowAssignedSize === this.maxSlotSize) {
+                    status += '<i class="fa  fa-check-circle-o"></i>';
+                } else if (this.nowAssignedSize >= this.minSlotSize) {
+                    status += '<i class="fa fa-check"></i>';
+                } else {
+                    status += '<i class="fa fa-times"></i>';
                 }
-                application.attr("data-slot", -1)
-                this.nowAssignedSize -= parseInt(application.attr('data-student-size'))
-                this.updateDivTempItem(application);
+                status += '</div>'
+
+
+                this.div.append($(status))
+                for (let application of this.applications.values()) {
+                    this.div.append(application.div)
+                }
+                for (let i = this.nowAssignedSize + 1; i <= this.maxSlotSize; i++) {
+                    if (i > this.minSlotSize)
+                        this.div.append($('<div class="placeholder field" style="color: white; font-style: italic; background: var(--purple)"> place ' + i + '</div>'))
+                    else
+                        this.div.append($('<div class="placeholder field" style=" background: var(--lightblue)"> place ' + i + '</div>'))
+                }
             }
         }
 
         /**
-         * Handles when a user changes the selcted topic
-         * @param topic_id the new selected topic
+         * A class to represent one Application
          */
-        function topicChanged(topic_id) {
-            $('#assignments').html("")
-            $('#applications').html("")
-            slots = []
-
-            $.ajax({
-                data: {
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                    action: "selectTopic",
-                    topic_id: topic_id,
-                },
-                method: "POST",
-                dataType: "json",
-                success: function (data) {
-                    //Create Slots
-                    let slotCount = parseInt(data['topicSlots']);
-
-                    for (let slotID = 1; slotID <= slotCount; slotID++) {
-                        let slot = new Slot(slotID, data['topicMinSlotSize'], data['topicMaxSlotSize'])
-                        slots.push(slot);
-                    }
-
-                    //Create Applications
-                    let applications = data['applications']
-                    applications.forEach(
-                        function (application) {
-                            let html = createDragItem(application);
-                            $(html).appendTo('#applications')
-                        });
-
-                    //Create Assignments
-                    let assignments = data['assignments'];
-                    for (let assignment of assignments) {
-                        slots[assignment.slotID - 1].addApplication(createDragItem(assignment))
-                    }
+        class Application {
+            constructor(applicationID, students, preference, possibleAssignments, slotID) {
+                this.id = applicationID;
+                this.preference = preference;
+                this.possibleAssignments = possibleAssignments;
+                this.slotID = slotID;
+                this.div = $('<div id="application' + applicationID + '" class="outer-item application"></div>');
+                let i = 0;
+                for (let student of students) {
+                    this.div.append('<div class="inner-item">' + student + '</div>')
+                    i++;
                 }
-            })
+                this.size = i;
+                let container = $('#assignment-application');
+                this.div.draggable({
+                    revert: 'invalid',
+                    helper: 'clone',
+                    scroll: false,
+                    containment: [
+                        container.left,
+                        container.top,
+                        container.left,
+                        container.top
+                    ],
+                    start: function (event, ui) {
+                        ui.helper.width($(this).width());
+                    }
+                })
+            }
         }
 
         /**
-         * Creates a function that handles when an application is dropped
-         * @returns The created function
+         * Handles a click on another topic, loads new slots, assignments and applications
+         * @param newTopicID the id of the new topic
          */
-        function handleDropOnApplications() {
-            return function (e, ui) {
-                const drag = ui.draggable;
+        function handleTopicChange(newTopicID) {
+            //Delete old Content
+            $('#assignments').html("")
+            $('#applications').html("")
 
-                if (!drag.parent().hasClass("slot")) {
-                    return
-                }
+            infoPopup("wait","retrieving topic data")
+            //Get and load new Data
+            doServerRequest();
+            infoPopup("good","loaded topic data")
 
-
-                let applicationID = parseInt(drag.attr("data-applicationid"))
-                let slotID = parseInt(drag.attr("data-slot"))
-
-                infoPopup("info", "Waiting for server response")
+            /**
+             * Request data for the new topic from the server
+             */
+            function doServerRequest() {
                 $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeAssignment",
-                            applicationID: applicationID,
-                            slotID: slotID
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: (data) => {
-                            if (data['requestStatus']) {
-                                slots[slotID - 1].removeApplication(drag);
-                                $('#applications').append(drag);
-                                infoPopup("good", data['text'])
-                            } else {
-                                infoPopup("bad", data['text'])
-                            }
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "selectTopic",
+                        topicID: newTopicID,
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        console.log(data)
 
-                        }
+                        loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize']);
+
+                        loadApplications(data['applications'])
                     }
-                );
+                })
+            }
+
+            /**
+             * Creates {@link Application}s and adds them to either their slot or applications.
+             * @param applications the applications to load
+             */
+            function loadApplications(loadedApplications) {
+                console.log("Loading " + loadedApplications.length + " Applications")
+                let application;
+                for (let app of loadedApplications) {
+                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignments'], app['slotID']);
+                    applications.set(application.id, application);
+                    if (application.slotID !== -1)
+                        slots.get(application.slotID).addApplication(application);
+                    else
+                        $('#applications').append(application.div);
+
+                }
+            }
+
+            /**
+             * Creates {@link Slot}s and adds them to assignments
+             * @param count how many slots will be created
+             * @param minSize minSize of a slot
+             * @param maxSize maxSize of a Slot
+             */
+            function loadSlots(count, minSize, maxSize) {
+                console.log("Loading " + count + " Slots");
+                for (let slotID = 1; slotID <= count; slotID++) {
+                    slots.set(slotID, new Slot(slotID, minSize, maxSize))
+                }
 
             }
         }
@@ -350,37 +575,15 @@
         function infoPopup(type, msg) {
             const userFeedback = $('#user-feedback');
             let userFeedbackClone = userFeedback.clone()
-            userFeedbackClone.removeClass("good bad info")
+            userFeedbackClone.removeClass("good bad info wait")
             userFeedbackClone.addClass(type)
-            userFeedbackClone.html(msg)
+            userFeedbackClone.html(msg);
+            if (type === "wait") {
+                userFeedbackClone.append('<i class="fa fa-circle-o-notch fa-spin" style="margin-left: 3px"></i>');
+            }
             userFeedback.replaceWith(userFeedbackClone)
         }
 
-        /**
-         * Create one draggable item (for one application)
-         * @param val data from query
-         * @return {*|jQuery} the html object
-         */
-        function createDragItem(val) {
-            let students = val['students']
-            let html = '<div class="application outer-item" data-applicationid="' + val['applicationID'] + '" data-student-size="' + students.length + '" data-slot="-1">'
-            for (let student of students) {
-                html += '<div class="student inner-item" data-student-pk="' + student + '">' + student + '</div>'
-            }
-            html += '</div>'
-            return $(html).draggable({
-                revert: true,
-                revertDuration: 0,
-                stack: ".dragndrop",
-                helper: 'clone',
-                scroll: false,
-                start: function (event, ui) {
-                    ui.helper.width($(this).width());
-                }
-            });
-        }
-
-        // --- MAIN FUNCTION --- //
         $(document).ready(
             function () {
                 // --- SEARCHBAR HANDLING --- //
@@ -410,7 +613,6 @@
                     });
                 });
 
-
                 // --- TOPIC CHANGE HANDLING --- //
                 $('.topic:not(.selected)').click(function (e) {
                     e.preventDefault();
@@ -422,7 +624,7 @@
 
                     let topic_id = $(this).attr('data-topicid');
 
-                    topicChanged(topic_id);
+                    handleTopicChange(topic_id);
                 })
 
                 // --- INIT APPLICATIONS DIV --- //
@@ -433,5 +635,43 @@
                 })
             }
         )
+
+        /**
+         * Handles a drop on applications.
+         * @return {(function(*, *): void)|*} the jquery drop handler
+         */
+        function handleDropOnApplications() {
+            return function (e, ui) {
+                const application = applications.get(parseInt(ui.draggable.attr("id").substring(11)));
+
+                if (application.slotID === -1) {
+                    return;
+                }
+
+                infoPopup("wait", "Waiting for server response")
+                $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "removeAssignment",
+                            applicationID: application.id,
+                            slotID: application.slotID
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: (data) => {
+                            if (data['requestStatus']) {
+                                $('#applications').append(ui.draggable);
+                                slots.get(application.slotID).removeApplication(application);
+                                infoPopup("good", data['text'])
+                            } else {
+                                infoPopup("bad", data['text'])
+                            }
+
+                        }
+                    }
+                );
+            }
+        }
     </script>
+
 {% endblock content %}

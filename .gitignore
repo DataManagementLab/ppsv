@@ -2,3 +2,8 @@
 env/
 media/
 /ppsv/.coverage
+/ppsv/db.sqlite3
+/venv/
+/ppsv/frontend/migrations/
+/ppsv/backend/migrations/
+/static/
