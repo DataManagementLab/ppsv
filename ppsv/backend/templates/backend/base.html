@@ -24,6 +24,10 @@
     <link href="https://fonts.googleapis.com/css?family=Arvo&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/table.css' %}">
 
+    <!-- JQuery & JQuery UI Integration -->
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
 </head>
 
 <body>
@@ -101,39 +105,58 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
         overflow-x: hidden;
     }
 
+    #controls {
+        display: flex;
+        align-items: baseline;
+    }
+
+    #header-content {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    #import-export {
+        display: flex;
+        flex-direction: row;
+    }
 
 </style>
 {% if not is_popup %}
     <!-- Header -->
     <div id="header" class="header-background">
         <div class="white-strip"></div>
-        <h3> {% translate "Internship & Seminar Allocation" %} - {% block title %} {% endblock %} </h3>
-        <div class="login-box">
-            {% if user.is_authenticated %}
-                {% if user.is_superuser %}
-                    <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">Admin
-                        Page</a>
-                {% endif %}
-                {% if user.is_staff %}
-                    <a href="{% url 'backend:assignment_page' %}"
-                       class="adminbtn btn btn-danger navbar-inline-list">
-                        Zuweisungspage </a>
-                {% endif %}
-            {% endif %}
-
-            <!-- user_menu -->
-            <div class="user-menu">
-                {% block login %}
-                    {% if user.is_authenticated %}
-                        {{ user.username }} (<a href="{% url 'frontend:logout' %}">Logout</a>)
-                    {% else %}
-                        {% translate "You are not logged in." %}
-                        (<a href="{% url 'frontend:login' %}">Login</a>)
-                    {% endif %}
+        <div id="header-content">
+            <h3> {% translate "Internship & Seminar Allocation" %} - {% block title %} {% endblock %} </h3>
+            <div id="controls">
+                {% block additional_buttons %}
                 {% endblock %}
-
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">Admin
+                            Page</a>
+                    {% endif %}
+                    {% if user.is_staff %}
+                        <a href="{% url 'backend:assignment_page' %}"
+                           class="adminbtn btn btn-danger navbar-inline-list">
+                            Assignment Page </a>
+                    {% endif %}
+                {% endif %}
+                <div class="login-box">
+                    <!-- user_menu -->
+                    <div class="user-menu">
+                        {% block login %}
+                            {% if user.is_authenticated %}
+                                {{ user.username }} (<a href="{% url 'frontend:logout' %}">Logout</a>)
+                            {% else %}
+                                {% translate "You are not logged in." %}
+                                (<a href="{% url 'frontend:login' %}">Login</a>)
+                            {% endif %}
+                        {% endblock %}
+                    </div>
+                    <a class="login-link" href="{% url 'frontend:login' %}"><i
+                            class="fa fa-user-circle-o fa-3x"></i></a>
+                </div>
             </div>
-            <a class="login-link" href="{% url 'frontend:login' %}"><i class="fa fa-user-circle-o fa-3x"></i></a>
         </div>
     </div>
 {% endif %}

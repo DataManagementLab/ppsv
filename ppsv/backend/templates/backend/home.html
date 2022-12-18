@@ -12,7 +12,13 @@
     Homepage
 {% endblock title %}
 
-{%  block content %}
+{% block additional_buttons %}
+    <div id="import-export">
+        <a href="/export-applications-and-assignments/" class="adminbtn btn btn-danger navbar-inline-list">Export</a>
+    </div>
+{% endblock %}
+
+{% block content %}
 
 
-{%  endblock content %}
+{% endblock content %}
