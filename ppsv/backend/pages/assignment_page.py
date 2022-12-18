@@ -212,7 +212,9 @@ def assignment_page(request):
         unassign_group:    the request was sent because a group was unassigned from a slot; the database entry corresponding
                             to the group assignment to the slot gets removed
 
-    In case of the request methode not being a POST all topics will be returned grouped by their corresponding course
+    In case of the request methode not being a POST all topics will be returned grouped by their corresponding course.
+    In case of the request specifying a user who is not allowed to access this download-page redirects to the
+    login page.
 
     :return: a JsonResponse containing the information about the request if the request was a POST or a render()
     object otherwise
