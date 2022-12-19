@@ -550,3 +550,22 @@ class AssignmentViewTests(TestCase):
             Assignment.objects.get(topic=self.topic2A, slot_id=3).accepted_applications.contains(self.topic_selection4))
         self.assertFalse(
             Assignment.objects.get(topic=self.topic2A, slot_id=3).accepted_applications.contains(self.topic_selection5))
+
+    def test_filter_exists(self):
+        """
+        tests if the filter options are shown correctly
+        """
+
+        self.client.force_login(self.superUser1)
+        response = self.client.get(reverse('backend:assignment_page'))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(response, 'CP:')
+        self.assertContains(response, 'Choose CP')
+
+        self.assertContains(response, 'Course Type:')
+        self.assertContains(response, 'Choose Course Typ')
+
+        self.assertContains(response, 'Faculty:')
+        self.assertContains(response, 'Choose Faculty')
+
