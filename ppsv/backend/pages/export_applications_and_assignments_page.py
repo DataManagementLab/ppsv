@@ -41,12 +41,12 @@ def export_applications_and_assignments_page(request):
         for slotID in range(topic.max_slots):
             assignees = ''
             course = '%d(%s)' % (topic.course.id, topic.course.title)
-            slotSize = '%d - %d' % (topic.min_slot_size, topic.max_slot_size)
+            slotSize = '%d-%d' % (topic.min_slot_size, topic.max_slot_size)
 
             if Assignment.objects.all().filter(topic__id=topic.id).filter(slot_id=slotID).count():
-                for group in Assignment.objects.all().filter(topic__id=topic.id).filter(
-                        slot_id=slotID).get().groups.all():
-                    assignees = assignees + '%s,' % group.id
+                for assignment in Assignment.objects.all().filter(topic__id=topic.id).filter(
+                        slot_id=slotID).get().accepted_applications.all():
+                    assignees = assignees + '%s,' % assignment.id
 
             assignmentWriter.writerow([topic.id, slotID, course, slotSize, assignees])
 
