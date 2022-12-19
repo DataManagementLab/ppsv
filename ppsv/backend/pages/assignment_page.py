@@ -1,8 +1,9 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 
+from course.models import TopicSelection, Topic, CourseType, Course
 from backend.models import Assignment, possible_assignments
-from course.models import TopicSelection, Topic
 
 
 # ----------Database Interactions---------- #
@@ -219,6 +220,10 @@ def assignment_page(request):
     :return: a JsonResponse containing the information about the request if the request was a POST or a render()
     object otherwise
     """
+
+    if not request.user.is_staff:
+        return redirect(reverse('admin:login') + '?next=' + reverse('backend:assignment_page'))
+
     template_name = 'backend/assignment.html'
     args = {}
 
@@ -239,7 +244,20 @@ def assignment_page(request):
                 topics_of_courses.append(topics_of_course)
             topics.append(topic)
 
+    course_types = []
+    for course_type in CourseType.objects.all():
+        course_types.append(course_type.type)
+
+    faculties = []
+    for course in Course.objects.all():
+        if course.faculty not in faculties:
+            faculties.append(course.faculty)
+    faculties.sort()
+
     args["topics_of_courses"] = topics_of_courses
     args["show_course"] = True
+    args["course_types"] = course_types
+    args["faculties"] = faculties
+    args["range"] = range(1, 11)
 
     return render(request, template_name, args)
