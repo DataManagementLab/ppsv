@@ -240,9 +240,63 @@
     </style>
 
     <div id="assignment-topBar">
-        <label>
-            <input id="searchbar" type="text" placeholder="{% translate "Search course/topic" %}">
-        </label>
+        <div id="searchAndFilterDiv">
+            <div id="searchbarDiv">
+                <label>
+                    <input id="searchbar" type="text" placeholder="{% translate "Search course/topic" %}">
+                </label>
+            </div>
+            <div id="filterDiv">
+                <button id="filterButton"><i class="fa fa-filter"></i></button>
+                <p>CP:</p>
+                <div class="Filter-dropdown">
+                    Choose CP
+                    <ul class="Filter-dropdown-list">
+                        {% for i in range %}
+                            <li>
+                                <label>
+                                    <input type="checkbox" class="cp" value={{ i }} name={{ i }} checked/>{{ i }}
+                                </label>
+                            </li>
+                        {% endfor %}
+                        <li>
+                            <label>
+                                <input type="checkbox" class="cp" value="-1" name=">10" checked/>>10
+                            </label>
+                        </li>
+
+                    </ul>
+                </div>
+                <p>Course Type:</p>
+                <div class="Filter-dropdown">
+                    Choose Course Type
+                    <ul class="Filter-dropdown-list">
+                        {% for courseType in course_types %}
+                            <li>
+                                <label>
+                                    <input type="checkbox" class="courseType" value={{ courseType }} name=courseType
+                                           checked/>{{ courseType }}
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <p>Faculty:</p>
+                <div class="Filter-dropdown">
+                    Choose Faculty
+                    <ul class="Filter-dropdown-list">
+                        {% for faculty in faculties %}
+                            <li>
+                                <label>
+                                    <input type="checkbox" class="faculty" value={{ faculty }} name=faculty
+                                           checked/>{{ faculty }}
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
         <div id="user-feedback"></div>
     </div>
 
@@ -258,7 +312,11 @@
                                  data-courseid="{{ topics_of_course.course.id }}">{{ topics_of_course.course.title }}
                                 {% for topic in topics_of_course.topics %}
                                     <div class="topic field"
-                                         data-topicid="{{ topic.id }}">{{ topic.title }}</div>
+                                         data-topicid="{{ topic.id }}"
+                                         data-cp="{{ topics_of_course.course.cp }}"
+                                         data-faculty="{{ topics_of_course.course.faculty }}"
+                                         data-course_type="{{ topics_of_course.course.type }}">
+                                        {{ topic.title }}</div>
                                 {% endfor %}
                             </div>
                         {% endfor %}
@@ -504,10 +562,10 @@
             $('#assignments').html("")
             $('#applications').html("")
 
-            infoPopup("wait","retrieving topic data")
+            infoPopup("wait", "retrieving topic data")
             //Get and load new Data
             doServerRequest();
-            infoPopup("good","loaded topic data")
+            infoPopup("good", "loaded topic data")
 
             /**
              * Request data for the new topic from the server
@@ -533,7 +591,7 @@
 
             /**
              * Creates {@link Application}s and adds them to either their slot or applications.
-             * @param applications the applications to load
+             * @param loadedApplications the applications to load
              */
             function loadApplications(loadedApplications) {
                 console.log("Loading " + loadedApplications.length + " Applications")
@@ -581,57 +639,212 @@
             userFeedback.replaceWith(userFeedbackClone)
         }
 
-        $(document).ready(
-            function () {
-                // --- SEARCHBAR HANDLING --- //
-                let searchbar = $('#assignment-topBar #searchbar');
-                searchbar.val('');
-                searchbar.keyup(function () {
-                    let elements = $('.topics_of_course, .topic, .course');
-                    $('#assignments, #applications').html('');
-                    $('.topic.selected').removeClass('selected');
-                    if ($(this).val().length === 0 || $(this).val() === "") {
-                        elements.show();
-                        return;
-                    }
+        selectedCP = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1];
 
-                    let search_term = $(this).val().toLowerCase();
-                    elements.hide();
-                    $('.topic, .course').each(function () {
-                        let name = $(this).text().toLowerCase();
-                        if (name.includes(search_term)) {
-                            $(this).parent('.topics_of_course').show();
-                            if ($(this).hasClass('topic'))
-                                $(this).siblings(('.course:first')).show();
-                            else
-                                $(this).siblings().show();
-                            $(this).show();
-                        }
-                    });
+        selectedCourseTypes = []
+        {% for courseType in course_types %}
+            selectedCourseTypes.push("{{ courseType }}")
+        {% endfor %}
+
+        selectedFaculties = []
+        {% for faculty in faculties %}
+            selectedFaculties.push("{{ faculty }}")
+        {% endfor %}
+
+        /**
+         * Checks if the given topic should be shown according to the selected filters.
+         * @param topic The topic to check.
+         * @returns {boolean} true, if the given topic div should be visible according to the selected filters.
+         */
+        function applyTopicFilter(topic) {
+            if ($(topic).data("cp") <= 10) {
+                if (!selectedCP.some(item => item === $(topic).data("cp"))) {
+                    return false
+                }
+            } else {
+                if (!selectedCP.some(item => item === -1)) {
+                    return false;
+                }
+            }
+
+            if (!selectedCourseTypes.some(item => item === $(topic).data("course_type"))) {
+                return false;
+            }
+
+            return selectedFaculties.some(item => item === $(topic).data("faculty"));
+        }
+
+        /**
+         * Checks if the given topic should be shown according to the searchbar input.
+         * @param topic The topic to check.
+         * @returns {boolean} true, if the given topic div should be visible according to the searchbar input.
+         */
+        function applyTopicSearchbarFilter(topic) {
+            let searchbar = $('#assignment-topBar #searchbar');
+
+            if (searchbar.val() === "") {
+                return true;
+            }
+
+            let search_term = searchbar.val().toLowerCase();
+            let topicName = $(topic).text().toLowerCase();
+            let courseName = $(topic).parent().text().toLowerCase();
+
+            return topicName.includes(search_term) || courseName.includes(search_term);
+        }
+
+        /**
+         * Checks if the given course should be shown according to the selected filters.
+         * Assumes that visibility of the topics has already been updated according to applyTopicsFilter(topic).
+         * @param course The course to check.
+         * @returns {boolean} true, if the given course div should be visible according to the selected filters.
+         */
+        function applyCourseFilter(course) {
+            let hasChild = false;
+
+            $(course).children(".topic").each(function () {
+                if ($(this).css("display") !== "none") {
+                    hasChild = true;
+                }
+            });
+
+            return hasChild;
+
+
+        }
+
+        /**
+         * Checks if the given course should be shown according to the searchbar input.
+         * @param course The course to check.
+         * @returns {boolean} true, if the given course div should be visible according to the searchbar input.
+         */
+        function applyCourseSearchbarFilter(course) {
+            let searchbar = $('#assignment-topBar #searchbar');
+
+            if (searchbar.val() === "") {
+                return true;
+            }
+
+            let search_term = searchbar.val().toLowerCase();
+            let courseName = $(course).text().toLowerCase();
+            if (!courseName.includes(search_term)) {
+
+                let hasMatchingChild = false
+                $(course).children(".topic").each(function () {
+                    if ($(this).text().toLowerCase().includes(search_term)) {
+                        hasMatchingChild = true;
+                    }
                 });
 
-                // --- TOPIC CHANGE HANDLING --- //
-                $('.topic:not(.selected)').click(function (e) {
-                    e.preventDefault();
-                    $('.topic').removeClass('selected');
-                    $(this).addClass('selected');
-
-                    $('#assignments').html('');
-                    $('#applications').html('');
-
-                    let topic_id = $(this).attr('data-topicid');
-
-                    handleTopicChange(topic_id);
-                })
-
-                // --- INIT APPLICATIONS DIV --- //
-                $('#applications').droppable({
-                    accept: ".application",
-                    hoverClass: "drop-hover",
-                    drop: handleDropOnApplications()
-                })
+                if (!hasMatchingChild) {
+                    return false;
+                }
             }
-        )
+
+            return true;
+        }
+
+        /**
+         * Handles when a choiceBox of the CP filter is clicked.
+         */
+        function CPCheckBoxHandler() {
+            if (!this.checked) {
+                selectedCP.splice(selectedCP.findIndex(item => item === parseInt($(this).val())), 1);
+            } else {
+                selectedCP.push(parseInt($(this).val()));
+            }
+
+            updateTopicsAndCourses();
+        }
+
+        /**
+         * Handles when a choiceBox of the course type filter is clicked.
+         */
+        function courseTypeCheckBoxHandler() {
+            if (!this.checked) {
+                selectedCourseTypes.splice(selectedCourseTypes.findIndex(item => item === $(this).val()), 1);
+            } else {
+                selectedCourseTypes.push($(this).val());
+            }
+
+            updateTopicsAndCourses();
+        }
+
+        /**
+         * Handles when a choiceBox of the faculty filter is clicked.
+         */
+        function facultyCheckBoxHandler() {
+            if (!this.checked) {
+                selectedFaculties.splice(selectedFaculties.findIndex(item => item === $(this).val()), 1);
+            } else {
+                selectedFaculties.push($(this).val());
+            }
+
+            updateTopicsAndCourses();
+        }
+
+        /**
+         * Hides the given topic and removes the selection if it was selected.
+         * @param topic The topic to hide.
+         */
+        function hideTopic(topic) {
+            $(topic).hide();
+            if ($(topic).hasClass("selected")) {
+                $('#assignments, #applications').html('');
+                $('.topic.selected').removeClass('selected');
+            }
+        }
+
+        /**
+         * Shows the given topic.
+         * @param topic The topic to show.
+         */
+        function showTopic(topic) {
+            $(topic).show();
+        }
+
+        /**
+         * Hides the given course and all of its topics.
+         * @param course The topic to hide.
+         */
+        function hideCourse(course) {
+            $(course).hide();
+            $(course).children(".topic").each((index, topic) => hideTopic(topic));
+        }
+
+        /**
+         * Shows the given course. Does not change the visibility of its topics.
+         * @param course The topic to show.
+         */
+        function showCourse(course) {
+            $(course).show();
+        }
+
+        /**
+         * Updates the visibility of all topics and courses according to the selected filters and searchbar input
+         */
+        function updateTopicsAndCourses() {
+            let topics = $(".topic");
+            let courses = $(".topics_of_course.inner-list-item");
+
+            topics.each((index, topic) => {
+                if (applyTopicFilter(topic)) showTopic(topic);
+                else hideTopic(topic);
+            });
+
+            courses.each((index, course) => {
+                if (applyCourseFilter(course)) showCourse(course);
+                else hideCourse(course);
+            });
+
+            courses.each((index, course) => {
+                if (!applyCourseSearchbarFilter(course)) hideCourse(course);
+            });
+
+            topics.each((index, topic) => {
+                if (!applyTopicSearchbarFilter(topic)) hideTopic(topic);
+            });
+        }
 
         /**
          * Handles a drop on applications.
@@ -669,6 +882,56 @@
                 );
             }
         }
-    </script>
 
+        // --- MAIN FUNCTION --- //
+        $(document).ready(
+            function () {
+                // --- SEARCHBAR HANDLING --- //
+                let searchbar = $('#assignment-topBar #searchbar');
+                searchbar.val('');
+                searchbar.keyup(updateTopicsAndCourses);
+
+                // --- Filter Handling --- //
+                $(".cp").change(CPCheckBoxHandler);
+                $(".courseType").change(courseTypeCheckBoxHandler);
+                $(".faculty").change(facultyCheckBoxHandler);
+
+                // --- TOPIC CHANGE HANDLING --- //
+                $('.topic:not(.selected)').click(function (e) {
+                    e.preventDefault();
+                    $('.topic').removeClass('selected');
+                    $(this).addClass('selected');
+
+                    $('#assignments').html('');
+                    $('#applications').html('');
+
+                    let topic_id = $(this).attr('data-topicid');
+
+                    handleTopicChange(topic_id);
+                })
+
+                // --- INIT DROPDOWN FILTERS --- //
+                $(".Filter-dropdown").click(function () {
+                    $(this).toggleClass("is-active");
+                });
+
+                document.addEventListener("click", e => {
+                    if (!e.target.closest(".Filter-dropdown")) {
+                        $(".Filter-dropdown").removeClass("is-active")
+                    }
+                })
+
+                $(".Filter-dropdown ul").click(function (e) {
+                    e.stopPropagation();
+                });
+
+                // --- INIT APPLICATIONS DIV --- //
+                $('#applications').droppable({
+                    accept: ".application",
+                    hoverClass: "drop-hover",
+                    drop: handleDropOnApplications()
+                })
+            }
+        )
+    </script>
 {% endblock content %}
