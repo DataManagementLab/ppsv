@@ -5,9 +5,8 @@ from django.http import HttpResponse, FileResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from backend.admin import TopicSelectionResource
 from backend.models import Assignment
-from course.models import Topic
+from course.models import Topic, TopicSelection
 
 
 def export_applications_and_assignments_page(request):
@@ -15,7 +14,7 @@ def export_applications_and_assignments_page(request):
 
     :param request: the given request send by the export_applications_and_assignments html-page
         In case of the request specifying a user who is not allowed to access this download-page redirects to the
-        login page.
+        home page.
 
     :return: a zip-archive containing the applications and assignments .csv files
     :rtype: FileResponse
@@ -23,43 +22,60 @@ def export_applications_and_assignments_page(request):
     if not request.user.is_staff:
         return redirect(reverse('admin:login') + '?next=' + reverse('backend:home_page'))
 
-    # the export_applications csv file is created by using the corresponding resource model and saved for being added to
-    # the zip archive later
-    applicationsDataset = TopicSelectionResource().export()
-    applicationsFileForTemporaryUse = open("export_applications.csv", "w")
-    applicationsFileForTemporaryUse.write(applicationsDataset.csv)
-    applicationsFileForTemporaryUse.close()
+    # files
+    export_applications_file = "export_applications.csv"
+    export_assignments_file = "export_assignments.csv"
+    export_applications_and_assignments_file = "export_applications_and_assignments.zip"
+
+    # the export_applications csv file is created manually by accessing the database, fetching the required data and
+    # saved for being added to the zip archive later
+    applications_response = HttpResponse(content_type='text/csv')
+
+    application_writer = csv.writer(applications_response)
+    application_writer.writerow(
+        ['ApplicationID', 'TopicID', 'topic name', 'GroupID', 'group size', 'collection number', 'priority'])
+
+    for application in TopicSelection.objects.all():
+        application_writer.writerow(
+            [application.id, application.topic.id, application.topic.title, application.group.id,
+             application.group.size, application.collection_number, application.priority])
+
+    applications_response['Content-Disposition'] = 'attachment; filename=export_applications_file'
+
+    applications_file_for_temporary_use = open(export_applications_file, "wb")
+    applications_file_for_temporary_use.write(applications_response.content)
+
+    applications_file_for_temporary_use.close()
 
     # the export_assignments csv file is created manually by accessing the database, fetching the required data and
     # saved for being added to the zip archive later
-    assignmentsResponse = HttpResponse(content_type='text/csv')
+    assignments_response = HttpResponse(content_type='text/csv')
 
-    assignmentWriter = csv.writer(assignmentsResponse)
-    assignmentWriter.writerow(['TopicID', 'SlotID', 'CourseID(course name)', 'Slot size', 'assignees'])
+    assignment_writer = csv.writer(assignments_response)
+    assignment_writer.writerow(['TopicID', 'SlotID', 'Slot size', 'assignees'])
 
     for topic in Topic.objects.all():
-        for slotID in range(topic.max_slots):
+        for slot_id in range(1, topic.max_slots + 1):
             assignees = ''
-            course = '%d(%s)' % (topic.course.id, topic.course.title)
-            slotSize = '%d-%d' % (topic.min_slot_size, topic.max_slot_size)
+            slotSize = '%d~%d' % (topic.min_slot_size, topic.max_slot_size)
 
-            if Assignment.objects.all().filter(topic__id=topic.id).filter(slot_id=slotID).count():
+            if Assignment.objects.all().filter(topic__id=topic.id).filter(slot_id=slot_id).exists():
                 for assignment in Assignment.objects.all().filter(topic__id=topic.id).filter(
-                        slot_id=slotID).get().accepted_applications.all():
+                        slot_id=slot_id).get().accepted_applications.all():
                     assignees = assignees + '%s,' % assignment.id
 
-            assignmentWriter.writerow([topic.id, slotID, course, slotSize, assignees])
+            assignment_writer.writerow([topic.id, slot_id, slotSize, assignees])
 
-    assignmentsResponse['Content-Disposition'] = 'attachment; filename="export_assignments.csv"'
+    assignments_response['Content-Disposition'] = 'attachment; filename=export_assignments_file'
 
-    assignmentsFileForTemporaryUse = open("export_assignments.csv", "wb")
-    assignmentsFileForTemporaryUse.write(assignmentsResponse.content)
+    assignments_file_for_temporary_use = open(export_assignments_file, "wb")
+    assignments_file_for_temporary_use.write(assignments_response.content)
 
-    assignmentsFileForTemporaryUse.close()
+    assignments_file_for_temporary_use.close()
 
     # creates the zip file and adds the created csv files to be exported
-    zipFileToExport = zipfile.ZipFile('export_applications_and_assignments.zip', 'w')
-    zipFileToExport.write('export_applications.csv')
-    zipFileToExport.write('export_assignments.csv')
+    zip_file_to_export = zipfile.ZipFile(export_applications_and_assignments_file, 'w')
+    zip_file_to_export.write(export_applications_file)
+    zip_file_to_export.write(export_assignments_file)
 
-    return FileResponse(open('export_applications_and_assignments.zip', 'rb'), as_attachment=True)
+    return FileResponse(open(export_applications_and_assignments_file, 'rb'), as_attachment=True)
