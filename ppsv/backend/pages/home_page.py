@@ -1,5 +1,24 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from backend import algorithm as algo
+
+
+def handle_do_automatic_assignments(request):
+    algo.create_assignments()
+    return JsonResponse(
+        {
+            'status': "done"
+        })
+
+
+def handle_post(request):
+    if "action" not in request.POST:
+        raise ValueError("POST request didn't specify an action")
+    action = request.POST.get("action")
+
+    if action == "doAutomaticAssignments":
+        return handle_do_automatic_assignments(request)
 
 
 def home_page(request):
@@ -12,5 +31,8 @@ def home_page(request):
     """
     if not request.user.is_staff:
         return redirect(reverse('admin:login') + '?next=' + reverse('backend:home_page'))
+
+    if request.method == "POST":
+        return handle_post(request)
 
     return render(request, 'backend/home.html')

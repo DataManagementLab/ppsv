@@ -187,7 +187,7 @@ class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name=_("course"))
     title = models.CharField(max_length=200, verbose_name=_("title"))
     max_slots = models.PositiveIntegerField(verbose_name=_("max slot count"), default=1,
-                                                   validators=[MinValueValidator(1)])
+                                            validators=[MinValueValidator(1)])
     min_slot_size = models.PositiveIntegerField(verbose_name=_("min GroupSize"), default=1,
                                                 validators=[MinValueValidator(1)])
     max_slot_size = models.PositiveIntegerField(verbose_name=_("max GroupSize"), default=1,
@@ -202,7 +202,6 @@ class Topic(models.Model):
         :rtype: boolean
         """
         return self.max_slot_size > 1
-
 
     def clean(self):
         if self.min_slot_size > self.max_slot_size:
@@ -397,9 +396,6 @@ class TopicSelection(models.Model):
         :rtype: QuerySet
         """
         return TopicSelection.objects.filter(group=self.group, collection_number=self.collection_number)
-
-
-
 
     get_display.fget.short_description = _("group")
 
