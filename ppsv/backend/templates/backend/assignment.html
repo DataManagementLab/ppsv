@@ -13,232 +13,6 @@
 {% endblock title %}
 
 {% block content %}
-
-    <style>
-        :root {
-            --blue: #0a3d62ff;
-            --lightblue: #83c5beff;
-            --purple: #9191e9ff;
-            --darkgreen: #1e441eff;
-            --lightgreen: #2a7221ff;
-        }
-
-        #assignment-topBar {
-            height: 40px;
-            display: flex;
-            justify-content: space-between;
-            gap: 3px;
-        }
-
-        #user-feedback {
-            align-self: flex-end;
-            width: fit-content;
-            text-align: end;
-            font-size: 1rem;
-            color: var(--blue);
-            border-radius: 3px;
-            padding-right: 3px;
-            padding-left: 3px;
-        }
-
-        #user-feedback.bad {
-            background-color: lightcoral;
-            animation-name: user-feedback-fade-out;
-            animation-delay: 5s;
-            animation-duration: 1s;
-            animation-fill-mode: forwards
-        }
-
-        #user-feedback.good {
-            background-color: lightgreen;
-            animation-name: user-feedback-fade-out;
-            animation-delay: 5s;
-            animation-duration: 1s;
-            animation-fill-mode: forwards
-        }
-
-        #user-feedback.wait {
-            background-color: white;
-            animation-name: user-feedback-fade-out;
-            animation-delay: 5s;
-            animation-duration: 1s;
-            animation-fill-mode: forwards
-        }
-
-        @keyframes user-feedback-fade-out {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
-
-        {#Design der Searchbar#}
-        #searchbar {
-            height: 40px;
-            font-size: 18px;
-            min-width: 400px;
-            width: 30%;
-            border: 1px solid black;
-            padding: 9px 4px 9px 40px;
-            border-radius: 3px;
-            background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E") no-repeat 13px center;
-        }
-
-        #searchbar:focus-visible {
-            outline: 0;
-            border: 2px solid dodgerblue;
-            padding: 9px 4px 9px 39px;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E") no-repeat 12px center;
-        }
-
-        {#Eine "Spalte" Content die umrandet wird#}
-        .section {
-            height: 100%;
-            border: solid black 1px;
-            border-radius: 3px;
-            display: flex;
-            width: 100%;
-        }
-
-        {# Inhalte einer Section #}
-        .section-inner {
-            padding: 6px;
-            height: 100%;
-            overflow: hidden;
-            display: flex;
-            flex-flow: column;
-            width: 100%;
-
-        }
-
-        {#Eine scrollable liste. Nur diese sollte einen Overflow haben#}
-        .inner-list {
-            overflow-y: scroll;
-            overflow-x: hidden;
-            min-width: 200px;
-            width: 100%;
-            margin-top: 3px;
-            padding-right: 3px;
-            border-radius: 3px;
-        }
-
-        .inner-list .inner-list-item {
-            overflow: hidden;
-            border-radius: 3px;
-            margin-bottom: 3px;
-            padding-left: 3px;
-            background: var(--blue);
-            color: #ffffff;
-        }
-
-
-        .inner-list .inner-list-item .field {
-            background: aliceblue;
-            color: #000000;
-            border-left: 9px solid var(--blue);
-            border-bottom: 1px solid var(--blue);
-        }
-
-        #topics .field:hover {
-            cursor: pointer;
-        }
-
-        .inner-list .inner-list-item .field.selected {
-            background-color: var(--lightblue);
-        }
-
-        {#The main content of this page#}
-        #assignment-content {
-            padding-top: 20px;
-            display: flex;
-            gap: 3px;
-            flex-flow: row;
-            font-size: 20px;
-            height: calc(100% - 60px);
-        }
-
-        #assignment-content #applications {
-            height: 100%;
-        }
-
-        #assignment-content #topics {
-            min-width: 400px;
-            max-width: 400px;
-        }
-
-
-        #assignment-content span {
-            border-bottom: 1px solid black;
-        }
-
-        #assignment-content .field {
-            padding: 3px;
-            width: 100%;
-        }
-
-        #assignments-div {
-            width: 40%;
-            min-width: 300px;
-        }
-
-        #applications-div {
-            background: aliceblue;
-            width: 60%;
-            height: 100%;
-            min-width: 300px;
-        }
-
-        #assignment-content .application {
-            padding-left: 3px;
-            padding-right: 3px;
-            word-break: break-word;
-            background-color: #cdcdcd;
-            border-radius: 3px;
-            margin: 3px;
-            cursor: pointer;
-        }
-
-        #assignment-content .application:hover {
-            opacity: 0.7;
-        }
-
-        .inner-list-item .status {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-        }
-
-        .inner-list-item .status .fa {
-            margin-right: 5px;
-        }
-
-
-        /* --- Scrollbar --- */
-        /* width */
-        ::-webkit-scrollbar {
-            width: 6px;
-            border-radius: 3px;
-        }
-
-        /* Track */
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        /* Handle */
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-        }
-
-        /* Handle on hover */
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-    </style>
-
     <div id="assignment-topBar">
         <div id="searchAndFilterDiv">
             <div id="searchbarDiv">
@@ -470,7 +244,11 @@
             addApplication(application) {
                 console.log("Adding application " + application.id + " to slot " + this.id);
                 this.applications.set(application.id, application);
-                this.nowAssignedSize += application.size;
+                this.nowAssignedSize += application.students.length;
+                if (application.slotID === -1) {
+                    application.collectionFullfilled = true;
+                    updateApplicationsPossibleAssignments();
+                }
                 application.slotID = this.id;
                 this.updateDiv();
             }
@@ -482,7 +260,9 @@
             removeApplication(application) {
                 console.log("Removing application " + application.id + " to slot " + this.id);
                 this.applications.delete(application.id);
-                this.nowAssignedSize -= application.size;
+                this.nowAssignedSize -= application.students.length;
+                application.collectionFullfilled = false;
+                updateApplicationsPossibleAssignments();
                 application.slotID = -1;
                 this.updateDiv();
             }
@@ -497,11 +277,11 @@
 
                 let status = '<div class="status"> Slot ' + this.id;
                 if (this.nowAssignedSize === this.maxSlotSize) {
-                    status += '<i class="fa  fa-check-circle-o"></i>';
+                    status += '<i class="fa  fa-check-circle-o" title="slot fully assigned"></i>';
                 } else if (this.nowAssignedSize >= this.minSlotSize) {
-                    status += '<i class="fa fa-check"></i>';
+                    status += '<i class="fa fa-check" title="slot has remaining unoccupied places"></i>';
                 } else {
-                    status += '<i class="fa fa-times"></i>';
+                    status += '<i class="fa fa-times" title="not enough students assigned"></i>';
                 }
                 status += '</div>'
 
@@ -517,24 +297,43 @@
                         this.div.append($('<div class="placeholder field" style=" background: var(--lightblue)"> place ' + i + '</div>'))
                 }
             }
+
+            remainingSpace() {
+                return this.maxSlotSize - this.nowAssignedSize;
+            }
+        }
+
+        function biggestOpenSlot() {
+            let biggestOpenSlot = 0;
+            for (let slot of slots.values()) {
+                if (biggestOpenSlot < slot.remainingSpace()) {
+                    biggestOpenSlot = slot.remainingSpace();
+                }
+            }
+            return biggestOpenSlot;
+        }
+
+        function updateApplicationsPossibleAssignments() {
+            applications.forEach(app => {
+                app.updatePossibleAssignment()
+            });
         }
 
         /**
          * A class to represent one Application
          */
         class Application {
-            constructor(applicationID, students, preference, possibleAssignments, slotID) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
+                this.collectionSize = collectionSize
                 this.slotID = slotID;
+                this.students = students;
+                this.collectionFullfilled = collectionFullfilled;
                 this.div = $('<div id="application' + applicationID + '" class="outer-item application"></div>');
-                let i = 0;
-                for (let student of students) {
-                    this.div.append('<div class="inner-item">' + student + '</div>')
-                    i++;
-                }
-                this.size = i;
+                this.updateDiv()
+
                 let container = $('#assignment-application');
                 this.div.draggable({
                     revert: 'invalid',
@@ -551,16 +350,65 @@
                     }
                 })
             }
+
+            updateDiv() {
+                $('#application' + this.id + " .inner-item").detach();
+                let doInfoItem = true;
+                for (let student of this.students) {
+                    let studItem = $('<div class="inner-item">' + student + '</div>');
+                    if (doInfoItem) {
+                        doInfoItem = false;
+                        let infoItem = $('<div class="group-info"></div>')
+                        let preference = $('<div id="group-info-preference" title="preference ranking in affiliated collection">' + '<i class="fa fa-hashtag"></i>' + this.preference + '</div>');
+                        let remainingAssignments = $('<div id="group-info-possible-assignments" title="possible remaining assignments / size of affiliated collection"></div>');
+                        let remainingAssignmentsTemp = "";
+                        if (this.collectionFullfilled || (this.possibleAssignments <= 0 && this.div.parent().parent().attr("id") === "slot")) {
+                            remainingAssignmentsTemp += '<i style="color: green" class="fa fa-check"></i>';
+                        } else if (this.possibleAssignments <= 0) {
+                            remainingAssignmentsTemp += '<i style="color: var(--lightcoral)" class="fa fa-times"></i>';
+                        } else {
+                            remainingAssignmentsTemp += '<i class="fa fa-th"></i>';
+                        }
+                        remainingAssignments.append(remainingAssignmentsTemp += this.possibleAssignments + "/" + this.collectionSize)
+                        infoItem.append(preference);
+                        infoItem.append(remainingAssignments);
+                        studItem.append(infoItem)
+                    }
+                    this.div.append(studItem);
+                }
+            }
+
+            updatePossibleAssignment() {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "getPossibleAssignmentsForTopic",
+                        applicationID: this.id,
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        console.log("updating application " + this.id + " to " + data['possibleAssignments'])
+                        this.possibleAssignments = data['possibleAssignments'];
+                        this.updateDiv();
+                    }
+                })
+
+            }
         }
 
         /**
          * Handles a click on another topic, loads new slots, assignments and applications
          * @param newTopicID the id of the new topic
          */
-        function handleTopicChange(newTopicID) {
+        function
+
+        handleTopicChange(newTopicID) {
             //Delete old Content
             $('#assignments').html("")
             $('#applications').html("")
+            slots.clear();
+            applications.clear();
 
             infoPopup("wait", "retrieving topic data")
             //Get and load new Data
@@ -597,7 +445,7 @@
                 console.log("Loading " + loadedApplications.length + " Applications")
                 let application;
                 for (let app of loadedApplications) {
-                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignments'], app['slotID']);
+                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled']);
                     applications.set(application.id, application);
                     if (application.slotID !== -1)
                         slots.get(application.slotID).addApplication(application);
@@ -627,7 +475,9 @@
          * @param type the type of the message (good,bad,info)
          * @param msg the message to show
          */
-        function infoPopup(type, msg) {
+        function
+
+        infoPopup(type, msg) {
             const userFeedback = $('#user-feedback');
             let userFeedbackClone = userFeedback.clone()
             userFeedbackClone.removeClass("good bad info wait")
@@ -656,7 +506,9 @@
          * @param topic The topic to check.
          * @returns {boolean} true, if the given topic div should be visible according to the selected filters.
          */
-        function applyTopicFilter(topic) {
+        function
+
+        applyTopicFilter(topic) {
             if ($(topic).data("cp") <= 10) {
                 if (!selectedCP.some(item => item === $(topic).data("cp"))) {
                     return false
@@ -679,7 +531,9 @@
          * @param topic The topic to check.
          * @returns {boolean} true, if the given topic div should be visible according to the searchbar input.
          */
-        function applyTopicSearchbarFilter(topic) {
+        function
+
+        applyTopicSearchbarFilter(topic) {
             let searchbar = $('#assignment-topBar #searchbar');
 
             if (searchbar.val() === "") {
@@ -699,7 +553,9 @@
          * @param course The course to check.
          * @returns {boolean} true, if the given course div should be visible according to the selected filters.
          */
-        function applyCourseFilter(course) {
+        function
+
+        applyCourseFilter(course) {
             let hasChild = false;
 
             $(course).children(".topic").each(function () {
@@ -718,7 +574,9 @@
          * @param course The course to check.
          * @returns {boolean} true, if the given course div should be visible according to the searchbar input.
          */
-        function applyCourseSearchbarFilter(course) {
+        function
+
+        applyCourseSearchbarFilter(course) {
             let searchbar = $('#assignment-topBar #searchbar');
 
             if (searchbar.val() === "") {
@@ -747,7 +605,9 @@
         /**
          * Handles when a choiceBox of the CP filter is clicked.
          */
-        function CPCheckBoxHandler() {
+        function
+
+        CPCheckBoxHandler() {
             if (!this.checked) {
                 selectedCP.splice(selectedCP.findIndex(item => item === parseInt($(this).val())), 1);
             } else {
@@ -760,7 +620,9 @@
         /**
          * Handles when a choiceBox of the course type filter is clicked.
          */
-        function courseTypeCheckBoxHandler() {
+        function
+
+        courseTypeCheckBoxHandler() {
             if (!this.checked) {
                 selectedCourseTypes.splice(selectedCourseTypes.findIndex(item => item === $(this).val()), 1);
             } else {
@@ -773,7 +635,9 @@
         /**
          * Handles when a choiceBox of the faculty filter is clicked.
          */
-        function facultyCheckBoxHandler() {
+        function
+
+        facultyCheckBoxHandler() {
             if (!this.checked) {
                 selectedFaculties.splice(selectedFaculties.findIndex(item => item === $(this).val()), 1);
             } else {
@@ -787,7 +651,9 @@
          * Hides the given topic and removes the selection if it was selected.
          * @param topic The topic to hide.
          */
-        function hideTopic(topic) {
+        function
+
+        hideTopic(topic) {
             $(topic).hide();
             if ($(topic).hasClass("selected")) {
                 $('#assignments, #applications').html('');
@@ -799,7 +665,9 @@
          * Shows the given topic.
          * @param topic The topic to show.
          */
-        function showTopic(topic) {
+        function
+
+        showTopic(topic) {
             $(topic).show();
         }
 
@@ -807,7 +675,9 @@
          * Hides the given course and all of its topics.
          * @param course The topic to hide.
          */
-        function hideCourse(course) {
+        function
+
+        hideCourse(course) {
             $(course).hide();
             $(course).children(".topic").each((index, topic) => hideTopic(topic));
         }
@@ -816,14 +686,18 @@
          * Shows the given course. Does not change the visibility of its topics.
          * @param course The topic to show.
          */
-        function showCourse(course) {
+        function
+
+        showCourse(course) {
             $(course).show();
         }
 
         /**
          * Updates the visibility of all topics and courses according to the selected filters and searchbar input
          */
-        function updateTopicsAndCourses() {
+        function
+
+        updateTopicsAndCourses() {
             let topics = $(".topic");
             let courses = $(".topics_of_course.inner-list-item");
 
@@ -850,14 +724,14 @@
          * Handles a drop on applications.
          * @return {(function(*, *): void)|*} the jquery drop handler
          */
-        function handleDropOnApplications() {
+        function
+
+        handleDropOnApplications() {
             return function (e, ui) {
                 const application = applications.get(parseInt(ui.draggable.attr("id").substring(11)));
-
                 if (application.slotID === -1) {
                     return;
                 }
-
                 infoPopup("wait", "Waiting for server response")
                 $.ajax({
                         data: {
@@ -876,7 +750,6 @@
                             } else {
                                 infoPopup("bad", data['text'])
                             }
-
                         }
                     }
                 );
@@ -884,54 +757,56 @@
         }
 
         // --- MAIN FUNCTION --- //
-        $(document).ready(
-            function () {
-                // --- SEARCHBAR HANDLING --- //
-                let searchbar = $('#assignment-topBar #searchbar');
-                searchbar.val('');
-                searchbar.keyup(updateTopicsAndCourses);
+        $(document)
 
-                // --- Filter Handling --- //
-                $(".cp").change(CPCheckBoxHandler);
-                $(".courseType").change(courseTypeCheckBoxHandler);
-                $(".faculty").change(facultyCheckBoxHandler);
+            .ready(
+                function () {
+                    // --- SEARCHBAR HANDLING --- //
+                    let searchbar = $('#assignment-topBar #searchbar');
+                    searchbar.val('');
+                    searchbar.keyup(updateTopicsAndCourses);
 
-                // --- TOPIC CHANGE HANDLING --- //
-                $('.topic:not(.selected)').click(function (e) {
-                    e.preventDefault();
-                    $('.topic').removeClass('selected');
-                    $(this).addClass('selected');
+                    // --- Filter Handling --- //
+                    $(".cp").change(CPCheckBoxHandler);
+                    $(".courseType").change(courseTypeCheckBoxHandler);
+                    $(".faculty").change(facultyCheckBoxHandler);
 
-                    $('#assignments').html('');
-                    $('#applications').html('');
+                    // --- TOPIC CHANGE HANDLING --- //
+                    $('.topic:not(.selected)').click(function (e) {
+                        e.preventDefault();
+                        $('.topic').removeClass('selected');
+                        $(this).addClass('selected');
 
-                    let topic_id = $(this).attr('data-topicid');
+                        $('#assignments').html('');
+                        $('#applications').html('');
 
-                    handleTopicChange(topic_id);
-                })
+                        let topic_id = $(this).attr('data-topicid');
 
-                // --- INIT DROPDOWN FILTERS --- //
-                $(".Filter-dropdown").click(function () {
-                    $(this).toggleClass("is-active");
-                });
+                        handleTopicChange(topic_id);
+                    })
 
-                document.addEventListener("click", e => {
-                    if (!e.target.closest(".Filter-dropdown")) {
-                        $(".Filter-dropdown").removeClass("is-active")
-                    }
-                })
+                    // --- INIT DROPDOWN FILTERS --- //
+                    $(".Filter-dropdown").click(function () {
+                        $(this).toggleClass("is-active");
+                    });
 
-                $(".Filter-dropdown ul").click(function (e) {
-                    e.stopPropagation();
-                });
+                    document.addEventListener("click", e => {
+                        if (!e.target.closest(".Filter-dropdown")) {
+                            $(".Filter-dropdown").removeClass("is-active")
+                        }
+                    })
 
-                // --- INIT APPLICATIONS DIV --- //
-                $('#applications').droppable({
-                    accept: ".application",
-                    hoverClass: "drop-hover",
-                    drop: handleDropOnApplications()
-                })
-            }
-        )
+                    $(".Filter-dropdown ul").click(function (e) {
+                        e.stopPropagation();
+                    });
+
+                    // --- INIT APPLICATIONS DIV --- //
+                    $('#applications').droppable({
+                        accept: ".application",
+                        hoverClass: "drop-hover",
+                        drop: handleDropOnApplications()
+                    })
+                }
+            )
     </script>
 {% endblock content %}

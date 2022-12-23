@@ -30,94 +30,12 @@
 
 </head>
 
-<body>
 
+<body>
 <!-- Both "header" and "navbar" will be included in all html pages which extend "base.html" -->
 
 <!-- "header" contains on the left side the page name and on the right side a logo and the name of the user which is
 logged in right now. If a user is logged in, a logout button is displayed. If not, a login button is displayed. -->
-<style>
-    html, body {
-        height: 100%;
-        width: 100%;
-        margin: 0;
-    }
-
-    .white-strip {
-        background-color: white;
-        height: 5px;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-
-    #header {
-        height: 100px;
-    }
-
-
-    #header.header-background {
-        background-color: #0a3d62;
-        padding: 20px 50px 10px;
-        color: white;
-        height: 100px;
-    }
-
-    #header h3 {
-        font-weight: 500;
-        font-family-sans-serif: 'Roboto';
-        height: 30px;
-    }
-
-    #header .login-box {
-        display: flex;
-        flex-direction: row;
-    }
-
-    #header .user-menu {
-        display: flex;
-        flex-direction: row;
-        justify-content: right;
-        margin-left: 10px;
-        margin-top: 10px
-    }
-
-    #header .login-link {
-        color: white;
-    }
-
-    #header .adminbtn {
-        height: 35px;
-        margin-top: 5px;
-        margin-right: 5px;
-    }
-
-    #header .login-link i {
-        margin-left: 10px;
-    }
-
-    #base {
-        margin: 20px 50px 20px 50px;
-        height: calc(100% - 140px);
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
-
-    #controls {
-        display: flex;
-        align-items: baseline;
-    }
-
-    #header-content {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    #import-export {
-        display: flex;
-        flex-direction: row;
-    }
-
-</style>
 {% if not is_popup %}
     <!-- Header -->
     <div id="header" class="header-background">
