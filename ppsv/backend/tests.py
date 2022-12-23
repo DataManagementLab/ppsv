@@ -340,6 +340,7 @@ class AssignmentViewTests(TestCase):
         response = self.client.post(reverse('backend:assignment_page'), data=data)
         self.assertEqual(response.status_code, 200)
 
+        self.maxDiff = None
         self.assertJSONEqual(
             str(response.content, encoding='utf8'),
             {
@@ -354,17 +355,21 @@ class AssignmentViewTests(TestCase):
                             "ab12eeee",
                             "bc22eeee"],
                         "applicationID": 1,
-                        "possibleAssignmentsForCollection": 2,
+                        "possibleAssignmentsForCollection": 3,
+                        "collectionCount":3,
                         "preference": 1,
-                        "slotID": 2
+                        "collectionFulfilled":True,
+                        "slotID": 2,
                     },
                     {
                         "students": [
                             "cd33eeee"
                         ],
                         "applicationID": 3,
-                        "possibleAssignmentsForCollection": 0,
+                        "possibleAssignmentsForCollection": 1,
+                        "collectionCount":1,
                         "preference": 2,
+                        "collectionFulfilled":True,
                         "slotID": 2},
                     {
                         "students": [
@@ -372,7 +377,9 @@ class AssignmentViewTests(TestCase):
                         ],
                         "applicationID": 4,
                         "possibleAssignmentsForCollection": 1,
+                        "collectionCount":1,
                         "preference": 3,
+                        "collectionFulfilled":False,
                         "slotID": -1
                     }
                 ]

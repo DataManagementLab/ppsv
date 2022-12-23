@@ -39,7 +39,7 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
     <div style="position:absolute;right:50px;top:37px;display: flex; flex-direction: row;">
         {% if user.is_authenticated %}
             {% if user.is_superuser %}
-            <a href="{% url 'admin:index' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px">
+            <a href="{% url 'backend:home_page' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px">
                 Admin Page
             </a>
             {% endif %}

@@ -94,7 +94,9 @@ def handle_select_topic(request):
             'applicationID': application.id,
             'possibleAssignmentsForCollection': possible_assignments(application.group.id,
                                                                      application.collection_number),
+            'collectionCount': TopicSelection.objects.filter(group=application.group,collection_number=application.collection_number).count(),
             'preference': application.priority,
+            'collectionFulfilled': Assignment.objects.filter(accepted_applications__group_id__in=[application.group], accepted_applications__collection_number=application.collection_number).exists(),
         }
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():
@@ -170,6 +172,14 @@ def handle_remove_assignment(request):
     })
 
 
+def handle_get_possible_assignments_for_topic(request):
+    application = TopicSelection.objects.get(pk=request.POST.get("applicationID"))
+    _possibleAssignments = possible_assignments(application.group.id, application.collection_number)
+    return JsonResponse({
+        "possibleAssignments": _possibleAssignments,
+    })
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -184,15 +194,14 @@ def handle_post(request):
 
     action = request.POST.get("action")
 
+    if action == "getPossibleAssignmentsForTopic":
+        return handle_get_possible_assignments_for_topic(request)
     if action == "selectTopic":
         return handle_select_topic(request)
-
     if action == "newAssignment":
         return handle_new_assignment(request)
-
     if action == "changeAssignment":
         return handle_change_assignment(request)
-
     if action == "removeAssignment":
         return handle_remove_assignment(request)
 

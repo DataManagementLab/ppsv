@@ -5,15 +5,25 @@ from course.models import Topic
 from course.models import Group
 
 
+
 def possible_assignments(group_id, collection_number):
-    """open applications in collection
-    :return: the number of open applications of this group for the given collection
+    """possible applications in collection
+    :return: the number of possible applications of this group for the given collection
     :rtype: int
     """
-    all_applications = TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number)
-    all_assignments = Assignment.objects.filter(accepted_applications__in=all_applications)
 
-    return all_applications.count() - all_assignments.count()
+    all_applications = TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number)
+    all_applications_count = all_applications.count()
+
+    group_size = Group.objects.get(pk=group_id).size
+
+    query_possible_assignments = Assignment.objects.filter(topic__in=all_applications.values_list("topic_id"))
+    for assignment in query_possible_assignments:
+        if not (assignment.open_places_in_slot_count >= group_size or query_possible_assignments.count() < assignment.topic.max_slots):
+            all_applications_count -= 1
+
+
+    return all_applications_count
 
 
 class Assignment(models.Model):
@@ -68,10 +78,6 @@ class Assignment(models.Model):
     @property
     def max_assigned_student_to_slot(self):
         return self.topic.max_slot_size
-
-    # def __str__(self):
-    #     return "Assignments for Topic " + self.topic.title + " [" + str(self.assigned_groups_all) + "/" + str((
-    #             self.topic.max_slots * self.topic.max_GroupSize)) + "]: Slot " + str(self.slot_id)
 
     def __str__(self):
         if self.topic.is_group_topic:
