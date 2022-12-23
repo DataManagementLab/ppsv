@@ -29,6 +29,11 @@ def sort_applications(applications):
     applications.sort(key=lambda app: possible_assignments(app.group.id, app.collection_number))  # primary key
 
 
+def filter(biggest_possible_application):
+    return lambda app: app.group.size <= biggest_possible_application and not Assignment.objects.filter(
+        accepted_applications__group__in=[app.group])
+
+
 def create_assignments():
     # Create an empty dictionary that will store the applications
     applications = {}
@@ -54,14 +59,15 @@ def create_assignments():
 
         biggest_possible_application = biggest_open_slot_in_topic(topic)[0]
         while biggest_possible_application > 0:
-            possible_applications = filter_applications(applications[topic],
-                                                        lambda app: app.group.size <= biggest_possible_application)
+            possible_applications = filter_applications(applications[topic], filter(biggest_possible_application))
             if len(possible_applications) == 0:
                 break
 
             sort_applications(possible_applications)
 
-            assignment = Assignment.objects.get_or_create(topic=topic, slot_id=biggest_open_slot_in_topic(topic)[1])[0]
+            assignment = \
+                Assignment.objects.get_or_create(topic=topic, slot_id=biggest_open_slot_in_topic(topic)[1])[0]
+            print("Adding Group " + possible_applications[0] + " to Slot " + str(biggest_open_slot_in_topic(topic)[1]))
             assignment.accepted_applications.add(possible_applications[0])
             assignment.save()
             biggest_possible_application = biggest_open_slot_in_topic(topic)[0]
