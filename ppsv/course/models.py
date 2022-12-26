@@ -317,6 +317,18 @@ class Group(models.Model):
     size.fget.short_description = _("group Size")
 
     @property
+    def get_collections(self):
+        """collections of this group as dictionary order by top to low priority
+        """
+        collections = {}
+        for application in TopicSelection.objects.filter(group=self).order_by("collection_number", "priority"):
+            if application.collection_number in collections:
+                collections[application.collection_number].append(application)
+            else:
+                collections[application.collection_number] = [application]
+        return collections
+
+    @property
     def get_display(self):
         """String representation
         Returns a list of all students in this object.
