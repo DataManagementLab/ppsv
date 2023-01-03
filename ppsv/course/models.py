@@ -203,6 +203,16 @@ class Topic(models.Model):
         """
         return self.max_slot_size > 1
 
+    @property
+    def has_applications(self):
+        """true if it has at least ona application
+        :return: true, if this topic has at least one application
+        :rtype: bool
+        """
+        return TopicSelection.objects.filter(topic=self).count() > 0
+
+
+
     def clean(self):
         if self.min_slot_size > self.max_slot_size:
             raise ValidationError("min group size is bigger than max group size")

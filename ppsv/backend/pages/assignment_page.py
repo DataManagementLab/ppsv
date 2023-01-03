@@ -94,9 +94,11 @@ def handle_select_topic(request):
             'applicationID': application.id,
             'possibleAssignmentsForCollection': possible_assignments(application.group.id,
                                                                      application.collection_number),
-            'collectionCount': TopicSelection.objects.filter(group=application.group,collection_number=application.collection_number).count(),
+            'collectionCount': TopicSelection.objects.filter(group=application.group,
+                                                             collection_number=application.collection_number).count(),
             'preference': application.priority,
-            'collectionFulfilled': Assignment.objects.filter(accepted_applications__group_id__in=[application.group], accepted_applications__collection_number=application.collection_number).exists(),
+            'collectionFulfilled': Assignment.objects.filter(accepted_applications__group_id__in=[application.group],
+                                                             accepted_applications__collection_number=application.collection_number).exists(),
         }
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():

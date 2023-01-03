@@ -2,10 +2,11 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from backend import algorithm as algo
+from backend import algo_new as algo_new
 
 
 def handle_do_automatic_assignments(request):
-    algo.create_assignments()
+    algo_new.main()
     return JsonResponse(
         {
             'status': "done"
