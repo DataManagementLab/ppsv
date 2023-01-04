@@ -75,7 +75,7 @@ class Assignments:
     def biggest_open_slot(self, topic):
         assignments = self.get_assignments(topic)
         if len(assignments) < topic.max_slots:
-            return topic.max_slot_size, len(assignments)
+            return topic.max_slot_size, len(assignments) + 1
         open_slot_size = 0
         open_slot_id = 1
         for slot in assignments:
