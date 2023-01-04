@@ -42,8 +42,6 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-#    'frontend.apps.FrontendConfig',
-#    'course.apps.CourseConfig',
 INSTALLED_APPS = [
     'backend.apps.BackendConfig',
     'course.apps.CourseConfig',

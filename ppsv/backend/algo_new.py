@@ -1,63 +1,61 @@
 import random
 import time
 import statistics
+import multiprocessing
 from dataclasses import dataclass
 
 from backend.models import Assignment
 from course.models import TopicSelection, Topic
+
+max_number_of_iterations = 100000
+worker = 4
 
 
 def main():
     print("Starting automatic assignments!")
 
     # --- init --- #
-    max_number_of_iterations = 100
     strategy = Strategy()
     time_list = []
-
     topics = []
     for topic in Topic.objects.all():
         if topic.has_applications:
             topics.append(topic)
-
     # --- main loop --- #
-    iteration = 0
     best_assignments = Assignments(topics)
     print("Initial Score: " + str(best_assignments.score))
-    while iteration < max_number_of_iterations:
-        _assignments = Assignments(topics)
-        _accepted_applications = []
-        _applications = Applications(topics)
 
-        time_0 = time.time()
-        for topic in topics:
-            __biggest_open_slot = _assignments.biggest_open_slot(topic)
-            # filter for all applications that are within this size
-            possible_applications = _applications.filter(
-                lambda app: app.topic == topic and app.group.size <= __biggest_open_slot[0])
-            while __biggest_open_slot[0] > 0 and len(possible_applications.values()) != 0:
-                next_application = strategy.get_next_application(possible_applications)
-                _applications.accept(next_application)
-                _assignments.add_application(next_application, __biggest_open_slot[1])
-                possible_applications = _applications.filter(
-                    lambda app: app.topic == topic and app.group.size <= __biggest_open_slot[0])
-                __biggest_open_slot = _assignments.biggest_open_slot(topic)
-        time_1 = time.time()
-        time_list.append(time_1 - time_0)
-
-        print("Iteration " + str(iteration) + "/" + str(max_number_of_iterations) + " done with score: " + str(
-            _assignments.score) + ". ETA remaining: " + str(
-            round(statistics.median(time_list) * (max_number_of_iterations - iteration), 2)) + " seconds")
-
-        if _assignments.score >= best_assignments.score:
-            best_assignments = _assignments
-
-        iteration += 1
-        strategy.iteration += 1
+    with multiprocessing.Pool(4) as pool:
+        pool.starmap(create_assignments,
+                     [(strategy, topics, iteration, time_list) for iteration in range(0, max_number_of_iterations)])
 
     print("Finished! Saving best score " + str(best_assignments.score) + " to database")
     best_assignments.save_to_database()
     print("Saved!")
+
+
+def create_assignments(strategy, queue, topics, iteration, time_list):
+    _assignments = Assignments(topics)
+    _accepted_applications = []
+    _applications = Applications(topics)
+    time_0 = time.time()
+    for topic in topics:
+        __biggest_open_slot = _assignments.biggest_open_slot(topic)
+        # filter for all applications that are within this size and have this topic
+        possible_applications = _applications.filter(
+            lambda app: app.topic == topic and app.group.size <= __biggest_open_slot[0])
+        while __biggest_open_slot[0] > 0 and len(possible_applications.values()) != 0:
+            next_application = strategy.get_next_application(possible_applications, iteration)
+            _applications.accept(next_application)
+            _assignments.add_application(next_application, __biggest_open_slot[1])
+            possible_applications = _applications.filter(
+                lambda app: app.topic == topic and app.group.size <= __biggest_open_slot[0])
+            __biggest_open_slot = _assignments.biggest_open_slot(topic)
+    time_1 = time.time()
+    time_list.append(time_1 - time_0)
+    print("Iteration " + str(iteration) + "/" + str(max_number_of_iterations) + " done with score: " + str(
+        _assignments.score) + ". ETA remaining: " + str(
+        round(statistics.median(time_list) * (max_number_of_iterations - iteration), 2)) + " seconds")
 
 
 class Assignments:
@@ -193,16 +191,15 @@ class Applications:
 
 
 class Strategy:
-    iteration: int
     seed: int
 
     def __init__(self):
         self.iteration = 0
         self.seed = random.randint(0, 256)
 
-    def get_next_application(self, possible_applications):
+    def get_next_application(self, possible_applications, iteration):
         applications = []
         for possible_application in possible_applications.values():
             applications.append(possible_application[0])
 
-        return applications.pop((self.iteration + random.randint(0, self.seed)) % len(applications))
+        return applications.pop((iteration + random.randint(0, self.seed)) % len(applications))
