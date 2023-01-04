@@ -86,13 +86,34 @@ html, body {
     justify-content: space-between;
 }
 
+/*#import-export {*/
+/*    display: flex;*/
+/*    flex-direction: row;*/
+/*}*/
+
+/*end ehemals base.html*/
+
+
+/*Home.html*/
 #import-export {
     display: flex;
-    flex-direction: row;
+    margin-left: auto;
+    height: fit-content;
+    /*border: solid black 1px;*/
+    /*border-radius: 3px;*/
+    width: fit-content;
+    align-items: center;
+    gap: 3px;
+}
+
+#import-export label {
+    font-size: 1.5em;
+    margin: 0;
 }
 
 
-/*end ehemals base.html*/
+
+/*Ende Home.html*/
 
 #assignment-topBar {
     height: 40px;

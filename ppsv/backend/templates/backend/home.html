@@ -13,12 +13,67 @@
 {% endblock title %}
 
 {% block additional_buttons %}
-    <div id="import-export">
-        <a href="/export-applications-and-assignments/" class="adminbtn btn btn-danger navbar-inline-list">Export</a>
-    </div>
+
 {% endblock %}
 
 {% block content %}
+    <div id="import-export">
+        <form action="{% url 'backend:export_applications_and_assignments_page' %}" method="get">
+            <label for="export-filter-faculty"> Faculty: </label>
+                <select name="faculty" id="export-filter-faculty" class="Filter-dropdown">
+                    <option value="all" >all</option>
+                    {% for faculty in faculties %}
+                        <option value={{ faculty }}>{{ faculty }}</option>
+                    {% endfor %}
+                </select>
+            <button type="submit" class="adminbtn btn btn-danger navbar-inline-list">Export</button>
+        </form>
+    </div>
 
+
+    {#    <div id="import-export">#}
+    {#        <p>Faculty:</p>#}
+    {#        <div class="Filter-dropdown">#}
+    {#            Choose Faculty#}
+    {#            <ul class="Filter-dropdown-list">#}
+    {#                {% for faculty in faculties %}#}
+    {#                    <li>#}
+    {#                        <label>#}
+    {#                            <input type="checkbox" class="faculty" value={{ faculty }} name=faculty#}
+    {#                                   checked/>{{ faculty }}#}
+    {#                        </label>#}
+    {#                    </li>#}
+    {#                {% endfor %}#}
+    {#            </ul>#}
+    {#        </div>#}
+    {#    </div>#}
+
+
+
+    <script>
+
+        // --- MAIN FUNCTION --- //
+        $(document)
+
+            .ready(
+                function () {
+
+                    // --- INIT DROPDOWN FILTERS --- //
+                    $(".Filter-dropdown").click(function () {
+                        $(this).toggleClass("is-active");
+                    });
+
+                    document.addEventListener("click", e => {
+                        if (!e.target.closest(".Filter-dropdown")) {
+                            $(".Filter-dropdown").removeClass("is-active")
+                        }
+                    })
+
+                    $(".Filter-dropdown ul").click(function (e) {
+                        e.stopPropagation();
+                    });
+                }
+            )
+    </script>
 
 {% endblock content %}
