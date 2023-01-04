@@ -1,16 +1,19 @@
-from dataclasses import dataclass
 import random
+import time
+import statistics
+from dataclasses import dataclass
 
-from backend.models import Assignment, possible_assignments
-from course.models import Group, TopicSelection, Topic
+from backend.models import Assignment
+from course.models import TopicSelection, Topic
 
 
 def main():
     print("Starting automatic assignments!")
 
     # --- init --- #
-    max_number_of_iterations = 1
+    max_number_of_iterations = 100
     strategy = Strategy()
+    time_list = []
 
     topics = []
     for topic in Topic.objects.all():
@@ -26,6 +29,7 @@ def main():
         _accepted_applications = []
         _applications = Applications(topics)
 
+        time_0 = time.time()
         for topic in topics:
             __biggest_open_slot = _assignments.biggest_open_slot(topic)
             # filter for all applications that are within this size
@@ -38,8 +42,11 @@ def main():
                 possible_applications = _applications.filter(
                     lambda app: app.topic == topic and app.group.size <= __biggest_open_slot[0])
                 __biggest_open_slot = _assignments.biggest_open_slot(topic)
+        time_1 = time.time()
+        time_list.append(time_1 - time_0)
 
-        print("Iteration " + str(iteration) + " done with score: " + str(_assignments.score))
+        print("Iteration " + str(iteration) + "/" + str(max_number_of_iterations) + " done with score: " + str(
+            _assignments.score) + ". ETA remaining: " + str(round(statistics.mean(time_list) * (max_number_of_iterations - iteration), 2)) + " seconds")
 
         if _assignments.score >= best_assignments.score:
             best_assignments = _assignments
@@ -47,7 +54,9 @@ def main():
         iteration += 1
         strategy.iteration += 1
 
+    print("Finished! Saving best score " + str(best_assignments.score) + " to database")
     best_assignments.save_to_database()
+    print("Saved!")
 
 
 class Assignments:
