@@ -47,7 +47,7 @@ def main():
 
         print("Iteration " + str(iteration) + "/" + str(max_number_of_iterations) + " done with score: " + str(
             _assignments.score) + ". ETA remaining: " + str(
-            round(statistics.mean(time_list) * (max_number_of_iterations - iteration), 2)) + " seconds")
+            round(statistics.median(time_list) * (max_number_of_iterations - iteration), 2)) + " seconds")
 
         if _assignments.score >= best_assignments.score:
             best_assignments = _assignments
