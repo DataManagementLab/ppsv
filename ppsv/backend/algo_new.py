@@ -1,15 +1,18 @@
+import multiprocessing
+
+import django
+
+django.setup()
 import random
 import time
 import statistics
 from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from dataclasses import dataclass
 
-import django
-
 from backend.models import Assignment
 from course.models import TopicSelection, Topic
 
-max_number_of_iterations = 10000
+max_number_of_iterations = 100
 worker = 4
 
 
@@ -18,7 +21,7 @@ def main():
 
     # --- init --- #
     strategy = Strategy()
-    time_list = []
+    time_list = multiprocessing.Manager().list()
     topics = []
     for topic in Topic.objects.all():
         if topic.has_applications:
@@ -27,17 +30,15 @@ def main():
     best_assignments = Assignments(topics)
     print("Initial Score: " + str(best_assignments.score))
 
-    with ProcessPoolExecutor(max_workers=4, initializer=subprocess_setup) as executor:
-        # Start the load operations and mark each future with its URL
-        future_to_assignment = {
-            executor.submit(create_assignments(strategy, topics, iteration, time_list)): iteration for iteration in
-            range(max_number_of_iterations)}
-        for future in as_completed(future_to_assignment):
-            assignments = future_to_assignment[future]
+    with ProcessPoolExecutor(max_workers=worker, initializer=subprocess_setup) as executor:
+        futures = []
+        for iteration in range(max_number_of_iterations):
+            futures.append(executor.submit(create_assignments, strategy, topics, iteration, time_list))
+        for future in as_completed(futures):
             try:
                 data = future.result()
             except Exception as exc:
-                print('%r generated an exception: %s' % (assignments, exc))
+                print('%r generated an exception: %s' % (future, exc))
             else:
                 if best_assignments.score < data.score:
                     best_assignments = data
@@ -70,9 +71,9 @@ def create_assignments(strategy, topics, iteration, time_list):
             __biggest_open_slot = assignments.biggest_open_slot(topic)
     time_1 = time.time()
     time_list.append(time_1 - time_0)
-    print("Iteration " + str(iteration) + "/" + str(max_number_of_iterations) + " done with score: " + str(
+    print("Iteration " + str(len(time_list)) + "/" + str(max_number_of_iterations) + " done with score: " + str(
         assignments.score) + ". ETA remaining: " + str(
-        round(statistics.median(time_list) * (max_number_of_iterations - iteration), 2)) + " seconds")
+        round(statistics.fmean(time_list) * (max_number_of_iterations - iteration) / worker, 2)) + " seconds")
     return assignments
 
 
