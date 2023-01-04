@@ -1,13 +1,15 @@
 import random
 import time
 import statistics
-import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed, ThreadPoolExecutor
 from dataclasses import dataclass
+
+import django
 
 from backend.models import Assignment
 from course.models import TopicSelection, Topic
 
-max_number_of_iterations = 100000
+max_number_of_iterations = 10000
 worker = 4
 
 
@@ -25,37 +27,53 @@ def main():
     best_assignments = Assignments(topics)
     print("Initial Score: " + str(best_assignments.score))
 
-    with multiprocessing.Pool(4) as pool:
-        pool.starmap(create_assignments,
-                     [(strategy, topics, iteration, time_list) for iteration in range(0, max_number_of_iterations)])
+    with ProcessPoolExecutor(max_workers=4, initializer=subprocess_setup) as executor:
+        # Start the load operations and mark each future with its URL
+        future_to_assignment = {
+            executor.submit(create_assignments(strategy, topics, iteration, time_list)): iteration for iteration in
+            range(max_number_of_iterations)}
+        for future in as_completed(future_to_assignment):
+            assignments = future_to_assignment[future]
+            try:
+                data = future.result()
+            except Exception as exc:
+                print('%r generated an exception: %s' % (assignments, exc))
+            else:
+                if best_assignments.score < data.score:
+                    best_assignments = data
 
     print("Finished! Saving best score " + str(best_assignments.score) + " to database")
     best_assignments.save_to_database()
     print("Saved!")
 
 
-def create_assignments(strategy, queue, topics, iteration, time_list):
-    _assignments = Assignments(topics)
+def subprocess_setup():
+    django.setup()
+
+
+def create_assignments(strategy, topics, iteration, time_list):
+    assignments = Assignments(strategy.get_topics(topics, iteration))
     _accepted_applications = []
     _applications = Applications(topics)
     time_0 = time.time()
-    for topic in topics:
-        __biggest_open_slot = _assignments.biggest_open_slot(topic)
+    for topic in strategy.get_topics(topics, iteration):
+        __biggest_open_slot = assignments.biggest_open_slot(topic)
         # filter for all applications that are within this size and have this topic
         possible_applications = _applications.filter(
             lambda app: app.topic == topic and app.group.size <= __biggest_open_slot[0])
         while __biggest_open_slot[0] > 0 and len(possible_applications.values()) != 0:
             next_application = strategy.get_next_application(possible_applications, iteration)
             _applications.accept(next_application)
-            _assignments.add_application(next_application, __biggest_open_slot[1])
+            assignments.add_application(next_application, __biggest_open_slot[1])
             possible_applications = _applications.filter(
                 lambda app: app.topic == topic and app.group.size <= __biggest_open_slot[0])
-            __biggest_open_slot = _assignments.biggest_open_slot(topic)
+            __biggest_open_slot = assignments.biggest_open_slot(topic)
     time_1 = time.time()
     time_list.append(time_1 - time_0)
     print("Iteration " + str(iteration) + "/" + str(max_number_of_iterations) + " done with score: " + str(
-        _assignments.score) + ". ETA remaining: " + str(
+        assignments.score) + ". ETA remaining: " + str(
         round(statistics.median(time_list) * (max_number_of_iterations - iteration), 2)) + " seconds")
+    return assignments
 
 
 class Assignments:
@@ -203,3 +221,7 @@ class Strategy:
             applications.append(possible_application[0])
 
         return applications.pop((iteration + random.randint(0, self.seed)) % len(applications))
+
+    def get_topics(self, topics, iteration):
+        random.shuffle(topics)
+        return topics
