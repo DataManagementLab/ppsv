@@ -2,7 +2,6 @@ import multiprocessing
 
 import django
 
-django.setup()
 import random
 import time
 import statistics

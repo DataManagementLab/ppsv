@@ -3,10 +3,11 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from backend import algorithm as algo
 from backend import algo_new as algo_new
+from backend.automatic_assignment import main as automatic_assignment
 
 
 def handle_do_automatic_assignments(request):
-    algo_new.main()
+    automatic_assignment.main(False)
     return JsonResponse(
         {
             'status': "done"
