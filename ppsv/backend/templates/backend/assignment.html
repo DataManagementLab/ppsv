@@ -191,7 +191,6 @@
              * @param ui the ui
              */
             handleDrop(event, ui) {
-                console.log("dropping into " + this.id);
                 const drag = ui.draggable;
 
                 let application = applicationsModal.get(parseInt(drag.data('applicationid')));
@@ -204,7 +203,6 @@
 
                 if (oldSlotID !== -1) {
                     //switch from slot to another
-                    console.log("Switch from slot " + oldSlotID + " to " + this.id)
                     $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -220,7 +218,6 @@
                     );
                 } else {
                     //new assignment
-                    console.log("Creating new assignment for slot " + this.id)
                     $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -279,7 +276,6 @@
              * @param application the application to add
              */
             addApplication(application) {
-                console.log("Adding application " + application.id + " to slot " + this.id);
                 this.applications.set(application.id, application);
                 this.nowAssignedSize += application.students.length;
                 if (application.slotID === -1) {
@@ -295,7 +291,6 @@
              * @param application the application to remove
              */
             removeApplication(application) {
-                console.log("Removing application " + application.id + " to slot " + this.id);
                 this.applications.delete(application.id);
                 this.nowAssignedSize -= application.students.length;
                 application.collectionFullfilled = false;
@@ -308,7 +303,6 @@
              * Updates the div of this slot. Consist of a status (name + icon), current assignments and placeholders
              */
             updateDiv() {
-                console.log("Updating slot " + this.id + " new size= " + this.nowAssignedSize);
                 $('.slot[data-slotid="' + this.id + '"] .field').detach();
                 $('.slot[data-slotid="' + this.id + '"] .status').remove();
 
@@ -373,6 +367,9 @@
                 })
             }
 
+            /**
+             * Updates the div of this application.
+             */
             updateDiv() {
                 $('.modalApplication[data-applicationid="' + this.id + '"] .inner-item').detach();
                 let doInfoItem = true;
@@ -400,6 +397,9 @@
                 }
             }
 
+            /**
+             * Updates the possible assignments of this application
+             */
             updatePossibleAssignment() {
                 $.ajax({
                     data: {
@@ -410,7 +410,6 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        console.log("updating application " + this.id + " to " + data['possibleAssignments'])
                         this.possibleAssignments = data['possibleAssignments'];
                         this.updateDiv();
                     }
@@ -451,7 +450,6 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        console.log(data)
                         $('#assignment-modal .title span').text(data['topicName'] + ' - via group: ' + groupName);
 
                         loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize']);
@@ -466,7 +464,6 @@
              * @param loadedApplications the applications to load
              */
             function loadApplications(loadedApplications) {
-                console.log("Loading " + loadedApplications.length + " Applications")
                 let application;
                 for (let app of loadedApplications) {
                     application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], $('#assignment-modal .applications'));
@@ -486,7 +483,6 @@
              * @param maxSize maxSize of a Slot
              */
             function loadSlots(count, minSize, maxSize) {
-                console.log("Loading " + count + " Slots");
                 for (let slotID = 1; slotID <= count; slotID++) {
                     slotsModal.set(slotID, new ModalSlot(slotID, minSize, maxSize, $('#assignment-modal .assignments')))
                 }
@@ -603,7 +599,6 @@
          */
         function handleGroupDetailServerResponse() {
             return function (data) {
-                console.log(data);
                 let groupList = $('#groupdetails .members .inner-list');
                 groupList.html('');
                 data['members'].forEach(function (member) {
@@ -668,7 +663,6 @@
              * @param ui the ui
              */
             handleDrop(event, ui) {
-                console.log("dropping into " + this.id);
                 const drag = ui.draggable;
 
                 let application = applications.get(parseInt(drag.attr('id').substring(11)));
@@ -681,7 +675,6 @@
 
                 if (oldSlotID !== -1) {
                     //switch from slot to another
-                    console.log("Switch from slot " + oldSlotID + " to " + this.id)
                     $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -697,7 +690,6 @@
                     );
                 } else {
                     //new assignment
-                    console.log("Creating new assignment for slot " + this.id)
                     $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -756,7 +748,6 @@
              * @param application the application to add
              */
             addApplication(application) {
-                console.log("Adding application " + application.id + " to slot " + this.id);
                 this.applications.set(application.id, application);
                 this.nowAssignedSize += application.students.length;
                 if (application.slotID === -1) {
@@ -779,7 +770,6 @@
              * @param application the application to remove
              */
             removeApplication(application) {
-                console.log("Removing application " + application.id + " to slot " + this.id);
                 this.applications.delete(application.id);
                 this.nowAssignedSize -= application.students.length;
                 application.collectionFullfilled = false;
@@ -792,7 +782,6 @@
              * Updates the div of this slot. Consist of a status (name + icon), current assignments and placeholders
              */
             updateDiv() {
-                console.log("Updating slot " + this.id + " new size= " + this.nowAssignedSize);
                 $('#slot' + this.id + ' .field').detach();
                 $('#slot' + this.id + ' .status').remove();
 
@@ -919,7 +908,6 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        console.log("updating application " + this.id + " to " + data['possibleAssignments'])
                         this.possibleAssignments = data['possibleAssignments'];
                         this.updateDiv();
                     }
@@ -963,8 +951,6 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        console.log(data)
-
                         loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize']);
 
                         loadApplications(data['applications'])
@@ -977,7 +963,6 @@
              * @param loadedApplications the applications to load
              */
             function loadApplications(loadedApplications) {
-                console.log("Loading " + loadedApplications.length + " Applications")
                 let application;
                 for (let app of loadedApplications) {
                     application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled']);
@@ -999,7 +984,6 @@
              * @param maxSize maxSize of a Slot
              */
             function loadSlots(count, minSize, maxSize) {
-                console.log("Loading " + count + " Slots");
                 for (let slotID = 1; slotID <= count; slotID++) {
                     slots.set(slotID, new Slot(slotID, minSize, maxSize))
                 }
