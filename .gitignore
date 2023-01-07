@@ -7,4 +7,5 @@ media/
 /venv/
 /ppsv/frontend/migrations/
 /ppsv/backend/migrations/
+/ppsv/course/migrations/
 /static/

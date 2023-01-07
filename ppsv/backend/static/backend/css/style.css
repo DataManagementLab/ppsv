@@ -38,7 +38,6 @@ html, body {
 
 #header h3 {
     font-weight: 500;
-    font-family-sans-serif: 'Roboto';
     height: 30px;
 }
 
@@ -169,6 +168,7 @@ html, body {
     border-radius: 3px;
     display: flex;
     width: 100%;
+    transition: filter .25s linear;
 }
 
 /* Inhalte einer Section */
@@ -193,6 +193,7 @@ html, body {
     margin-top: 3px;
     padding-right: 3px;
     border-radius: 3px;
+    height: 100%;
 }
 
 .inner-list .inner-list-item {
@@ -229,6 +230,7 @@ html, body {
     flex-flow: row;
     font-size: 20px;
     height: calc(100% - 60px);
+    position: relative;
 }
 
 #assignment-content #applications {
@@ -278,8 +280,17 @@ html, body {
     justify-content: space-evenly;
 }
 
-.inner-item .group-info .fa{
+.inner-item .group-info .fa {
     padding-right: 3px;
+}
+
+.inner-item .group-info .info-button {
+    color: var(--blue);
+    padding: 5px 3px;
+}
+
+.application.selected .group-info .info-button {
+    color: var(--teal);
 }
 
 #group-info-possible-assignments {
@@ -287,7 +298,7 @@ html, body {
     border-top-right-radius: 3px;
 }
 
-#assignment-content .application {
+#assignment-content .application, #assignment-content .modalApplication {
     padding-left: 3px;
     word-break: break-word;
     background-color: var(--lightgrey);
@@ -296,7 +307,7 @@ html, body {
     cursor: pointer;
 }
 
-#assignment-content .application:hover {
+#assignment-content .application:hover, #assignment-content .modalApplication:hover {
     opacity: 0.7;
 }
 
@@ -310,6 +321,9 @@ html, body {
     margin-right: 5px;
 }
 
+.ui-draggable {
+    user-select: none;
+}
 
 #assignments .ui-draggable-dragging {
     padding-left: 3px;
@@ -320,6 +334,75 @@ html, body {
     border-radius: 3px;
     margin: 3px;
     width: fit-content;
+}
+
+#assignment-content #groupdetails {
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+#assignment-content #groupdetails .section-inner {
+    border-radius: 3px;
+    padding: 0;
+    height: fit-content;
+}
+
+#assignment-content #groupdetails .section-inner p {
+    margin-bottom: 0;
+    background-color: var(--blue);
+    color: #FFFFFF;
+    padding-left: 3px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#assignment-content #groupdetails .section-inner p i {
+    transition: rotate linear .2s;
+    margin: 3px;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list {
+    margin-top: 0;
+    border-radius: unset;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list .inner-item {
+    padding: 3px;
+    border-left: 9px solid var(--blue);
+    border-bottom: 1px solid var(--blue);
+    color: black;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list .choice {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list .choice .name .fa {
+    margin: 0 3px;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list .choice .details small {
+    margin: 0 3px;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list .choice:hover {
+    background-color: var(--gray-dark);
+    cursor: pointer;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list .choice.assigned {
+    background-color: var(--green) !important;
+}
+
+#assignment-content #groupdetails .section-inner .inner-list .choice.full {
+    background-color: var(--red);
 }
 
 #searchAndFilterDiv {
@@ -383,6 +466,7 @@ html, body {
     left: -1px; /* align the dropdown to the left */
     right: -1px; /* align the dropdown to the right */
     opacity: 0; /* hide the dropdown */
+    z-index: 10;
 
     transition: opacity 0.4s ease-in-out;
     height: 200px;
@@ -411,6 +495,61 @@ html, body {
     color: black;
 }
 
+/* --- Assignment Modal ----*/
+/* - Class for blurring background - */
+.blur {
+    filter: blur(3px);
+    user-select: none;
+    cursor: none;
+}
+
+#assignment-modal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background-color: transparent;
+    display: none;
+}
+
+#assignment-modal .modal-content {
+    position: absolute;
+    border-radius: 3px;
+    border: 1px solid black;
+    z-index: 10;
+    width: fit-content;
+    height: 80%;
+    background-color: #fff;
+    margin: auto auto;
+    padding: 6px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+#assignment-modal .modal-content .title {
+    border-bottom: 1px solid black;
+    height: 40px;
+}
+
+#assignment-modal .modal-content .title span {
+    border: none;
+    line-height: 40px;
+}
+
+#assignment-modal .modal-content .title .fa {
+    float: right;
+    margin: 6px;
+    padding: 3px;
+    cursor: pointer;
+}
+
+#assignment-modal .dragdrop-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
 
 /* --- Scrollbar --- */
 /* width */

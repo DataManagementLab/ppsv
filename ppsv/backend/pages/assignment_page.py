@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from course.models import TopicSelection, Topic, CourseType, Course
+from course.models import TopicSelection, Topic, CourseType, Course, Group
 from backend.models import Assignment, possible_assignments
 
 
@@ -116,6 +116,60 @@ def handle_select_topic(request):
         })
 
 
+def handle_select_application(request):
+    """
+    Handles an application selection request.
+
+    :return: the information about the group of the selected application.
+    :rtype: JsonResponse
+    """
+
+    application = TopicSelection.objects.get(id=int(request.POST.get("applicationID")))
+    group = Group.objects.get(id=application.group.id)
+
+    members = []
+    group_name = ""
+    for member in group.members:
+        members.append(member.tucan_id + ": " + member.firstname + ' ' + member.lastname)
+        group_name += member.tucan_id + ' '
+
+    assigned = []
+    for assignments in Assignment.objects.all():
+        try:
+            app = assignments.accepted_applications.get(group=group)
+            assigned.append(app.topic.id)
+        except TopicSelection.DoesNotExist:
+            continue
+
+    collection = []
+    for selection in TopicSelection.objects.filter(group_id=group.pk).filter(
+            collection_number=application.collection_number):
+
+        free_space = 0
+        slots = Assignment.objects.filter(topic=selection.topic).count()
+        if slots != selection.topic.max_slots:
+            free_space = selection.topic.max_slot_size
+        elif slots != 0 and slots == selection.topic.max_slots:
+            for slot in Assignment.objects.filter(topic=selection.topic):
+                if slot.open_places_in_slot_count > free_space:
+                    free_space = slot.open_places_in_slot_count
+        else:
+            free_space = 0
+
+        topic = {"id": selection.topic.id, "name": selection.topic.title, "priority": selection.priority,
+                 "free_space": free_space}
+        collection.append(topic)
+
+    return JsonResponse(
+        {
+            'group_name': group_name,
+            'members': members,
+            'assigned': assigned,
+            'collection': collection
+        }
+    )
+
+
 def handle_new_assignment(request):
     """
     Handles an assignment request by assigning the group to the slot of the topic.
@@ -198,6 +252,8 @@ def handle_post(request):
         return handle_get_possible_assignments_for_topic(request)
     if action == "selectTopic":
         return handle_select_topic(request)
+    if action == "selectApplication":
+        return handle_select_application(request)
     if action == "newAssignment":
         return handle_new_assignment(request)
     if action == "changeAssignment":
@@ -268,5 +324,6 @@ def assignment_page(request):
     args["course_types"] = course_types
     args["faculties"] = faculties
     args["range"] = range(1, 11)
+    args["topicid"] = request.GET["topic-id"] if (request.method == "GET") & ("topic-id" in request.GET) else False
 
     return render(request, template_name, args)
