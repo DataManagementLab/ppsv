@@ -27,6 +27,7 @@
     <!-- JQuery & JQuery UI Integration -->
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 
 </head>
 
@@ -47,13 +48,8 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
                 {% endblock %}
                 {% if user.is_authenticated %}
                     {% if user.is_superuser %}
-                        <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">Admin
-                            Page</a>
-                    {% endif %}
-                    {% if user.is_staff %}
-                        <a href="{% url 'backend:assignment_page' %}"
-                           class="adminbtn btn btn-danger navbar-inline-list">
-                            Assignment Page </a>
+                        <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">Django
+                            Admin</a>
                     {% endif %}
                 {% endif %}
                 <div class="login-box">

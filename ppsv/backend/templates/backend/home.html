@@ -2,8 +2,6 @@
 {% load static %}
 {% load i18n %}
 
-
-
 {% block tab_name %}
     Homepage
 {% endblock tab_name %}
@@ -13,33 +11,120 @@
 {% endblock title %}
 
 {% block additional_buttons %}
-    <div id="import-export">
-        <a href="/export-applications-and-assignments/" class="adminbtn btn btn-danger navbar-inline-list">Export</a>
-    </div>
+    {% if user.is_authenticated %}
+        {% if user.is_staff %}
+            <a href="{% url 'backend:assignment_page' %}"
+               class="adminbtn btn btn-danger navbar-inline-list">
+                Assignment Page </a>
+        {% endif %}
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-    <form method="post">
-        <button id="automatic-assignment" name="automatic-assignment">Automatic assignment</button>
-    </form>
-    <script>
-        $(document).ready(function () {
-            $("#automatic-assignment").click(e => {
-                    e.preventDefault();
-                    $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "doAutomaticAssignments",
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: result => alert("Successfull: " + result),
-                    })
-                }
-            )
-        });
+    <div id="home-top-bar">
+        <div id="automatic-assignment">
+            <a href="/home/" class="adminbtn btn btn-danger navbar-inline-list">Automatic assignment</a>
+        </div>
+        <div id="import-export">
+            <a href="/export-applications-and-assignments/"
+               class="adminbtn btn btn-danger navbar-inline-list">Export</a>
+        </div>
+    </div>
 
+    <div id="home-content">
+        <div id="stats-and-filter">
+            <div id="statistics" class="section">
+                <div id="statistics-score">
+                    <span id="statistics-span">Statistics</span>
+                </div>
+                <div id="statistics-chart">
+                    <canvas id="bar-chart"></canvas>
+                </div>
+            </div>
+            <div id="pre-filtering" class="section">
+                Filtered Assignment
+            </div>
+        </div>
+        <div id="error-list" class="section">
+            There are no errors! *coping*
+        </div>
+    </div>
+
+    <script>
+
+        /**
+         * Loads the data of the assignment chart and displays it.
+         */
+        function loadChart() {
+            const assignmentChart = $("#bar-chart");
+
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: 'getChartData'
+                },
+                method: "POST",
+                dataType: "json",
+                success: function (data) {
+                    const ctx = assignmentChart[0].getContext("2d");
+
+                    const color1 = "#519BB2"
+                    const color2 = "#3F8098"
+                    const color3 = "#36738C"
+                    const color4 = "#2D657F"
+                    const color5 = "#245772"
+                    const color6 = "#20506C"
+                    const color7 = "#1B4965"
+
+                    const black = "#000000";
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ["1. Choice", "2. Choice", "3. Choice", "4. Choice", "5. Choice", "> 5. Choice", "No Assignment"],
+                            datasets: [
+                                {
+                                    data: data.values,
+                                    backgroundColor: [
+                                        color1,
+                                        color2,
+                                        color3,
+                                        color4,
+                                        color5,
+                                        color6,
+                                        color7
+                                    ],
+                                    borderColor: [
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black
+                                    ],
+                                    borderWidth: [1, 1, 1, 1, 1, 1, 1]
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Assignment Distribution'
+                            }
+                        }
+                    });
+
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            loadChart();
+        });
     </script>
 
 {% endblock content %}
-
