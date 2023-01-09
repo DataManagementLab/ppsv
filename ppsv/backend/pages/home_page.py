@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
+from backend.automatic_assignment import main
 from backend.models import Assignment
 from course.models import TopicSelection
 
@@ -47,6 +48,13 @@ def handle_get_chart_data():
         'values': [i for i in data.values()]
     })
 
+def handle_do_automatic_assignments(request):
+    main.main(True)
+    return JsonResponse(
+        {
+            'status': "done"
+        })
+
 
 def handle_post(request):
     """
@@ -63,6 +71,9 @@ def handle_post(request):
 
     if action == "getChartData":
         return handle_get_chart_data()
+
+    if action == "doAutomaticAssignments":
+        return handle_do_automatic_assignments(request)
 
     raise ValueError(f"invalid request action: {action}")
 

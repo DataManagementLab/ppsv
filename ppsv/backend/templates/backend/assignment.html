@@ -12,6 +12,16 @@
     Assignment
 {% endblock title %}
 
+{% block additional_buttons %}
+    {% if user.is_authenticated %}
+        {% if user.is_staff %}
+            <a href="{% url 'backend:home_page' %}"
+               class="adminbtn btn btn-danger navbar-inline-list">
+                Admin Page </a>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
 {% block content %}
     <div id="assignment-topBar">
         <div id="searchAndFilterDiv">

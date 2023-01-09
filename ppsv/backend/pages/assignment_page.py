@@ -136,10 +136,8 @@ def handle_select_application(request):
         group_name += member.tucan_id + ' '
 
     assigned = []
-    for assignments in Assignment.objects.all():
-        app = assignments.accepted_applications.filter(group=group)
-        if app.exists():
-            assigned.append(app.topic.id)
+    for assignments in Assignment.objects.filter(accepted_applications__group__in=[group]):
+        assigned.append(assignments.topic.id)
 
     collection = []
     for selection in TopicSelection.objects.filter(group_id=group.pk).filter(

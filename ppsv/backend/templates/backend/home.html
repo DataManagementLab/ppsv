@@ -22,9 +22,29 @@
 
 {% block content %}
     <div id="home-top-bar">
-        <div id="automatic-assignment">
-            <a href="/home/" class="adminbtn btn btn-danger navbar-inline-list">Automatic assignment</a>
-        </div>
+        <form method="post">
+            <div id="automatic-assignment" name="automatic-assignment">
+                <button href="/home/" class="adminbtn btn btn-danger navbar-inline-list">Automatic assignment</button>
+            </div>
+        </form>
+        <script>
+            $(document).ready(function () {
+                $("#automatic-assignment").click(e => {
+                        e.preventDefault();
+                        $.ajax({
+                            data: {
+                                csrfmiddlewaretoken: "{{ csrf_token }}",
+                                action: "doAutomaticAssignments",
+                            },
+                            method: "POST",
+                            dataType: "json",
+                            success: result => alert("Successfull: " + result),
+                        })
+                    }
+                )
+            });
+
+        </script>
         <div id="import-export">
             <a href="/export-applications-and-assignments/"
                class="adminbtn btn btn-danger navbar-inline-list">Export</a>
