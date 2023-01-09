@@ -39,8 +39,10 @@ def main(override_assignments):
         time0 = time.time()
         assignments = Assignments()
         applications = Applications()
+        topics = strategy.get_topics(topics)
         time1 = time.time()
-        for topic in strategy.get_topics(topics, iteration):
+        print("Initializing iteration took " + str(round(time1-time0,2)) + "s.")
+        for topic in topics:
             biggest_open_slot = assignments.biggest_open_slot(topic)
             possible_applications = []
             for possible_application in applications.get_applications_for_topic(topic):
