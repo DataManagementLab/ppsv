@@ -2,6 +2,8 @@
 {% load static %}
 {% load i18n %}
 
+
+
 {% block tab_name %}
     Homepage
 {% endblock tab_name %}
@@ -46,8 +48,16 @@
 
         </script>
         <div id="import-export">
-            <a href="/export-applications-and-assignments/"
-               class="adminbtn btn btn-danger navbar-inline-list">Export</a>
+            <form action="{% url 'backend:export_applications_and_assignments_page' %}" method="get">
+                <label for="export-filter-faculty"> Faculty: </label>
+                <select name="faculty" id="export-filter-faculty" class="Filter-dropdown">
+                    <option value="all">all</option>
+                    {% for faculty in faculties %}
+                        <option value={{ faculty }}>{{ faculty }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="adminbtn btn btn-danger navbar-inline-list">Export</button>
+            </form>
         </div>
     </div>
 
