@@ -19,6 +19,27 @@
 {% endblock %}
 
 {% block content %}
+    <form method="post">
+        <button id="automatic-assignment" name="automatic-assignment">Automatic assignment</button>
+    </form>
+    <script>
+        $(document).ready(function () {
+            $("#automatic-assignment").click(e => {
+                    e.preventDefault();
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "doAutomaticAssignments",
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: result => alert("Successfull: " + result),
+                    })
+                }
+            )
+        });
 
+    </script>
 
 {% endblock content %}
+

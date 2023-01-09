@@ -5,7 +5,6 @@ from course.models import Topic
 from course.models import Group
 
 
-
 def possible_assignments(group_id, collection_number):
     """possible applications in collection
     :return: the number of possible applications of this group for the given collection
@@ -19,11 +18,19 @@ def possible_assignments(group_id, collection_number):
 
     query_possible_assignments = Assignment.objects.filter(topic__in=all_applications.values_list("topic_id"))
     for assignment in query_possible_assignments:
-        if not (assignment.open_places_in_slot_count >= group_size or query_possible_assignments.count() < assignment.topic.max_slots):
+        if not (assignment.open_places_in_slot_count >= group_size or
+                query_possible_assignments.count() < assignment.topic.max_slots):
             all_applications_count -= 1
 
-
     return all_applications_count
+
+
+def get_score_for_assigned(priority):
+    return 21 - min(11, priority)
+
+def get_score_for_not_assigned():
+    return -30
+
 
 
 class Assignment(models.Model):
@@ -41,6 +48,10 @@ class Assignment(models.Model):
         for assignment in Assignment.objects.filter(topic=self.topic):
             open_assignment_count -= self.topic.max_slot_size - assignment.open_places_in_slot_count
         return open_assignment_count
+
+    @property
+    def locked(self):
+        return False
 
     @property
     def open_places_in_slot_count(self):
