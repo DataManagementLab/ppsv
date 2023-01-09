@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from backend.automatic_assignment import main
 from backend.models import Assignment
-from course.models import TopicSelection
+from course.models import TopicSelection, Course
 
 
 def handle_get_chart_data():
@@ -47,6 +47,7 @@ def handle_get_chart_data():
     return JsonResponse(data={
         'values': [i for i in data.values()]
     })
+
 
 def handle_do_automatic_assignments(request):
     main.main(True)
@@ -92,4 +93,14 @@ def home_page(request):
     if request.method == "POST":
         return handle_post(request)
 
-    return render(request, 'backend/home.html')
+    args = {}
+
+    faculties = []
+    for course in Course.objects.all():
+        if course.faculty not in faculties:
+            faculties.append(course.faculty)
+    faculties.sort()
+
+    args["faculties"] = faculties
+
+    return render(request, 'backend/home.html', args)
