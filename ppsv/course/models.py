@@ -187,7 +187,7 @@ class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name=_("course"))
     title = models.CharField(max_length=200, verbose_name=_("title"))
     max_slots = models.PositiveIntegerField(verbose_name=_("max slot count"), default=1,
-                                                   validators=[MinValueValidator(1)])
+                                            validators=[MinValueValidator(1)])
     min_slot_size = models.PositiveIntegerField(verbose_name=_("min GroupSize"), default=1,
                                                 validators=[MinValueValidator(1)])
     max_slot_size = models.PositiveIntegerField(verbose_name=_("max GroupSize"), default=1,
@@ -202,6 +202,15 @@ class Topic(models.Model):
         :rtype: boolean
         """
         return self.max_slot_size > 1
+
+    @property
+    def has_applications(self):
+        """true if it has at least ona application
+        :return: true, if this topic has at least one application
+        :rtype: bool
+        """
+        return TopicSelection.objects.filter(topic=self).count() > 0
+
 
 
     def clean(self):
@@ -318,6 +327,18 @@ class Group(models.Model):
     size.fget.short_description = _("group Size")
 
     @property
+    def get_collections(self):
+        """collections of this group as dictionary order by top to low priority
+        """
+        collections = {}
+        for application in TopicSelection.objects.filter(group=self).order_by("collection_number", "priority"):
+            if application.collection_number in collections:
+                collections[application.collection_number].append(application)
+            else:
+                collections[application.collection_number] = [application]
+        return collections
+
+    @property
     def get_display(self):
         """String representation
         Returns a list of all students in this object.
@@ -397,9 +418,6 @@ class TopicSelection(models.Model):
         :rtype: QuerySet
         """
         return TopicSelection.objects.filter(group=self.group, collection_number=self.collection_number)
-
-
-
 
     get_display.fget.short_description = _("group")
 
