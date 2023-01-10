@@ -5,7 +5,4 @@ media/
 /ppsv/db.sqlite3
 /ppsv/dbTestData.sqlite3
 /venv/
-/ppsv/frontend/migrations/
-/ppsv/backend/migrations/
-/ppsv/course/migrations/
 /static/
