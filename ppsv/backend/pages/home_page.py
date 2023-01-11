@@ -1,9 +1,10 @@
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.automatic_assignment import main
-from backend.models import Assignment
+from backend.models import Assignment, get_all_applications_by_collection, get_all_applications_in_assignments
 from course.models import TopicSelection, Course
 
 
@@ -49,12 +50,40 @@ def handle_get_chart_data():
     })
 
 
-def handle_do_automatic_assignments(request):
+def handle_do_automatic_assignments():
     main.main(True)
     return JsonResponse(
         {
             'status': "done"
         })
+
+
+def handle_get_problems_listing():
+    broken_slots = []
+    for slot in Assignment.objects.all():
+        try:
+            slot.clean()
+        except ValidationError as e:
+            broken_slots.append((slot.topic.id, str(e)))
+        else:
+            if not slot.assigned_student_to_slot_count == 0 and \
+                    slot.assigned_student_to_slot_count < slot.topic.min_slot_size:
+                broken_slots.append(
+                    (slot.topic.id, str(slot), "Less than minimal amount of student in this slot"))
+
+    unfulfilled_collections = []
+    all_applications_in_assignments = get_all_applications_in_assignments()
+    for collection in get_all_applications_by_collection():
+        if collection not in all_applications_in_assignments:
+            unfulfilled_collections.append((str(collection[0]), collection[1], collection[0].id))
+
+    return JsonResponse(
+        data={
+            'brokenSlots': broken_slots,
+            'unfulfilledCollections': unfulfilled_collections,
+        }
+    )
+    pass
 
 
 def handle_post(request):
@@ -73,8 +102,11 @@ def handle_post(request):
     if action == "getChartData":
         return handle_get_chart_data()
 
+    if action == "getProblemsListing":
+        return handle_get_problems_listing()
+
     if action == "doAutomaticAssignments":
-        return handle_do_automatic_assignments(request)
+        return handle_do_automatic_assignments()
 
     raise ValueError(f"invalid request action: {action}")
 
@@ -94,6 +126,8 @@ def home_page(request):
         return handle_post(request)
 
     args = {}
+
+    # --- EXPORT --- #
 
     faculties = []
     for course in Course.objects.all():

@@ -75,8 +75,17 @@
                 Filtered Assignment
             </div>
         </div>
-        <div id="error-list" class="section">
-            There are no errors! *coping*
+        <div id="problems-listing" class="section">
+            <div id="unfulfilled-collections-div" class="section-inner">
+                <span>Unassigned Groups</span>
+                <div id="unfulfilled-collections" class="inner-list">
+                </div>
+            </div>
+            <div id="broken-slots-div" class="section-inner">
+                <span>Slots with Errors</span>
+                <div id="broken-slots" class="inner-list">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -152,8 +161,33 @@
             });
         }
 
+        function loadProblemsListing() {
+            const brokenSlots = $("#broken-slots");
+            const unfulfilledCollections = $("#unfulfilled-collections")
+
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: 'getProblemsListing'
+                },
+                method: "POST",
+                dataType: "json",
+                success: function (data) {
+                    for (let brokenSlot of data["brokenSlots"]) {
+                        let item = $('<a href="/assignment/?topic=' + brokenSlot[0] + '"><div class="inner-list-item broken-slot"><div class="slot-str">' + brokenSlot[1] + '</div><div class="cause"> Caused by: ' + brokenSlot[2] + '</div></div></a>')
+                        brokenSlots.append(item)
+                    }
+                    for (let unfulfilledCollection of data["unfulfilledCollections"]) {
+                        let item = $('<a href="/assignment/?group=' + unfulfilledCollection[2] + '&collection=' + unfulfilledCollection[1] + '"><div class="inner-list-item unfulfilled-collection"> <div class="group">' + unfulfilledCollection[0] + '</div><div class="collection-id"> Collection ' + unfulfilledCollection[1] + '</div></div></a>')
+                        unfulfilledCollections.append(item)
+                    }
+                }
+            });
+        }
+
         $(document).ready(function () {
             loadChart();
+            loadProblemsListing();
         });
     </script>
 
