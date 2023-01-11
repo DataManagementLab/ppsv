@@ -31,7 +31,6 @@
                 </label>
             </div>
             <div id="filterDiv">
-                <button id="filterButton"><i class="fa fa-filter"></i></button>
                 <p>CP:</p>
                 <div class="Filter-dropdown">
                     Choose CP
@@ -119,7 +118,7 @@
         </div>
         <div id="assignment-application" class="section">
             <div class="section-inner" id="assignments-div">
-                <span id="topicSpan">Assignments</span>
+                <span>Assignments</span>
                 <div id="assignments" class="inner-list">
                     Select a topic to do assignments here.
                 </div>
@@ -153,7 +152,7 @@
                 <div class="title"><span>Topic Title Placeholder</span><i class="fa fa-times"></i></div>
                 <div class="dragdrop-container">
                     <div class="section-inner" id="assignments-div">
-                        <span id="topicSpan">Assignments</span>
+                        <span>Assignments</span>
                         <div class="assignments inner-list">
 
                         </div>
@@ -554,7 +553,7 @@
             }
         }
 
-        $('#assignment-modal').on('click', function(event) {
+        $('#assignment-modal').on('click', function (event) {
             if (event.target === this || event.target === $('#assignment-modal .title i.fa')[0]) closeModal();
         })
     </script>
@@ -579,7 +578,12 @@
                 let appID = $(this).attr('id').replace('application', '');
                 getApplicationGroupDetails(appID);
             });
-        });
+
+            // --- Preselect group information --- //
+            {% if groupid != False and collectionid != False %}
+                getGroupDetails({{ groupid }}, {{ collectionid }})
+            {% endif %}
+        })
 
         /**
          * Function for retrieving details about the applications group and displaying it
@@ -596,6 +600,31 @@
                         csrfmiddlewaretoken: "{{ csrf_token }}",
                         action: "selectApplication",
                         applicationID: appID
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: handleGroupDetailServerResponse()
+
+                }
+            );
+        }
+
+        /**
+         * Function for retrieving details about a group and displaying it
+         * @param groupID  The id of the group
+         * @param collectionID The collection of the group
+         */
+        function getGroupDetails(groupID, collectionID) {
+            if ($('#assignment-modal').is(':visible'))
+                return;
+            $('#assignment-content #groupdetails .description').hide();
+            $('#assignment-content #groupdetails .section-inner').show();
+            $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "loadGroupData",
+                        groupID: groupID,
+                        collectionID: collectionID,
                     },
                     method: "POST",
                     dataType: "json",
@@ -621,7 +650,7 @@
                     let classes = '';
                     if (choice['free_space'] < data['members'].length)
                         classes += ' full';
-                    if (data['assigned'].includes(choice['id']))
+                    if (data['assigned'] === choice['id'])
                         classes += ' assigned';
                     let html =
                         $('<div class="choice inner-item' + classes + '" data-topic-id="' + choice['id'] + '">' +
@@ -630,7 +659,7 @@
                             '</div>' +
                             '<div class="details">' +
                             '<small>Free slots</small>' +
-                            choice['free_space'] +
+                            choice['freeSpace'] +
                             '</div>' +
                             '</div>');
                     html.click(function (event) {
@@ -639,10 +668,51 @@
                     });
                     choiceList.append(html);
                 })
+                updateURL(null, data['selectedGroup'], data['selectedCollection'])
             }
+        }
+
+        function updateURL(newTopicID, newGroupID, newCollectionID) {
+            let urlData = window.location.href.substring(window.location.href.lastIndexOf('/') + 2).split('&')
+            if (urlData.length === 3) {
+                urlData[0] = urlData[0].substring(6);
+                urlData[1] = urlData[1].substring(6);
+                urlData[2] = urlData[2].substring(11);
+            } else {
+                urlData[0] = -1;
+                urlData[1] = -1;
+                urlData[2] = -1;
+            }
+            let url = '/?'
+            url += 'topic='
+            if (newTopicID != null) {
+                url += newTopicID;
+            } else if (parseInt(urlData[0]) !== -1) {
+                url += urlData[0];
+            } else {
+                url += -1
+            }
+            url += 'group='
+            if (newGroupID != null) {
+                url += newGroupID;
+            } else if (parseInt(urlData[1]) !== -1) {
+                url += urlData[1];
+            } else {
+                url += -1
+            }
+            url += 'collection='
+            if (newCollectionID != null) {
+                url += newCollectionID;
+            } else if (parseInt(urlData[2]) !== -1) {
+                url += urlData[2];
+            } else {
+                url += -1
+            }
+            history.replaceState(null, '', '/assignment' + url);
         }
     </script>
 
+    <!-- Script block for the assignments and topic handling and filters-->
     <script>
         const slots = new Map();
         const applications = new Map();
@@ -926,6 +996,45 @@
             }
         }
 
+        function updateURL(newTopicID, newGroupID, newCollectionID) {
+            let urlData = window.location.href.substring(window.location.href.lastIndexOf('/') + 2).split('&')
+            if (urlData.length === 3) {
+                urlData[0] = urlData[0].substring(6);
+                urlData[1] = urlData[1].substring(6);
+                urlData[2] = urlData[2].substring(11);
+            } else {
+                urlData[0] = -1;
+                urlData[1] = -1;
+                urlData[2] = -1;
+            }
+            let url = '/?'
+            url += 'topic='
+            if (newTopicID != null) {
+                url += newTopicID;
+            } else if (parseInt(urlData[0]) !== -1) {
+                url += urlData[0];
+            } else {
+                url += -1
+            }
+            url += '&group='
+            if (newGroupID != null) {
+                url += newGroupID;
+            } else if (parseInt(urlData[1]) !== -1) {
+                url += urlData[1];
+            } else {
+                url += -1
+            }
+            url += '&collection='
+            if (newCollectionID != null) {
+                url += newCollectionID;
+            } else if (parseInt(urlData[2]) !== -1) {
+                url += urlData[2];
+            } else {
+                url += -1
+            }
+            history.replaceState(null, '', '/assignment' + url);
+        }
+
         /**
          * Handles a click on another topic, loads new slots, assignments and applications
          * @param newTopicID the id of the new topic
@@ -964,6 +1073,8 @@
                         loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize']);
 
                         loadApplications(data['applications'])
+
+                        updateURL(newTopicID, null, null)
                     }
                 })
             }
@@ -1266,65 +1377,65 @@
 
         // --- MAIN FUNCTION --- //
         $(document).ready(
-                function () {
-                    // --- SEARCHBAR HANDLING --- //
-                    let searchbar = $('#assignment-topBar #searchbar');
-                    searchbar.val('');
-                    searchbar.keyup(updateTopicsAndCourses);
+            function () {
+                // --- SEARCHBAR HANDLING --- //
+                let searchbar = $('#assignment-topBar #searchbar');
+                searchbar.val('');
+                searchbar.keyup(updateTopicsAndCourses);
 
-                    // --- Filter Handling --- //
-                    $(".cp").change(CPCheckBoxHandler);
-                    $(".courseType").change(courseTypeCheckBoxHandler);
-                    $(".faculty").change(facultyCheckBoxHandler);
+                // --- Filter Handling --- //
+                $(".cp").change(CPCheckBoxHandler);
+                $(".courseType").change(courseTypeCheckBoxHandler);
+                $(".faculty").change(facultyCheckBoxHandler);
 
-                    // --- TOPIC CHANGE HANDLING --- //
-                    $('.topic:not(.selected)').click(function (e) {
-                        e.preventDefault();
-                        $('.topic').removeClass('selected');
-                        $(this).addClass('selected');
+                // --- TOPIC CHANGE HANDLING --- //
+                $('.topic:not(.selected)').click(function (e) {
+                    e.preventDefault();
+                    $('.topic').removeClass('selected');
+                    $(this).addClass('selected');
 
-                        $('#assignments').html('');
-                        $('#applications').html('');
+                    $('#assignments').html('');
+                    $('#applications').html('');
 
-                        let topic_id = $(this).attr('data-topicid');
+                    let topic_id = $(this).attr('data-topicid');
 
-                        handleTopicChange(topic_id);
-                    })
+                    handleTopicChange(topic_id);
+                })
 
-                    // --- INIT DROPDOWN FILTERS --- //
-                    $(".Filter-dropdown").click(function () {
-                        $(this).toggleClass("is-active");
-                    });
+                // --- INIT DROPDOWN FILTERS --- //
+                $(".Filter-dropdown").click(function () {
+                    $(this).toggleClass("is-active");
+                });
 
-                    document.addEventListener("click", e => {
-                        if (!e.target.closest(".Filter-dropdown")) {
-                            $(".Filter-dropdown").removeClass("is-active")
-                        }
-                    })
+                document.addEventListener("click", e => {
+                    if (!e.target.closest(".Filter-dropdown")) {
+                        $(".Filter-dropdown").removeClass("is-active")
+                    }
+                })
 
-                    $(".Filter-dropdown ul").click(function (e) {
-                        e.stopPropagation();
-                    });
+                $(".Filter-dropdown ul").click(function (e) {
+                    e.stopPropagation();
+                });
 
-                    // --- INIT APPLICATIONS DIV --- //
-                    $('#applications').droppable({
-                        accept: ".application",
-                        hoverClass: "drop-hover",
-                        drop: handleDropOnApplications()
-                    })
+                // --- INIT APPLICATIONS DIV --- //
+                $('#applications').droppable({
+                    accept: ".application",
+                    hoverClass: "drop-hover",
+                    drop: handleDropOnApplications()
+                })
 
-                    // --- INIT APPLICATIONS DIV FOR MODAL --- //
-                    $('#assignment-modal .applications').droppable({
-                        accept: ".modalApplication",
-                        hoverClass: "drop-hover",
-                        drop: handleDropOnModalApplications()
-                    })
+                // --- INIT APPLICATIONS DIV FOR MODAL --- //
+                $('#assignment-modal .applications').droppable({
+                    accept: ".modalApplication",
+                    hoverClass: "drop-hover",
+                    drop: handleDropOnModalApplications()
+                })
 
-                    // --- PRESELECT TOPIC IF GETTER IS SET --- //
-                    {% if topicid != False %}
-                        $('#topics .topic[data-topicid="{{ topicid }}"]').click();
-                    {% endif %}
-                }
-            )
+                // --- PRESELECT TOPIC IF GETTER IS SET --- //
+                {% if topicid != False %}
+                    $('#topics .topic[data-topicid="{{ topicid }}"]').click();
+                {% endif %}
+            }
+        )
     </script>
 {% endblock content %}

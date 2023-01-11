@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from course.models import TopicSelection, Topic, CourseType, Course, Group
-from backend.models import Assignment, possible_assignments
+from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
+    possible_assignments_for_topic
 
 
 # ----------Database Interactions---------- #
@@ -92,8 +93,8 @@ def handle_select_topic(request):
         data = {
             'students': list(map(lambda x: x.pk, application.group.members)),
             'applicationID': application.id,
-            'possibleAssignmentsForCollection': possible_assignments(application.group.id,
-                                                                     application.collection_number),
+            'possibleAssignmentsForCollection': possible_assignments_for_group(application.group.id,
+                                                                               application.collection_number),
             'collectionCount': TopicSelection.objects.filter(group=application.group,
                                                              collection_number=application.collection_number).count(),
             'preference': application.priority,
@@ -127,45 +128,7 @@ def handle_select_application(request):
     """
 
     application = TopicSelection.objects.get(id=int(request.POST.get("applicationID")))
-    group = Group.objects.get(id=application.group.id)
-
-    members = []
-    group_name = ""
-    for member in group.members:
-        members.append(member.tucan_id + ": " + member.firstname + ' ' + member.lastname)
-        group_name += member.tucan_id + ' '
-
-    assigned = []
-    for assignments in Assignment.objects.filter(accepted_applications__group__in=[group]):
-        assigned.append(assignments.topic.id)
-
-    collection = []
-    for selection in TopicSelection.objects.filter(group_id=group.pk).filter(
-            collection_number=application.collection_number):
-
-        free_space = 0
-        slots = Assignment.objects.filter(topic=selection.topic).count()
-        if slots != selection.topic.max_slots:
-            free_space = selection.topic.max_slot_size
-        elif slots != 0 and slots == selection.topic.max_slots:
-            for slot in Assignment.objects.filter(topic=selection.topic):
-                if slot.open_places_in_slot_count > free_space:
-                    free_space = slot.open_places_in_slot_count
-        else:
-            free_space = 0
-
-        topic = {"id": selection.topic.id, "name": selection.topic.title, "priority": selection.priority,
-                 "free_space": free_space}
-        collection.append(topic)
-
-    return JsonResponse(
-        {
-            'group_name': group_name,
-            'members': members,
-            'assigned': assigned,
-            'collection': collection
-        }
-    )
+    return get_group_data(application.group_id, application.collection_number)
 
 
 def handle_new_assignment(request):
@@ -226,10 +189,50 @@ def handle_remove_assignment(request):
 
 def handle_get_possible_assignments_for_topic(request):
     application = TopicSelection.objects.get(pk=request.POST.get("applicationID"))
-    _possibleAssignments = possible_assignments(application.group.id, application.collection_number)
+    _possibleAssignments = possible_assignments_for_group(application.group.id, application.collection_number)
     return JsonResponse({
         "possibleAssignments": _possibleAssignments,
     })
+
+
+def handle_load_group_data(request):
+    return get_group_data(request.POST.get("groupID"), request.POST.get("collectionID"))
+
+
+# --- POST HANDLING HELPER --- #
+def get_group_data(group_id, collection_id):
+    group = Group.objects.get(id=group_id)
+
+    members = []
+    group_name = ""
+    for member in group.members:
+        members.append(member.tucan_id + ": " + member.firstname + ' ' + member.lastname)
+        group_name += str(member) + ' '
+
+    assignment_query = Assignment.objects.filter(accepted_applications__group__in=[group],
+                                                 accepted_applications__collection_number=collection_id)
+    assigned = assignment_query.get().id if assignment_query.exists() else None
+
+    application_in_collection = []
+    for application in all_applications_from_group(group_id, collection_id):
+        topic = {
+            'id': application.topic.id,
+            'name': application.topic.title,
+            'priority': application.priority,
+            'freeSpace': possible_assignments_for_topic(application.topic)
+        }
+        application_in_collection.append(topic)
+
+    return JsonResponse(
+        {
+            'selectedGroup': group_id,
+            'selectedCollection': collection_id,
+            'group_name': group_name,
+            'members': members,
+            'assigned': assigned,
+            'collection': application_in_collection
+        }
+    )
 
 
 def handle_post(request):
@@ -248,16 +251,18 @@ def handle_post(request):
 
     if action == "getPossibleAssignmentsForTopic":
         return handle_get_possible_assignments_for_topic(request)
-    if action == "selectTopic":
-        return handle_select_topic(request)
     if action == "selectApplication":
         return handle_select_application(request)
-    if action == "newAssignment":
-        return handle_new_assignment(request)
     if action == "changeAssignment":
         return handle_change_assignment(request)
+    if action == "newAssignment":
+        return handle_new_assignment(request)
     if action == "removeAssignment":
         return handle_remove_assignment(request)
+    if action == "selectTopic":
+        return handle_select_topic(request)
+    if action == "loadGroupData":
+        return handle_load_group_data(request)
 
     raise ValueError(f"invalid request action: {action}")
 
@@ -322,6 +327,9 @@ def assignment_page(request):
     args["course_types"] = course_types
     args["faculties"] = faculties
     args["range"] = range(1, 11)
-    args["topicid"] = request.GET["topic-id"] if (request.method == "GET") & ("topic-id" in request.GET) else False
+    args["topicid"] = request.GET["topic"] if (request.method == "GET") and ("topic" in request.GET) else False
+    args["groupid"] = request.GET["group"] if (request.method == "GET") and ("group" in request.GET) else False
+    args["collectionid"] = request.GET["collection"] if (request.method == "GET") and (
+            "collection" in request.GET) else False
 
     return render(request, template_name, args)

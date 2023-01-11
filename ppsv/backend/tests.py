@@ -189,7 +189,7 @@ class TestAssignmentModel(TestCase):
         tests if clean() raises a ValidationError if the assigned group is already assigned to a different slot
         """
 
-        assignment1_duplicate = Assignment.objects.create(topic=self.c1_topic3, slot_id=1)
+        assignment1_duplicate = Assignment.objects.create(topic=self.c1_topic1, slot_id=1)
         assignment1_duplicate.accepted_applications.add(self.app_g4_ct1_t1_c1_p1)
         with self.assertRaises(ValidationError):
             assignment1_duplicate.clean()

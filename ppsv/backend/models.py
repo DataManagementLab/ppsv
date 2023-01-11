@@ -5,7 +5,7 @@ from course.models import Topic
 from course.models import Group
 
 
-def possible_assignments(group_id, collection_number):
+def possible_assignments_for_group(group_id, collection_number):
     """possible applications in collection
     :return: the number of possible applications of this group for the given collection
     :rtype: int
@@ -25,12 +25,45 @@ def possible_assignments(group_id, collection_number):
     return all_applications_count
 
 
+def possible_assignments_for_topic(topic):
+    open_assignment_count = topic.max_slot_size * topic.max_slots
+    for assignment in Assignment.objects.filter(topic=topic):
+        open_assignment_count -= topic.max_slot_size - assignment.open_places_in_slot_count
+    return open_assignment_count
+
+
+def all_applications_from_group(group_id, collection_number):
+    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number))
+
+
+def get_all_applications_by_collection():
+    """returns a dictionary with a (group,collection_number) pair as key, containing all applications for this group in
+     this collection
+    """
+
+    application_for_group = {}
+    for application in TopicSelection.objects.all():
+        if (application.group, application.collection_number) not in application_for_group:
+            application_for_group[(application.group, application.collection_number)] = []
+        application_for_group[(application.group, application.collection_number)].append(application)
+    return application_for_group
+
+
+def get_all_applications_in_assignments():
+    """returns a list of (group,collection_number) pairs, containing all accepted applications"""
+    all_accepted_applications = []
+    for assignment in Assignment.objects.all():
+        for accepted_application in assignment.accepted_applications.all():
+            all_accepted_applications.append((accepted_application.group, accepted_application.collection_number))
+    return all_accepted_applications
+
+
 def get_score_for_assigned(priority):
     return 21 - min(11, priority)
 
+
 def get_score_for_not_assigned():
     return -30
-
 
 
 class Assignment(models.Model):
@@ -99,7 +132,7 @@ class Assignment(models.Model):
 
     def clean(self):
         # SlotID Unique
-        query = Assignment.objects.filter(slot_id=self.slot_id)
+        query = Assignment.objects.filter(topic=self.topic, slot_id=self.slot_id)
         if query.exists() and not (query.count() == 1 and query.contains(self)):
             raise ValidationError("Slot IDs need to be unique")
 

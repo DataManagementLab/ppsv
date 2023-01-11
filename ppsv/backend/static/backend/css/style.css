@@ -143,8 +143,8 @@ html, body {
 #stats-and-filter {
     display: flex;
     flex-flow: column;
-    width: 50%;
     min-width: 300px;
+    width: 100%;
     row-gap: 3px;
     max-height: 100%;
 }
@@ -175,6 +175,31 @@ html, body {
     height: 100%;
     min-width: 300px;
     margin-left: auto;
+}
+
+.problems-listing {
+    display: flex;
+}
+
+#unfulfilled-collections-div {
+    max-width: 300px;
+}
+
+#broken-slots-div {
+}
+
+.unfulfilled-collection {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.broken-slot {
+    display: flex;
+    padding-left: 3px;
+    padding-right: 3px;
+    flex-direction: column;
 }
 
 /* End of Home Page */
