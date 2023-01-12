@@ -360,6 +360,9 @@ class AssignmentViewTests(TestCase):
                         "preference": 1,
                         "collectionFulfilled":True,
                         "slotID": 2,
+                        "groupID": 1,
+                        "collectionID": 1,
+                        "assignedTopic": 1
                     },
                     {
                         "students": [
@@ -370,7 +373,11 @@ class AssignmentViewTests(TestCase):
                         "collectionCount":1,
                         "preference": 2,
                         "collectionFulfilled":True,
-                        "slotID": 2},
+                        "slotID": 2,
+                        "groupID": 2,
+                        "collectionID": 1,
+                        "assignedTopic": 1
+                    },
                     {
                         "students": [
                             "de44eeee"
@@ -380,7 +387,10 @@ class AssignmentViewTests(TestCase):
                         "collectionCount":1,
                         "preference": 3,
                         "collectionFulfilled":False,
-                        "slotID": -1
+                        "slotID": -1,
+                        "groupID": 3,
+                        "collectionID": 1,
+                        "assignedTopic": None
                     }
                 ]
             }

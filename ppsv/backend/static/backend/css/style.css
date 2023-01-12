@@ -565,7 +565,8 @@ html, body {
 }
 
 #assignment-content #groupdetails .section-inner .inner-list .choice:hover {
-    background-color: var(--gray-dark);
+    background-color: var(--lightblue);
+    text-decoration: underline;
     cursor: pointer;
 }
 

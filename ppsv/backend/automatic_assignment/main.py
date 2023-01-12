@@ -5,7 +5,7 @@ from .applications import Applications, init_applications
 from .assignments import Assignments, init_assignments
 from .strategy import Strategy
 
-iterations = 10000
+iterations = 10
 
 
 def main(override_assignments):
