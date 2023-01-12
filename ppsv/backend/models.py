@@ -11,18 +11,18 @@ def possible_assignments_for_group(group_id, collection_number):
     :rtype: int
     """
 
-    all_applications = TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number)
-    all_applications_count = all_applications.count()
-
-    group_size = Group.objects.get(pk=group_id).size
-
-    query_possible_assignments = Assignment.objects.filter(topic__in=all_applications.values_list("topic_id"))
-    for assignment in query_possible_assignments:
-        if not (assignment.open_places_in_slot_count >= group_size or
-                query_possible_assignments.count() < assignment.topic.max_slots):
-            all_applications_count -= 1
-
-    return all_applications_count
+    all_applications = all_applications_from_group(group_id, collection_number)
+    possible_assignments_for_group = 0
+    for application in all_applications:
+        query_assignments_for_topic = Assignment.objects.filter(topic=application.topic)
+        if query_assignments_for_topic.count() < application.topic.max_slot_size:
+            possible_assignments_for_group += 1
+            continue
+        for slot in query_assignments_for_topic:
+            if slot.open_places_in_slot_count >= application.group.size:
+                possible_assignments_for_group += 1
+                continue
+    return possible_assignments_for_group
 
 
 def possible_assignments_for_topic(topic):

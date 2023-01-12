@@ -347,7 +347,7 @@
          * A class to represent one Application in the modal
          */
         class ModalApplication {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
@@ -355,6 +355,9 @@
                 this.slotID = slotID;
                 this.students = students;
                 this.collectionFullfilled = collectionFullfilled;
+                this.groupeID = groupeID;
+                this.collectionID = collectionID;
+                this.assignedTopic = assignedTopic;
                 this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
                 this.updateDiv()
 
@@ -398,9 +401,18 @@
                             remainingAssignmentsTemp += '<i class="fa fa-th"></i>';
                         }
                         remainingAssignments.append(remainingAssignmentsTemp += this.possibleAssignments + "/" + this.collectionSize)
+                        let forwardingLink = '/assignment/?'
+                        if (this.collectionFullfilled) {
+                            forwardingLink += 'topic=' + this.assignedTopic
+                        } else {
+                            forwardingLink += 'topic=' + -1
+                        }
+                        forwardingLink += '&group=' + this.groupeID + '&collection=' + this.collectionID
+                        let forwardingItem = $('<div title="open this group' + (this.collectionFullfilled ? " and topic " : " ") + 'in another page"><a class="fa fa-share-square-o" aria-hidden="true" href="' + forwardingLink + '" target="_blank" style="color: var(--blue)"></a></div>')
                         infoItem.append(preference);
                         infoItem.append(remainingAssignments);
-                        studItem.append(infoItem)
+                        infoItem.append(forwardingItem);
+                        studItem.append(infoItem);
                     }
                     this.div.append(studItem);
                 }
@@ -475,13 +487,12 @@
             function loadApplications(loadedApplications) {
                 let application;
                 for (let app of loadedApplications) {
-                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], $('#assignment-modal .applications'));
+                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], $('#assignment-modal .applications'));
                     applicationsModal.set(application.id, application);
                     if (application.slotID !== -1)
                         slotsModal.get(application.slotID).addApplication(application);
                     else
                         $('#assignment-modal .applications').append(application.div);
-
                 }
             }
 
@@ -541,9 +552,10 @@
             $('#assignment-modal').hide();
             $('#assignment-content .section').removeClass('blur');
             let currentTopic = $('#assignment-content #topics .topic.selected').first().data('topicid');
-            handleTopicChange(currentTopic);
+            if (currentTopic != null)
+                handleTopicChange(currentTopic);
             let appID = $('#assignment-content #groupdetails').attr('data-applicationid');
-            if (appID !== -1) {
+            if (appID !== '-1') {
                 getApplicationGroupDetails(appID);
                 let selApp = $('#application' + appID);
                 selApp.addClass('selected');
@@ -648,7 +660,7 @@
                 choiceList.html('');
                 data['collection'].forEach(function (choice) {
                     let classes = '';
-                    if (choice['free_space'] < data['members'].length)
+                    if (choice['freeSpace'] < data['members'].length)
                         classes += ' full';
                     if (data['assigned'] === choice['id'])
                         classes += ' assigned';

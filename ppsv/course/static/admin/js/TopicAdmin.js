@@ -6,10 +6,12 @@
  */
 window.addEventListener("load", function () {
     (function () {
+        return;
+        if (location.href.lastIndexOf("change") === -1)
         let showAttribute = true;
         let label = document.getElementsByClassName("form-row field-max_slots")[0].getElementsByClassName("required")[0];
-        let min_GroupSize = document.getElementsByClassName('form-row field-min_GroupSize')[0];
-        let max_GroupSize = document.getElementsByClassName('form-row field-max_GroupSize')[0];
+        let min_GroupSize = document.getElementsByClassName('form-row field-min_slot_size')[0];
+        let max_GroupSize = document.getElementsByClassName('form-row field-max_slot_size')[0];
 
         django.jQuery(document).ready(function () {
             if (django.jQuery('#id_groupTopic').is(':checked')) {
@@ -29,8 +31,8 @@ window.addEventListener("load", function () {
                 if (showAttribute) {
                     min_GroupSize.style.display = 'none';
                     max_GroupSize.style.display = 'none';
-                    document.getElementById("id_min_GroupSize").value = 1;
-                    document.getElementById("id_max_GroupSize").value = 1;
+                    document.getElementById("id_min_slot_size").value = 1;
+                    document.getElementById("id_max_slot_size").value = 1;
                     label.innerText = 'Maximale Teilnehmeranzahl';
                 } else {
                     min_GroupSize.style.display = 'flex';

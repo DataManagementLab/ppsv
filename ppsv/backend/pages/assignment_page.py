@@ -2,9 +2,9 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from course.models import TopicSelection, Topic, CourseType, Course, Group
 from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
     possible_assignments_for_topic
+from course.models import TopicSelection, Topic, CourseType, Course, Group
 
 
 # ----------Database Interactions---------- #
@@ -90,6 +90,11 @@ def handle_select_topic(request):
     applications = []
 
     for application in TopicSelection.objects.filter(topic=topic):
+        assigned_topic = None
+        filtered_for_assignment = Assignment.objects.filter(accepted_applications__group_id__in=[application.group],
+                                      accepted_applications__collection_number=application.collection_number)
+        if filtered_for_assignment.exists():
+            assigned_topic = filtered_for_assignment.get().topic.id
         data = {
             'students': list(map(lambda x: x.pk, application.group.members)),
             'applicationID': application.id,
@@ -98,8 +103,10 @@ def handle_select_topic(request):
             'collectionCount': TopicSelection.objects.filter(group=application.group,
                                                              collection_number=application.collection_number).count(),
             'preference': application.priority,
-            'collectionFulfilled': Assignment.objects.filter(accepted_applications__group_id__in=[application.group],
-                                                             accepted_applications__collection_number=application.collection_number).exists(),
+            'collectionFulfilled': filtered_for_assignment.exists(),
+            'groupID': application.group.id,
+            'collectionID': application.collection_number,
+            'assignedTopic': assigned_topic
         }
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():
@@ -126,7 +133,6 @@ def handle_select_application(request):
     :return: the information about the group of the selected application.
     :rtype: JsonResponse
     """
-
     application = TopicSelection.objects.get(id=int(request.POST.get("applicationID")))
     return get_group_data(application.group_id, application.collection_number)
 
@@ -229,7 +235,7 @@ def get_group_data(group_id, collection_id):
 
     assignment_query = Assignment.objects.filter(accepted_applications__group__in=[group],
                                                  accepted_applications__collection_number=collection_id)
-    assigned = assignment_query.get().id if assignment_query.exists() else None
+    assigned = assignment_query.get().topic.id if assignment_query.exists() else None
 
     application_in_collection = []
     for application in all_applications_from_group(group_id, collection_id):
