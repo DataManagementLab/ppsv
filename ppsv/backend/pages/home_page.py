@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from backend.automatic_assignment import main
 from backend.models import Assignment, get_all_applications_by_collection, get_all_applications_in_assignments
-from course.models import TopicSelection, Course
+from course.models import TopicSelection, Course, CourseType
 
 
 def handle_get_chart_data():
@@ -127,6 +127,10 @@ def home_page(request):
 
     args = {}
 
+    course_types = []
+    for course_type in CourseType.objects.all():
+        course_types.append(course_type.type)
+
     # --- EXPORT --- #
 
     faculties = []
@@ -135,6 +139,8 @@ def home_page(request):
             faculties.append(course.faculty)
     faculties.sort()
 
+    args["course_types"] = course_types
     args["faculties"] = faculties
+    args["range"] = range(1, 11)
 
     return render(request, 'backend/home.html', args)

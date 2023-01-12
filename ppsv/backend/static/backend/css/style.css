@@ -136,6 +136,10 @@ html, body {
     position: relative;
 }
 
+#home-content .section {
+    padding: 3px;
+}
+
 #home-content span {
     border-bottom: 1px solid black;
 }
@@ -168,6 +172,60 @@ html, body {
 
 #pre-filtering {
     height: available;
+    display: block;
+}
+
+/* --- Homepage preselect filter --- */
+
+#pre-filtering .filter-checkboxes {
+    display: none;
+}
+
+#pre-filtering .filter-content {
+    padding: 3px;
+}
+
+#pre-filtering .chips {
+    margin: 6px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 3px;
+}
+
+#pre-filtering .chips .chip {
+    border-radius: 16px;
+    padding: 3px 9px 3px 6px;
+    background-color: var(--blue);
+    color: white;
+    width: fit-content;
+    font-size: 16px;
+    user-select: none;
+    min-width: 50px;
+    cursor: pointer;
+}
+
+#pre-filtering .chips .chip.selected {
+    background-color: var(--lightgreen);
+    color: black;
+}
+
+#pre-filtering .chips .chip .fa {
+    background-color: white;
+    color: var(--blue);
+    margin: 0 3px;
+    border-radius: 100%;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+}
+
+#pre-filtering .chips .chip .fa:before {
+    content: "\f00d";
+}
+
+#pre-filtering .chips .chip.selected .fa:before {
+    content: "\f00c";
 }
 
 #error-list {
@@ -539,7 +597,7 @@ html, body {
     margin: 0;
 }
 
-.Filter-dropdown {
+#filterDiv .filter-dropdown {
     width: 200px;
     border: 1px solid var(--lightgrey);
     padding: 8px;
@@ -550,7 +608,7 @@ html, body {
 }
 
 /* Display CSS arrow to the right of the dropdown text */
-.Filter-dropdown:after {
+#filterDiv .filter-dropdown:after {
     content: '';
     height: 0;
     position: absolute;
@@ -563,13 +621,13 @@ html, body {
 }
 
 /* Reverse the CSS arrow when the dropdown is active */
-.Filter-dropdown.is-active:after {
+#filterDiv .filter-dropdown.is-active:after {
     border-bottom-color: black;
     border-top-color: white;
     margin-top: -9px;
 }
 
-.Filter-dropdown-list {
+#filterDiv .filter-dropdown-list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -589,13 +647,13 @@ html, body {
     pointer-events: none; /* avoid mouse click events inside the dropdown */
 }
 
-.is-active .Filter-dropdown-list {
+#filterDiv .is-active .filter-dropdown-list {
     opacity: 1; /* display the dropdown */
     background-color: white;
     pointer-events: auto; /* make sure that the user still can select checkboxes */
 }
 
-.Filter-dropdown-list li label {
+#filterDiv .filter-dropdown-list li label {
     display: block;
     border-bottom: 1px solid var(--lightgrey);
     padding: 10px;
@@ -604,7 +662,7 @@ html, body {
     transition: all 0.2s ease-out;
 }
 
-.Filter-dropdown-list li label:hover {
+#filterDiv .filter-dropdown-list li label:hover {
     background-color: var(--aliceblue);
     color: black;
 }

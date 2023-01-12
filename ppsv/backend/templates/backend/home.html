@@ -72,7 +72,72 @@
                 </div>
             </div>
             <div id="pre-filtering" class="section">
-                Filtered Assignment
+                <span>Filtered Assignment</span>
+                <div class="filter-content">
+                    <form action="/assignment/" method="POST">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                        <input type="hidden" name="action" value="preselectFilters">
+                        <p>Choose CP:</p>
+                        <div class="filter" data-filter="cp">
+                            <div class="filter-checkboxes">
+                                {% for i in range %}
+                                    <label>
+                                        <input type="checkbox" class="cp" value="{{ i }}" name="cp"/>
+                                    </label>
+                                {% endfor %}
+                                <label>
+                                    <input type="checkbox" class="cp" value="-1" name="cp"/>
+                                </label>
+                            </div>
+                            <div class="chips">
+                                {% for i in range %}
+                                    <div class="chip selected" data-filter="cp" data-value="{{ i }}">
+                                        <i class="fa"></i>{{ i }}</div>
+                                {% endfor %}
+                                <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>>10</div>
+                            </div>
+                        </div>
+
+                        <div class="filter" data-filter="course">
+                            <p>Choose Course Type:</p>
+                            <div class="filter-checkboxes">
+                                {% for courseType in course_types %}
+                                    <label>
+                                        <input type="checkbox" class="courseType"
+                                               value="{{ courseType }}" name="courseType"/>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            <div class="chips">
+                                {% for courseType in course_types %}
+                                    <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
+                                        <i class="fa"></i>{{ courseType }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="filter" data-filter="faculty">
+                            <p>Choose Faculty:</p>
+                            <div class="filter-checkboxes">
+                                    {% for faculty in faculties %}
+                                            <label>
+                                                <input type="checkbox" class="faculty" value="{{ faculty }}"
+                                                       name="faculty"
+                                                       checked/>{{ faculty }}
+                                            </label>
+                                    {% endfor %}
+                            </div>
+                            <div class="chips">
+                                {% for faculty in faculties %}
+                                    <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}"><i
+                                            class="fa"></i>{{ faculty }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <input class="adminbtn btn btn-danger navbar-inline-list" type="submit"
+                               value="Start assignment">
+                    </form>
+                </div>
             </div>
         </div>
         <div id="problems-listing" class="section">
@@ -89,8 +154,8 @@
         </div>
     </div>
 
+    <!-- Script-block for loading the statistics chart -->
     <script>
-
         /**
          * Loads the data of the assignment chart and displays it.
          */
@@ -191,4 +256,35 @@
         });
     </script>
 
+    <!-- Script-block for managing filter for the assignment page -->
+    <script>
+        // --- MAIN FUNCTION --- //
+        $(document).ready(function () {
+            // Check each filter chip at startup
+            $('#pre-filtering .chips .chip').each(function () {
+                manageFilterInput($(this));
+            });
+        })
+
+        // --- INIT DROPDOWN FILTERS --- //
+        // Handle click on a filter chip
+        $('#pre-filtering .chips .chip').click(function () {
+            if ($(this).hasClass('selected'))
+                $(this).removeClass('selected');
+            else
+                $(this).addClass('selected');
+            manageFilterInput($(this));
+        });
+
+        // Manage the input fields for the chips
+        function manageFilterInput(chip) {
+            let filterType = chip.data('filter');
+            let filterValue = chip.data('value');
+            if (chip.hasClass('selected')) {
+                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', true);
+            } else {
+                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', false);
+            }
+        }
+    </script>
 {% endblock content %}

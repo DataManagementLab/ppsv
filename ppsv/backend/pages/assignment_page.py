@@ -195,6 +195,24 @@ def handle_get_possible_assignments_for_topic(request):
     })
 
 
+def handle_preselected_filters(request):
+    """
+    Handles preselected filters.
+
+    :param request: the handled request
+    :return: The rendered site with more arguments for preselected filters
+    :rtype: render() object
+    """
+    args = {}
+    filter_settings = {"CP": request.POST.getlist("cp"), "courseType": request.POST.getlist("courseType"),
+                       "faculty": request.POST.getlist("faculty")}
+
+    args['preselectedFilter'] = True
+    args['filterSettings'] = filter_settings
+
+    return render_site(request, args)
+
+
 def handle_load_group_data(request):
     return get_group_data(request.POST.get("groupID"), request.POST.get("collectionID"))
 
@@ -259,6 +277,8 @@ def handle_post(request):
         return handle_new_assignment(request)
     if action == "removeAssignment":
         return handle_remove_assignment(request)
+    if action == "preselectFilters":
+        return handle_preselected_filters(request)
     if action == "selectTopic":
         return handle_select_topic(request)
     if action == "loadGroupData":
@@ -267,39 +287,20 @@ def handle_post(request):
     raise ValueError(f"invalid request action: {action}")
 
 
-# ----------Main Function---------- #
-
-def assignment_page(request):
-    """The view for the assignment page.
-
-    :param request: the given request send by the assignment html-page
-    In case of the request methode being a 'POST' there are the following cases:
-        select_topic:   the request was sent because a topic was selected; all relevant data regarding the rendering of
-                        the webpage with the newly selected topic now displayed are retrieved from the database
-        assign_group:    the request was sent because a group was assigned to a slot; the assignment will be stored
-                            in the database if valid
-        unassign_group:    the request was sent because a group was unassigned from a slot; the database entry corresponding
-                            to the group assignment to the slot gets removed
-
-    In case of the request methode not being a POST all topics will be returned grouped by their corresponding course.
-    In case of the request specifying a user who is not allowed to access this download-page redirects to the
-    login page.
-
-    :return: a JsonResponse containing the information about the request if the request was a POST or a render()
-    object otherwise
+# ----------Site rendering--------- #
+def render_site(request, args=None):
     """
+    handles the rendering of the assignment page.
 
-    if not request.user.is_staff:
-        return redirect(reverse('admin:login') + '?next=' + reverse('backend:assignment_page'))
+    :param request: the handled request
+    :param args: Arguments for rendering. When none given, an empty array is created
 
+    :return: The rendered site
+    :rtype: render() object
+    """
+    if args is None:
+        args = {}
     template_name = 'backend/assignment.html'
-    args = {}
-
-    # check if the request is a post
-    if request.method == "POST":
-        return handle_post(request)
-
-    # if the request is not a post return a render of the default page
     topics_of_courses = []
     topics = []
     last_course = ""
@@ -333,3 +334,30 @@ def assignment_page(request):
             "collection" in request.GET) else False
 
     return render(request, template_name, args)
+
+
+# ----------Main Function---------- #
+
+def assignment_page(request):
+    """The view for the assignment page.
+
+    :param request: the given request send by the assignment html-page
+    In case of the request type being a 'POST' it will be handled by the handle_post method
+
+    In case of the request method not being a POST all topics will be returned grouped by their corresponding course.
+    In case of the request specifying a user who is not allowed to access this download-page redirects to the
+    login page.
+
+    :return: a JsonResponse containing the information about the request if the request was a POST or a render()
+    object otherwise
+    """
+
+    if not request.user.is_staff:
+        return redirect(reverse('admin:login') + '?next=' + reverse('backend:assignment_page'))
+
+    # check if the request is a post
+    if request.method == "POST":
+        return handle_post(request)
+
+    # if the request is not a post return a render of the default page
+    return render_site(request)
