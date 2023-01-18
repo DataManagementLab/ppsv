@@ -69,8 +69,8 @@ class Assignments:
             if slot.slot_id == slot_id:
                 slot.accepted_applications.append(application)
                 return
-        self.assignments[application.topic] = [TempAssignment(topic=application.topic, slot_id=slot_id,
-                                                              accepted_applications=[application])]
+        self.assignments[application.topic].append(TempAssignment(topic=application.topic, slot_id=slot_id,
+                                                                  accepted_applications=[application]))
 
     def biggest_open_slot(self, topic):
         """returns a tuple of (slot_size, slot_id) for the biggest open slot of the given topic. will return (0,1) if
