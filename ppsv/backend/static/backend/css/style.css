@@ -430,6 +430,24 @@ html, body {
     min-width: 300px;
 }
 
+/* Lock/Unlock Symbols*/
+
+.lock-open {
+    margin-right: auto;
+    border: 1px solid black;
+    border-radius: 3px;
+    color: gray;
+    background-color: white;
+}
+
+.lock-closed {
+    margin-right: auto;
+    border: 1px solid black;
+    border-radius: 3px;
+    color: var(--lightcoral);
+    background-color: #2A344A;
+}
+
 #applications-div {
     background: var(--aliceblue);
     width: 50%;

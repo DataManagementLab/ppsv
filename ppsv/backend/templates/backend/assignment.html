@@ -178,10 +178,12 @@
          * A class representing a slot in the modal
          */
         class ModalSlot {
-            constructor(slotID, minSlotSize, maxSlotSize) {
+            constructor(slotID, minSlotSize, maxSlotSize, finalized, topicID) {
                 this.id = slotID;
                 this.minSlotSize = minSlotSize;
                 this.maxSlotSize = maxSlotSize;
+                this.finalized = finalized;
+                this.topicID = topicID;
                 this.nowAssignedSize = 0;
                 this.applications = new Map();
                 this.div = $('<div class="slot inner-list-item droppable" data-slotid="' + this.id + '"></div>');
@@ -207,6 +209,14 @@
 
                 if (oldSlotID === this.id)
                     return;
+
+                /*
+                * Handling if application is dropped on this slot while this slot is finalized.
+                */
+                if(this.finalized !== 0){
+                    infoPopup('bad', "This slot is locked, application can't be added")
+                    return;
+                }
 
                 infoPopup("wait", "Waiting for server response");
 
@@ -315,7 +325,22 @@
                 $('.slot[data-slotid="' + this.id + '"] .field').detach();
                 $('.slot[data-slotid="' + this.id + '"] .status').remove();
 
-                let status = '<div class="status"> Slot ' + this.id;
+                let buttonID = 'modal-slot-' + this.id + '-finalized'
+                let status = '<div class="status">';
+                /*
+                * Begin of adding/creating a button to lock or unlock this slot.
+                */
+                status += '<a><button ';
+                if (this.finalized === 0) {
+                    status += 'class="fa fa-unlock-alt lock-open"'
+                } else {
+                    status += 'class="fa fa-lock lock-closed"'
+                }
+                status += 'aria-hidden="true" id="' + buttonID + '"></button>';
+                /*
+                * End of adding/creating a button to lock or unlock this slot.
+                */
+                status += ' Slot ' + this.id + '</a>';
                 if (this.nowAssignedSize === this.maxSlotSize) {
                     status += '<i class="fa  fa-check-circle-o" title="slot fully assigned"></i>';
                 } else if (this.nowAssignedSize >= this.minSlotSize) {
@@ -336,6 +361,8 @@
                     else
                         this.div.append($('<div class="placeholder field" style=" background: var(--lightblue)"> place ' + i + '</div>'))
                 }
+
+                handleButtonClickSlot(this, '#' + buttonID);
             }
 
             remainingSpace() {
@@ -347,7 +374,7 @@
          * A class to represent one Application in the modal
          */
         class ModalApplication {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic, finalized, topicID) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
@@ -358,6 +385,8 @@
                 this.groupeID = groupeID;
                 this.collectionID = collectionID;
                 this.assignedTopic = assignedTopic;
+                this.finalized = finalized;
+                this.topicID = topicID;
                 this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
                 this.updateDiv()
 
@@ -385,8 +414,29 @@
             updateDiv() {
                 $('.modalApplication[data-applicationid="' + this.id + '"] .inner-item').detach();
                 let doInfoItem = true;
+                let buttonID = 'modal-application-' + this.id + '-finalized'
                 for (let student of this.students) {
-                    let studItem = $('<div class="inner-item">' + student + '</div>');
+                    let studItemString = '<div class="inner-item"><a>'
+                    /*
+                    * Begin of adding/creating a button to lock or unlock this assigned application.
+                    */
+                    if (doInfoItem) {
+                        studItemString += '<button '
+                        if (this.slotID !== -1 && this.finalized) {
+                            studItemString += 'class="fa fa-lock lock-closed"'
+                        } else {
+                            studItemString += 'class="fa fa-unlock-alt lock-open"'
+                        }
+                        studItemString += ' aria-hidden="true"'
+                        studItemString += (this.slotID === -1) ? ' style="display:none"' : ''
+                        studItemString += ' id="' + buttonID + '"></button> '
+                    }
+                    /*
+                    * End of adding/creating a button to lock or unlock this assigned application.
+                    */
+                    studItemString += student + '</a></div>'
+
+                    let studItem = $(studItemString);
                     if (doInfoItem) {
                         doInfoItem = false;
                         let infoItem = $('<div class="group-info"></div>')
@@ -415,6 +465,8 @@
                         studItem.append(infoItem);
                     }
                     this.div.append(studItem);
+
+                    handleButtonClickApplication(this, '#' + buttonID)
                 }
             }
 
@@ -473,9 +525,9 @@
                     success: data => {
                         $('#assignment-modal .title span').text(data['topicName'] + ' - via group: ' + groupName);
 
-                        loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize']);
+                        loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize'], data['topicSlotsFinalized'], data['topicID']);
 
-                        loadApplications(data['applications'])
+                        loadApplications(data['applications'], data["topicID"]);
                     }
                 })
             }
@@ -483,16 +535,19 @@
             /**
              * Creates {@link Application}s and adds them to either their slot or applications.
              * @param loadedApplications the applications to load
+             * @param topicID the applications associated topicID
              */
-            function loadApplications(loadedApplications) {
+            function loadApplications(loadedApplications, topicID) {
                 let application;
                 for (let app of loadedApplications) {
-                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], $('#assignment-modal .applications'));
+                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], app['finalizedAssignment'], topicID, $('#assignment-modal .applications'));
                     applicationsModal.set(application.id, application);
                     if (application.slotID !== -1)
                         slotsModal.get(application.slotID).addApplication(application);
                     else
                         $('#assignment-modal .applications').append(application.div);
+
+                    application.updateDiv()
                 }
             }
 
@@ -501,10 +556,12 @@
              * @param count how many slots will be created
              * @param minSize minSize of a slot
              * @param maxSize maxSize of a Slot
+             * @param finalized whether a Slot is finalized
+             * @param topicID id of the topic the slot is associated with
              */
-            function loadSlots(count, minSize, maxSize) {
+            function loadSlots(count, minSize, maxSize, finalized, topicID) {
                 for (let slotID = 1; slotID <= count; slotID++) {
-                    slotsModal.set(slotID, new ModalSlot(slotID, minSize, maxSize, $('#assignment-modal .assignments')))
+                    slotsModal.set(slotID, new ModalSlot(slotID, minSize, maxSize, finalized[slotID - 1], topicID, $('#assignment-modal .assignments')))
                 }
 
             }
@@ -733,10 +790,12 @@
          * A class representing a slot
          */
         class Slot {
-            constructor(slotID, minSlotSize, maxSlotSize) {
+            constructor(slotID, minSlotSize, maxSlotSize, finalized, topicID) {
                 this.id = slotID;
                 this.minSlotSize = minSlotSize;
                 this.maxSlotSize = maxSlotSize;
+                this.finalized = finalized;
+                this.topicID = topicID;
                 this.nowAssignedSize = 0;
                 this.applications = new Map();
                 this.div = $('<div id="slot' + this.id + '" class="inner-list-item droppable"></div>');
@@ -762,6 +821,14 @@
 
                 if (oldSlotID === this.id)
                     return;
+
+                /*
+                * Handling if application is dropped on this slot while this slot is finalized.
+                */
+                if(this.finalized !== 0){
+                    infoPopup('bad', "This slot is locked, application can't be added")
+                    return;
+                }
 
                 infoPopup("wait", "Waiting for server response");
 
@@ -811,6 +878,7 @@
                     if (applicationAccepted) {
                         slots.get(application.slotID).removeApplication(application);
                         slot.addApplication(application);
+                        application.updateDiv();
                         infoPopup("good", applicationAcceptedText)
                     } else
                         infoPopup("bad", applicationAcceptedText)
@@ -877,7 +945,22 @@
                 $('#slot' + this.id + ' .field').detach();
                 $('#slot' + this.id + ' .status').remove();
 
-                let status = '<div class="status"> Slot ' + this.id;
+                let buttonID = 'slot-' + this.id + '-finalized';
+                let status = '<div class="status">'
+                /*
+                * Begin of adding/creating a button to lock or unlock this slot.
+                */
+                status += '<a><button ';
+                if (this.finalized === 0) {
+                    status += 'class="fa fa-unlock-alt lock-open"'
+                } else {
+                    status += 'class="fa fa-lock lock-closed"'
+                }
+                status += 'aria-hidden="true" id="' + buttonID + '"></button>'
+                /*
+                * End of adding/creating a button to lock or unlock this slot.
+                */
+                status += ' Slot ' + this.id + '</a>';
                 if (this.nowAssignedSize === this.maxSlotSize) {
                     status += '<i class="fa  fa-check-circle-o" title="slot fully assigned"></i>';
                 } else if (this.nowAssignedSize >= this.minSlotSize) {
@@ -886,7 +969,6 @@
                     status += '<i class="fa fa-times" title="not enough students assigned"></i>';
                 }
                 status += '</div>'
-
 
                 this.div.append($(status))
                 for (let application of this.applications.values()) {
@@ -898,21 +980,13 @@
                     else
                         this.div.append($('<div class="placeholder field" style=" background: var(--lightblue)"> place ' + i + '</div>'))
                 }
+
+                handleButtonClickSlot(this, '#' + buttonID);
             }
 
             remainingSpace() {
                 return this.maxSlotSize - this.nowAssignedSize;
             }
-        }
-
-        function biggestOpenSlot() {
-            let biggestOpenSlot = 0;
-            for (let slot of slots.values()) {
-                if (biggestOpenSlot < slot.remainingSpace()) {
-                    biggestOpenSlot = slot.remainingSpace();
-                }
-            }
-            return biggestOpenSlot;
         }
 
         /**
@@ -929,7 +1003,7 @@
          * A class to represent one Application
          */
         class Application {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, finalized, topicID) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
@@ -937,6 +1011,8 @@
                 this.slotID = slotID;
                 this.students = students;
                 this.collectionFullfilled = collectionFullfilled;
+                this.finalized = finalized;
+                this.topicID = topicID;
                 this.div = $('<div id="application' + applicationID + '" class="outer-item application"></div>');
                 this.updateDiv()
 
@@ -959,13 +1035,35 @@
                         getApplicationGroupDetails(applicationID);
                     }
                 })
+
             }
 
             updateDiv() {
                 $('#application' + this.id + " .inner-item").detach();
                 let doInfoItem = true;
+                let buttonID = 'application-' + this.id + '-finalized';
                 for (let student of this.students) {
-                    let studItem = $('<div class="inner-item">' + student + '</div>');
+                    let studItemString = '<div class="inner-item"><a>'
+                    /*
+                    * Begin of adding/creating a button to lock or unlock this assigned application.
+                    */
+                    if (doInfoItem) {
+                        studItemString += '<button '
+                        if (this.slotID !== -1 && this.finalized) {
+                            studItemString += 'class="fa fa-lock lock-closed"'
+                        } else {
+                            studItemString += 'class="fa fa-unlock-alt lock-open"'
+                        }
+                        studItemString += ' aria-hidden="true"'
+                        studItemString += (this.slotID === -1) ? ' style="display:none"' : ''
+                        studItemString += ' id="' + buttonID + '"></button> '
+                    }
+                    /*
+                    * Begin of adding/creating a button to lock or unlock this assigned application.
+                    */
+                    studItemString += student + '</a></div>'
+
+                    let studItem = $(studItemString);
                     if (doInfoItem) {
                         doInfoItem = false;
                         let infoItem = $('<div class="group-info"></div>')
@@ -988,6 +1086,8 @@
                     }
                     this.div.append(studItem);
                 }
+
+                handleButtonClickApplication(this, '#' + buttonID)
             }
 
             updatePossibleAssignment() {
@@ -1005,6 +1105,96 @@
                     }
                 })
 
+            }
+        }
+
+        /**
+         * Handling the click and visual representation of the button to lock and unlock this slot.
+         * @param slot the corresponding slot
+         * @param buttonID the id of the button element
+         */
+        function handleButtonClickSlot(slot, buttonID){
+            $(buttonID).on('click', {slot: slot}, function (event) {
+                let oldFinalized = event.data.slot.finalized;
+                if (oldFinalized === 0) {
+                    if (event.data.slot.nowAssignedSize >= event.data.slot.minSlotSize) {
+                        $(buttonID).removeClass("fa fa-unlock-alt lock-open")
+                        $(buttonID).addClass("fa fa-lock lock-closed")
+                        event.data.slot.finalized = 1;
+                    }
+                } else if (oldFinalized === 1) {
+                    $(buttonID).removeClass("fa fa-lock lock-closed")
+                    $(buttonID).addClass("fa fa-unlock-alt lock-open")
+                    event.data.slot.finalized = 0;
+                } else {
+                    infoPopup('bad', "Slot was locked by an admin and can't be unlocked")
+                }
+
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "changeFinalizedValueSlot",
+                        slotID: event.data.slot.id,
+                        slotTopicID: event.data.slot.topicID,
+                        newFinalized: event.data.slot.finalized,
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        infoPopup(data["finalizationChangedStatus"], data["finalizationChangedText"]);
+                        if (!data['finalizationChanged']) {
+                            event.data.slot.finalized = oldFinalized;
+                        }
+                        if(data['finalizationValue'] === 0){
+                            event.data.slot.div.addClass('droppable');
+                        } else {
+                            event.data.slot.div.removeClass('droppable');
+                        }
+                    }
+                })
+            });
+        }
+
+        /**
+         * Handling the click and visual representation of the button to lock and unlock this assigned application.
+         * @param application the corresponding application
+         * @param buttonID the id of the button element
+         */
+        function handleButtonClickApplication(application, buttonID){
+            $(buttonID).on('click', {application: application}, function (event) {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "changeFinalizedValueApplication",
+                        slotID: event.data.application.slotID,
+                        slotTopicID: event.data.application.topicID,
+                        applicationID: event.data.application.id,
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        infoPopup(data["finalizationChangedStatus"], data["finalizationChangedText"]);
+                        event.data.application.finalized = data['finalizationValue'];
+                        if (data['finalizationChanged']) {
+                            if (data['finalizationValue']) {
+                                $(buttonID).removeClass("fa fa-unlock-alt lock-open");
+                                $(buttonID).addClass("fa fa-lock lock-closed");
+                            } else {
+                                $(buttonID).removeClass("fa fa-lock lock-closed");
+                                $(buttonID).addClass("fa fa-unlock-alt lock-open");
+                            }
+                        }
+                    }
+                })
+            });
+
+            let parentDivID = application.div.parent().attr("id")
+            if (parentDivID !== undefined) {
+                if (parentDivID.includes('slot')) {
+                    $(buttonID).show();
+                } else {
+                    $(buttonID).hide();
+                }
             }
         }
 
@@ -1082,9 +1272,9 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize']);
+                        loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize'], data['topicSlotsFinalized'], data['topicID']);
 
-                        loadApplications(data['applications'])
+                        loadApplications(data['applications'], data['topicID'])
 
                         updateURL(newTopicID, null, null)
                     }
@@ -1094,11 +1284,12 @@
             /**
              * Creates {@link Application}s and adds them to either their slot or applications.
              * @param loadedApplications the applications to load
+             * @param topicID the applications associated topic
              */
-            function loadApplications(loadedApplications) {
+            function loadApplications(loadedApplications, topicID) {
                 let application;
                 for (let app of loadedApplications) {
-                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled']);
+                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['finalizedAssignment'], topicID);
                     applications.set(application.id, application);
                     if (application.slotID !== -1)
                         slots.get(application.slotID).addApplication(application);
@@ -1107,6 +1298,8 @@
 
                     if (selectedAppID !== -1 && application.id === selectedAppID)
                         application.div.addClass('selected');
+
+                    application.updateDiv();
                 }
             }
 
@@ -1115,12 +1308,13 @@
              * @param count how many slots will be created
              * @param minSize minSize of a slot
              * @param maxSize maxSize of a Slot
+             * @param finalized whether a slot is finalized
+             * @param topicID id of the topic the slot is associated to
              */
-            function loadSlots(count, minSize, maxSize) {
+            function loadSlots(count, minSize, maxSize, finalized, topicID) {
                 for (let slotID = 1; slotID <= count; slotID++) {
-                    slots.set(slotID, new Slot(slotID, minSize, maxSize))
+                    slots.set(slotID, new Slot(slotID, minSize, maxSize, finalized[slotID - 1], topicID))
                 }
-
             }
         }
 
@@ -1414,20 +1608,20 @@
                     handleTopicChange(topic_id);
                 })
 
-                    // --- INIT DROPDOWN FILTERS --- //
-                    $(".filter-dropdown").click(function () {
-                        $(this).toggleClass("is-active");
-                    });
+                // --- INIT DROPDOWN FILTERS --- //
+                $(".filter-dropdown").click(function () {
+                    $(this).toggleClass("is-active");
+                });
 
-                    document.addEventListener("click", e => {
-                        if (!e.target.closest(".filter-dropdown")) {
-                            $(".filter-dropdown").removeClass("is-active")
-                        }
-                    })
+                document.addEventListener("click", e => {
+                    if (!e.target.closest(".filter-dropdown")) {
+                        $(".filter-dropdown").removeClass("is-active")
+                    }
+                })
 
-                    $(".filter-dropdown ul").click(function (e) {
-                        e.stopPropagation();
-                    });
+                $(".filter-dropdown ul").click(function (e) {
+                    e.stopPropagation();
+                });
 
                 // --- INIT APPLICATIONS DIV --- //
                 $('#applications').droppable({
@@ -1454,9 +1648,9 @@
     <!-- Script block for preselcted filters -->
     <script>
         {% if preselectedFilter is True %}
-            $(document).ready(function() {
+            $(document).ready(function () {
                 // Set each filter option to false
-                $('#filterDiv input').each(function() {
+                $('#filterDiv input').each(function () {
                     if ($(this).prop('checked') === true) {
                         $(this).click();
                     }
@@ -1481,5 +1675,14 @@
                 {% endfor %}
             });
         {% endif %}
+    </script>
+
+    <!-- reload page when focusing -->
+    <script>
+        window.onblur = function () {
+            window.onfocus = function () {
+                location.reload(true)
+            }
+        };
     </script>
 {% endblock content %}
