@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
-    possible_assignments_for_topic
+    possible_assignments_for_topic, AcceptedApplications
 from course.models import TopicSelection, Topic, CourseType, Course, Group
 
 
@@ -60,7 +60,7 @@ def remove_assignment(application_id, slot_id):
     """
 
     if not TopicSelection.objects.filter(pk=application_id).exists():
-        return False, "This Assignment does not exist"
+        return False, "This Application does not exist"
 
     application = TopicSelection.objects.get(pk=application_id)
 
@@ -68,6 +68,14 @@ def remove_assignment(application_id, slot_id):
         return True, "Assignment does not exist"
 
     assignment = Assignment.objects.get(topic=application.topic, slot_id=slot_id)
+
+    if assignment.finalized_slot > 0:
+        return False, "Slot is locked, application can't be removed"
+
+    if AcceptedApplications.objects.filter(assignment=assignment,
+                                           topic_selection=application).get().finalized_assignment:
+        return False, "Application is locked and can't be removed"
+
     assignment.accepted_applications.remove(application)
 
     if assignment.accepted_applications.count() == 0:
@@ -88,13 +96,18 @@ def handle_select_topic(request):
 
     topic = Topic.objects.get(id=int(request.POST.get("topicID")))
     applications = []
+    slots_finalized = []
+
+    for i in range(0, topic.max_slots):
+        slots_finalized.append(0)
 
     for application in TopicSelection.objects.filter(topic=topic):
         assigned_topic = None
         filtered_for_assignment = Assignment.objects.filter(accepted_applications__group_id__in=[application.group],
-                                      accepted_applications__collection_number=application.collection_number)
+                                                            accepted_applications__collection_number=application.collection_number)
         if filtered_for_assignment.exists():
             assigned_topic = filtered_for_assignment.get().topic.id
+
         data = {
             'students': list(map(lambda x: x.pk, application.group.members)),
             'applicationID': application.id,
@@ -111,15 +124,21 @@ def handle_select_topic(request):
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():
             data['slotID'] = assignment.get().slot_id
+            slots_finalized[assignment.get().slot_id - 1] = assignment.get().finalized_slot
+            data['finalizedAssignment'] = AcceptedApplications.objects.get(topic_selection=application.id,
+                                                                           assignment_id=assignment.get().id).finalized_assignment
         else:
             data['slotID'] = -1
+            data['finalizedAssignment'] = None
         applications.append(data)
 
     return JsonResponse(
         {
             'topicName': topic.title,
+            'topicID': topic.id,
             'topicMinSlotSize': topic.min_slot_size,
             'topicMaxSlotSize': topic.max_slot_size,
+            'topicSlotsFinalized': slots_finalized,
             'topicSlots': topic.max_slots,
             'topicCourseName': topic.course.title,
             'applications': applications
@@ -259,6 +278,97 @@ def get_group_data(group_id, collection_id):
     )
 
 
+def handle_change_finalized_value_slot(request):
+    """
+    Handles a change of the finalized value of a slot.
+
+    :param request: the handled request
+    :return: If the finalized_slot value was changed successfully, the new finalized_slot value, a status and text
+    depicting if and how the finalized_slot value was changed
+    :rtype: JsonResponse
+    """
+
+    assignment = Assignment.objects.get_or_create(slot_id=request.POST.get("slotID"),
+                                                  topic_id=request.POST.get("slotTopicID"))[0]
+    old_finalized_value = assignment.__getattribute__("finalized_slot")
+
+    finalization_changed = None
+    finalization_value = None
+    finalization_changed_status = None
+    finalization_changed_text = None
+
+    if old_finalized_value >= 2:
+        finalization_changed = False
+        finalization_value = old_finalized_value
+        finalization_changed_status = "bad"
+        finalization_changed_text = "Slot can't be unlocked"
+    elif (assignment.assigned_student_to_slot_count < assignment.topic.min_slot_size) and (old_finalized_value == 0):
+        finalization_changed = False
+        finalization_value = old_finalized_value
+        finalization_changed_status = "bad"
+        finalization_changed_text = "Slot can't be locked"
+    else:
+        assignment.finalized_slot = request.POST.get("newFinalized")
+        assignment.save()
+        finalization_changed = True
+        finalization_value = request.POST.get("newFinalized")
+        finalization_changed_status = "good"
+        finalization_changed_text = "Slot has been locked" if (
+                old_finalized_value == 0) else "Slot has been unlocked"
+
+    return JsonResponse({
+        'finalizationChanged': finalization_changed,
+        'finalizationValue': finalization_value,
+        'finalizationChangedStatus': finalization_changed_status,
+        'finalizationChangedText': finalization_changed_text,
+    })
+
+
+def handle_change_finalized_value_application(request):
+    """
+    Handles a change of the finalized value of an application.
+
+    :param request: the handled request
+    :return: If the finalized_assignment value was changed successfully, the new finalized_assignment value, a status
+    and text depicting if and how the finalized_assignment value was changed
+    :rtype: JsonResponse
+    """
+
+    assignmentSlot = Assignment.objects.filter(slot_id=request.POST.get("slotID"),
+                                               topic_id=request.POST.get("slotTopicID"))[0]
+    oldFinalizedValueSlot = assignmentSlot.__getattribute__("finalized_slot")
+
+    finalization_changed = None
+    finalization_value = None
+    finalization_changed_status = None
+    finalization_changed_text = None
+
+    if oldFinalizedValueSlot < 2:
+        assignment = AcceptedApplications.objects.filter(topic_selection=request.POST.get("applicationID"),
+                                                         assignment=assignmentSlot)[0]
+        oldFinalizedValueApplication = assignment.__getattribute__("finalized_assignment")
+        assignment.finalized_assignment = not oldFinalizedValueApplication
+        assignment.save()
+        finalization_changed = True
+        finalization_value = assignment.finalized_assignment
+        finalization_changed_status = "good"
+        finalization_changed_text = "Assignment has been locked" if not oldFinalizedValueApplication else "Assignment has been unlocked"
+    else:
+        finalization_changed = False
+        finalization_value = AcceptedApplications.objects.filter(topic_selection=request.POST.get("applicationID"),
+                                                                 assignment=assignmentSlot)[0].__getattribute__(
+            "finalized_assignment")
+        finalization_changed_status = "bad"
+        finalization_changed_text = "Application can't be (un)locked"
+
+    return JsonResponse({
+        'finalizationChanged': finalization_changed,
+        'finalizationValue': finalization_value,
+        'finalizationChangedStatus': finalization_changed_status,
+        'finalizationChangedText': finalization_changed_text,
+    })
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -289,6 +399,10 @@ def handle_post(request):
         return handle_select_topic(request)
     if action == "loadGroupData":
         return handle_load_group_data(request)
+    if action == "changeFinalizedValueSlot":
+        return handle_change_finalized_value_slot(request)
+    if action == "changeFinalizedValueApplication":
+        return handle_change_finalized_value_application(request)
 
     raise ValueError(f"invalid request action: {action}")
 

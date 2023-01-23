@@ -345,8 +345,10 @@ class AssignmentViewTests(TestCase):
             str(response.content, encoding='utf8'),
             {
                 "topicName": "topic1A",
+                "topicID": 1,
                 "topicMinSlotSize": 3,
                 "topicMaxSlotSize": 5,
+                "topicSlotsFinalized": [0, 0, 0],
                 "topicSlots": 3,
                 "topicCourseName": "course1",
                 "applications": [
@@ -358,11 +360,12 @@ class AssignmentViewTests(TestCase):
                         "possibleAssignmentsForCollection": 3,
                         "collectionCount":3,
                         "preference": 1,
-                        "collectionFulfilled":True,
+                        "collectionFulfilled": True,
                         "slotID": 2,
                         "groupID": 1,
                         "collectionID": 1,
-                        "assignedTopic": 1
+                        "assignedTopic": 1,
+                        "finalizedAssignment": False,
                     },
                     {
                         "students": [
@@ -376,7 +379,8 @@ class AssignmentViewTests(TestCase):
                         "slotID": 2,
                         "groupID": 2,
                         "collectionID": 1,
-                        "assignedTopic": 1
+                        "assignedTopic": 1,
+                        "finalizedAssignment": False,
                     },
                     {
                         "students": [
@@ -390,7 +394,8 @@ class AssignmentViewTests(TestCase):
                         "slotID": -1,
                         "groupID": 3,
                         "collectionID": 1,
-                        "assignedTopic": None
+                        "assignedTopic": None,
+                        "finalizedAssignment": None,
                     }
                 ]
             }

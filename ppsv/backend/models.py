@@ -67,9 +67,27 @@ def get_score_for_not_assigned():
 
 
 class Assignment(models.Model):
+    """ Assignment
+
+    This model represents a slot to which applications can be assigned. An Assignment contains a topic, a slotID, all
+    assigned applications and can be finalized so that no applications can be assigned or removed from this assignment.
+
+    :attr Assignment.topic: The foreign key of a topic
+    :type Assignment.topic: ForeignKey
+    :attr Assignment.slot_id: The foreign key of a topic selection
+    :type Assignment.slot_id: PositiveIntegerField
+    :attr Assignment.accepted_applications: The accepted applications
+    :type Assignment.accepted_applications: ManyToManyField through class AcceptedApplications
+    :attr Assignment.finalized_slot: 0 if the assignment is not finalized, 1 if the assignment is finalized on the
+    assignment page, 2 if the assignment was finalized by an admin, but it previously wasn't finalized and 3 if the
+    assignment was finalized by an admin and it previously was finalized on the assignment page
+    :type Assignment.finalized_slot: PositiveIntegerField
+    """
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name="Topic")
     slot_id = models.PositiveIntegerField("SlotID")
-    accepted_applications = models.ManyToManyField(TopicSelection, verbose_name="Accepted Applications")
+    accepted_applications = models.ManyToManyField(TopicSelection, verbose_name="Accepted Applications",
+                                                   through="AcceptedApplications")
+    finalized_slot = models.PositiveIntegerField(default=0)
 
     @property
     def open_places_in_topic_count(self):
@@ -150,3 +168,21 @@ class Assignment(models.Model):
 
         if student_count > self.topic.max_slot_size:
             raise ValidationError("This assignment exceeds the maximum slot size of the assigned topic")
+
+
+class AcceptedApplications(models.Model):
+    """ AcceptedApplications
+
+    This model represents that an application is accepted via the specified assignment. An AcceptedApplications contains
+    an assignment, a TopicSelection and can be finalized so that it can't be changed anymore.
+
+    :attr AcceptedApplications.assignment: The foreign key of an assignment
+    :type AcceptedApplications.assignment: ForeignKey
+    :attr AcceptedApplications.topic_selection: The foreign key of a topic selection
+    :type AcceptedApplications.topic_selection: ForeignKey
+    :attr AcceptedApplications.finalized_assignment: True if the assignment is finalized
+    :type AcceptedApplications.finalized_assignment: BooleanField
+    """
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    topic_selection = models.ForeignKey(TopicSelection, on_delete=models.CASCADE)
+    finalized_assignment = models.BooleanField(default=False)
