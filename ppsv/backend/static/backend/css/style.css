@@ -742,6 +742,39 @@ html, body {
     width: 100%;
 }
 
+/* --- Statistics window ----*/
+#statistics-window {
+    position: fixed;
+    bottom: 0;
+    right: 6px;
+    background-color: #fff;
+    border: 1px solid black;
+    border-radius: 3px;
+    width: 25%;
+}
+
+#statistics-window span {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 20px;
+    background-color: var(--blue);
+    width: 100%;
+    color: white;
+    padding-left: 3px;
+    cursor: pointer;
+}
+
+#statistics-window span .icon {
+    margin: 3px;
+    transform: rotate(180deg);
+    transition: rotate linear .2s;
+}
+
+#statistics-window span .icon.rotation {
+    transform: rotate(0deg);
+}
+
 /* --- Scrollbar --- */
 /* width */
 ::-webkit-scrollbar {

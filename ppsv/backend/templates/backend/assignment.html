@@ -169,6 +169,93 @@
 
     </div>
 
+    <div id="statistics-window">
+        <span title="influenced by current active filters">Statistics<i class="icon fa fa-chevron-up"></i></span>
+        <div id="statistics-chart">
+            <canvas id="bar-chart"></canvas>
+        </div>
+    </div>
+
+    <!-- Script block for statistics window -->
+    <script>
+        $(document).ready(function () {
+            loadChart();
+            $('#statistics-window span').click(function () {
+                $('#statistics-chart #bar-chart').slideToggle();
+                $('#statistics-window span .icon').toggleClass('rotation');
+            });
+        });
+        /**
+         * Loads the data of the assignment chart and displays it.
+         */
+        function loadChart() {
+            const assignmentChart = $("#bar-chart");
+
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: 'getChartData'
+                },
+                method: "POST",
+                dataType: "json",
+                success: function (data) {
+                    const ctx = assignmentChart[0].getContext("2d");
+
+                    const color1 = "#519BB2"
+                    const color2 = "#3F8098"
+                    const color3 = "#36738C"
+                    const color4 = "#2D657F"
+                    const color5 = "#245772"
+                    const color6 = "#20506C"
+                    const color7 = "#1B4965"
+
+                    const black = "#000000";
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ["1. Choice", "2. Choice", "3. Choice", "4. Choice", "5. Choice", "> 5. Choice", "No Assignment"],
+                            datasets: [
+                                {
+                                    data: data.values,
+                                    backgroundColor: [
+                                        color1,
+                                        color2,
+                                        color3,
+                                        color4,
+                                        color5,
+                                        color6,
+                                        color7
+                                    ],
+                                    borderColor: [
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black
+                                    ],
+                                    borderWidth: [1, 1, 1, 1, 1, 1, 1]
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Assignment Distribution'
+                            }
+                        }
+                    });
+
+                }
+            });
+        }
+    </script>
+
     <!-- Script block for modal assignment -->
     <script>
         const slotsModal = new Map();
@@ -1645,7 +1732,7 @@
         )
     </script>
 
-    <!-- Script block for preselcted filters -->
+    <!-- Script block for preselected filters -->
     <script>
         {% if preselectedFilter is True %}
             $(document).ready(function () {
