@@ -17,7 +17,7 @@
         {% if user.is_staff %}
             <a href="{% url 'backend:home_page' %}"
                class="adminbtn btn btn-danger navbar-inline-list">
-                Assignment Home Page </a>
+                Home Page </a>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -129,7 +129,7 @@
                 </div>
             </div>
         </div>
-        <div class="section" id="groupdetails" data-applicationid="-1">
+        <div class="section" id="groupdetails" data-groupid="-1" data-applicationid="-1" data-collectionid="-1">
             <span>Group Details</span>
             <p class="description">Please click on the info button on an application.</p>
             <div class="section-inner members" style="display: none;">
@@ -213,7 +213,7 @@
                 /*
                 * Handling if application is dropped on this slot while this slot is finalized.
                 */
-                if(this.finalized !== 0){
+                if (this.finalized !== 0) {
                     infoPopup('bad', "This slot is locked, application can't be added")
                     return;
                 }
@@ -611,7 +611,10 @@
             let currentTopic = $('#assignment-content #topics .topic.selected').first().data('topicid');
             if (currentTopic != null)
                 handleTopicChange(currentTopic);
-            let appID = $('#assignment-content #groupdetails').attr('data-applicationid');
+            let groupDetailDiv = $('#assignment-content #groupdetails')
+            let appID = groupDetailDiv.attr('data-applicationid');
+            let groupID = groupDetailDiv.attr('data-groupid');
+            let collectionID = groupDetailDiv.attr('data-collectionid');
             if (appID !== '-1') {
                 getApplicationGroupDetails(appID);
                 let selApp = $('#application' + appID);
@@ -619,6 +622,8 @@
                 if (selApp.length > 0) {
                     selApp.addClass('selected');
                 }
+            } else if (groupID !== '-1' && collectionID !== '-1') {
+                getGroupDetails(groupID, collectionID);
             }
         }
 
@@ -661,7 +666,10 @@
         function getApplicationGroupDetails(appID) {
             if ($('#assignment-modal').is(':visible'))
                 return;
-            $('#assignment-content #groupdetails').attr('data-applicationid', appID);
+            let groupDetailDiv = $('#assignment-content #groupdetails');
+            groupDetailDiv.attr('data-groupid', '-1');
+            groupDetailDiv.attr('data-applicationid', appID);
+            groupDetailDiv.attr('data-collectionid', '-1');
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -673,7 +681,6 @@
                     method: "POST",
                     dataType: "json",
                     success: handleGroupDetailServerResponse()
-
                 }
             );
         }
@@ -686,6 +693,10 @@
         function getGroupDetails(groupID, collectionID) {
             if ($('#assignment-modal').is(':visible'))
                 return;
+            let groupDetailDiv = $('#assignment-content #groupdetails');
+            groupDetailDiv.attr('data-groupid', groupID);
+            groupDetailDiv.attr('data-applicationid', '-1');
+            groupDetailDiv.attr('data-collectionid', collectionID);
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -729,6 +740,7 @@
                             '<div class="details">' +
                             '<small>Free slots</small>' +
                             choice['freeSpace'] +
+                            '<i class="info-button fa fa-info-circle"></i>' +
                             '</div>' +
                             '</div>');
                     html.click(function (event) {
@@ -825,7 +837,7 @@
                 /*
                 * Handling if application is dropped on this slot while this slot is finalized.
                 */
-                if(this.finalized !== 0){
+                if (this.finalized !== 0) {
                     infoPopup('bad', "This slot is locked, application can't be added")
                     return;
                 }
@@ -1113,7 +1125,7 @@
          * @param slot the corresponding slot
          * @param buttonID the id of the button element
          */
-        function handleButtonClickSlot(slot, buttonID){
+        function handleButtonClickSlot(slot, buttonID) {
             $(buttonID).on('click', {slot: slot}, function (event) {
                 let oldFinalized = event.data.slot.finalized;
                 if (oldFinalized === 0) {
@@ -1145,7 +1157,7 @@
                         if (!data['finalizationChanged']) {
                             event.data.slot.finalized = oldFinalized;
                         }
-                        if(data['finalizationValue'] === 0){
+                        if (data['finalizationValue'] === 0) {
                             event.data.slot.div.addClass('droppable');
                         } else {
                             event.data.slot.div.removeClass('droppable');
@@ -1160,7 +1172,7 @@
          * @param application the corresponding application
          * @param buttonID the id of the button element
          */
-        function handleButtonClickApplication(application, buttonID){
+        function handleButtonClickApplication(application, buttonID) {
             $(buttonID).on('click', {application: application}, function (event) {
                 $.ajax({
                     data: {
@@ -1675,14 +1687,5 @@
                 {% endfor %}
             });
         {% endif %}
-    </script>
-
-    <!-- reload page when focusing -->
-    <script>
-        window.onblur = function () {
-            window.onfocus = function () {
-                location.reload(true)
-            }
-        };
     </script>
 {% endblock content %}

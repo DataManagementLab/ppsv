@@ -582,6 +582,10 @@ html, body {
     margin: 0 3px;
 }
 
+#assignment-content #groupdetails .section-inner .inner-list .choice .details .info-button {
+    margin-left: 6px;
+}
+
 #assignment-content #groupdetails .section-inner .inner-list .choice:hover {
     background-color: var(--lightblue);
     text-decoration: underline;

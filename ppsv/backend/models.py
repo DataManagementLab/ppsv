@@ -143,10 +143,10 @@ class Assignment(models.Model):
 
     def __str__(self):
         if self.topic.is_group_topic:
-            return "Slot " + str(self.slot_id) + " of " + self.topic.title + " [" + str(
+            return "Slot " + str(self.slot_id) + " of topic \"" + self.topic.title + "\" [" + str(
                 self.assigned_student_to_slot_count) + "/" + str(self.topic.max_slot_size) + "]"
         else:
-            return "Slot " + str(self.slot_id) + " of " + self.topic.title
+            return "Slot " + str(self.slot_id) + " of topic \"" + self.topic.title + "\""
 
     def clean(self):
         # SlotID Unique
