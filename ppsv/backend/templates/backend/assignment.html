@@ -1396,7 +1396,13 @@
 
             let search_term = searchbar.val().toLowerCase();
             let topicName = $(topic).text().toLowerCase();
-            let courseName = $(topic).parent().text().toLowerCase();
+            let courseName = "";
+
+            for (const element in $(topic).parent()) {
+                if (element.nodeType === Node.TEXT_NODE) {
+                    courseName += element.text;
+                }
+            }
 
             return topicName.includes(search_term) || courseName.includes(search_term);
         }
