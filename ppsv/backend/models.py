@@ -26,6 +26,10 @@ def possible_assignments_for_group(group_id, collection_number):
 
 
 def possible_assignments_for_topic(topic):
+    """
+    Returns all assignments than ce be assigned to the given topic without exceeding its maximum slot size
+    :param topic: the topic the search the possible assignments of
+    """
     open_assignment_count = topic.max_slot_size * topic.max_slots
     for assignment in Assignment.objects.filter(topic=topic):
         open_assignment_count -= topic.max_slot_size - assignment.open_places_in_slot_count
@@ -33,7 +37,13 @@ def possible_assignments_for_topic(topic):
 
 
 def all_applications_from_group(group_id, collection_number):
-    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number))
+    """
+    Returns all applications in the collection of the given group.
+    :param group_id: the id of the group
+    :param collection_number: the number of the collection to return the applications of
+    :return: a list containing all applications in the given collection of the given group sorted by their priority
+    """
+    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number).order_by('priority'))
 
 
 def get_all_applications_by_collection():
