@@ -492,7 +492,7 @@
          * A class to represent one Application in the modal
          */
         class ModalApplication {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic, finalized, topicID) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic, finalized, topicID, selectedGroupID) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
@@ -505,7 +505,13 @@
                 this.assignedTopic = assignedTopic;
                 this.finalized = finalized;
                 this.topicID = topicID;
-                this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
+                console.log(groupeID);
+                console.log(selectedGroupID);
+                if (groupeID === selectedGroupID) {
+                    this.div =  $('<div class="outer-item modalApplication selectedGroup" data-applicationid="' + applicationID + '"></div>');
+                } else {
+                    this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
+                }
                 this.updateDiv()
 
                 let container = $('#assignment-modal .modal-content');
@@ -614,7 +620,7 @@
          * @param newTopicID the id of the new topic
          * @param groupName the name of the group that was used to open the modal
          */
-        function handleApplicationModalOpen(newTopicID, groupName) {
+        function handleApplicationModalOpen(newTopicID, groupName, groupID) {
             $('#assignment-modal').show();
             $('#assignment-content .section').addClass('blur');
             //Delete old Content
@@ -645,7 +651,7 @@
 
                         loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize'], data['topicSlotsFinalized'], data['topicID']);
 
-                        loadApplications(data['applications'], data["topicID"]);
+                        loadApplications(data['applications'], data["topicID"], groupID);
                     }
                 })
             }
@@ -655,10 +661,10 @@
              * @param loadedApplications the applications to load
              * @param topicID the applications associated topicID
              */
-            function loadApplications(loadedApplications, topicID) {
+            function loadApplications(loadedApplications, topicID, groupID) {
                 let application;
                 for (let app of loadedApplications) {
-                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], app['finalizedAssignment'], topicID, $('#assignment-modal .applications'));
+                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], app['finalizedAssignment'], topicID, groupID);
                     applicationsModal.set(application.id, application);
                     if (application.slotID !== -1)
                         slotsModal.get(application.slotID).addApplication(application);
@@ -863,7 +869,7 @@
                             '</div>');
                     html.click(function (event) {
                         event.preventDefault();
-                        handleApplicationModalOpen(choice['id'], data['group_name']);
+                        handleApplicationModalOpen(choice['id'], data['group_name'], data['selectedGroup']);
                     });
                     choiceList.append(html);
                 })
