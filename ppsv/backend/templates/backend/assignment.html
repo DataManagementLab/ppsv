@@ -147,7 +147,7 @@
             </div>
         </div>
 
-        <div id="assignment-modal">
+        <div id="assignment-modal" class="modal-container">
             <div class="modal-content">
                 <div class="title"><span>Topic Title Placeholder</span><i class="fa fa-times"></i></div>
                 <div class="dragdrop-container">
@@ -161,6 +161,124 @@
                         <span>Applications</span>
                         <div class="applications inner-list ui-droppable">
 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            #filter-modal .filter-checkboxes {
+                display: none;
+            }
+
+            #filter-modal .filter-content {
+                padding: 3px;
+            }
+
+            #filter-modal .chips {
+                margin: 6px;
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 3px;
+            }
+
+            #filter-modal .chips .chip {
+                border-radius: 16px;
+                padding: 3px 9px 3px 6px;
+                background-color: var(--blue);
+                color: white;
+                width: fit-content;
+                font-size: 16px;
+                user-select: none;
+                min-width: 50px;
+                cursor: pointer;
+            }
+
+            #filter-modal .chips .chip.selected {
+                background-color: var(--lightgreen);
+                color: black;
+            }
+
+            #filter-modal .chips .chip .fa {
+                background-color: white;
+                color: var(--blue);
+                margin: 0 3px;
+                border-radius: 100%;
+                width: 18px;
+                height: 18px;
+                text-align: center;
+            }
+
+            #filter-modal .chips .chip .fa:before {
+                content: "\f00d";
+            }
+
+            #filter-modal .chips .chip.selected .fa:before {
+                content: "\f00c";
+            }
+        </style>
+
+        <div id="filter-modal" class="modal-container" style="display: block;">
+            <div class="modal-content">
+                <div class="title"><span>Filter</span><i class="fa fa-times"></i></div>
+                <div class="filter-content">
+                    <p>Choose CP:</p>
+                    <div class="filter" data-filter="cp">
+                        <div class="filter-checkboxes">
+                            {% for i in range %}
+                                <label>
+                                    <input type="checkbox" class="cp" value="{{ i }}" name="cp"/>
+                                </label>
+                            {% endfor %}
+                            <label>
+                                <input type="checkbox" class="cp" value="-1" name="cp"/>
+                            </label>
+                        </div>
+                        <div class="chips">
+                            {% for i in range %}
+                                <div class="chip selected" data-filter="cp" data-value="{{ i }}">
+                                    <i class="fa"></i>{{ i }}</div>
+                            {% endfor %}
+                            <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>>10</div>
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="course">
+                        <p>Choose Course Type:</p>
+                        <div class="filter-checkboxes">
+                            {% for courseType in course_types %}
+                                <label>
+                                    <input type="checkbox" class="courseType"
+                                           value="{{ courseType }}" name="courseType"/>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <div class="chips">
+                            {% for courseType in course_types %}
+                                <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
+                                    <i class="fa"></i>{{ courseType }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="faculty">
+                        <p>Choose Faculty:</p>
+                        <div class="filter-checkboxes">
+                            {% for faculty in faculties %}
+                                <label>
+                                    <input type="checkbox" class="faculty" value="{{ faculty }}"
+                                           name="faculty"
+                                           checked/>{{ faculty }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <div class="chips">
+                            {% for faculty in faculties %}
+                                <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}"><i
+                                        class="fa"></i>{{ faculty }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -496,7 +614,7 @@
          * @param newTopicID the id of the new topic
          * @param groupName the name of the group that was used to open the modal
          */
-        function handleModalOpen(newTopicID, groupName) {
+        function handleApplicationModalOpen(newTopicID, groupName) {
             $('#assignment-modal').show();
             $('#assignment-content .section').addClass('blur');
             //Delete old Content
@@ -605,7 +723,7 @@
         /**
          * Handles closing of the modal
          */
-        function closeModal() {
+        function closeApplicationModal() {
             $('#assignment-modal').hide();
             $('#assignment-content .section').removeClass('blur');
             let currentTopic = $('#assignment-content #topics .topic.selected').first().data('topicid');
@@ -628,7 +746,7 @@
         }
 
         $('#assignment-modal').on('click', function (event) {
-            if (event.target === this || event.target === $('#assignment-modal .title i.fa')[0]) closeModal();
+            if (event.target === this || event.target === $('#assignment-modal .title i.fa')[0]) closeApplicationModal();
         })
     </script>
 
@@ -745,7 +863,7 @@
                             '</div>');
                     html.click(function (event) {
                         event.preventDefault();
-                        handleModalOpen(choice['id'], data['group_name']);
+                        handleApplicationModalOpen(choice['id'], data['group_name']);
                     });
                     choiceList.append(html);
                 })
@@ -1608,9 +1726,9 @@
                 searchbar.keyup(updateTopicsAndCourses);
 
                 // --- Filter Handling --- //
-                $(".cp").change(CPCheckBoxHandler);
-                $(".courseType").change(courseTypeCheckBoxHandler);
-                $(".faculty").change(facultyCheckBoxHandler);
+                $("input.cp").change(CPCheckBoxHandler);
+                $("input.courseType").change(courseTypeCheckBoxHandler);
+                $("input.faculty").change(facultyCheckBoxHandler);
 
                 // --- TOPIC CHANGE HANDLING --- //
                 $('.topic:not(.selected)').click(function (e) {
@@ -1663,34 +1781,95 @@
         )
     </script>
 
-    <!-- Script block for preselcted filters -->
+    <!-- Script-block for managing filter for the assignment page -->
+    <script>
+        // --- MAIN FUNCTION --- //
+        $(document).ready(function () {
+            // Check each filter chip at startup
+            $('#filter-modal .chips .chip').each(function () {
+                manageFilterInput($(this));
+            });
+        });
+
+        /**
+         * Handles closing of the modal
+         */
+        function openFilterModal() {
+            $('#filter-modal').slideDown(250);
+            $('#assignment-content .section').addClass('blur');
+        }
+
+        /**
+         * Handles closing of the modal
+         */
+        function closeFilterModal() {
+            $('#filter-modal').slideUp(250);
+            $('#assignment-content .section').removeClass('blur');
+        }
+
+        $('#filter-modal').on('click', function (event) {
+            if (event.target === this || event.target === $('#filter-modal .title i.fa')[0]) closeFilterModal();
+        })
+
+        // --- INIT DROPDOWN FILTERS --- //
+        // Handle click on a filter chip
+        $('#filter-modal .chips .chip').click(function () {
+            if ($(this).hasClass('selected'))
+                $(this).removeClass('selected');
+            else
+                $(this).addClass('selected');
+            manageFilterInput($(this));
+        });
+
+        // Manage the input fields for the chips
+        function manageFilterInput(chip) {
+            let filterType = chip.data('filter');
+            let filterValue = chip.data('value');
+
+            if (chip.hasClass('selected')) {
+                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', true);
+            } else {
+                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', false);
+            }
+
+            if (filterType === "cp")
+                chip.parent().siblings('.filter-checkboxes').find('input').each(CPCheckBoxHandler);
+            else if (filterType === "courseType")
+                chip.parent().siblings('.filter-checkboxes').find('input').each(courseTypeCheckBoxHandler);
+            else if (filterType === "faculty")
+                chip.parent().siblings('.filter-checkboxes').find('input').each(facultyCheckBoxHandler);
+        }
+    </script>
+
+    <!-- Script block for preselected filters -->
     <script>
         {% if preselectedFilter is True %}
             $(document).ready(function () {
                 // Set each filter option to false
-                $('#filterDiv input').each(function () {
-                    if ($(this).prop('checked') === true) {
-                        $(this).click();
+                $('#filter-modal .filter .chip').each(function () {
+                    if ($(this).hasClass('selected')) {
+                        $(this).removeClass('selected');
                     }
                 });
 
-                // Get all filters for CP and click these
+                // Get all filters for CP and select these
                 {% for cp in filterSettings.CP %}
-                    if ($('#filterDiv input.cp[value="{{ cp }}"]').prop('checked') === false)
-                        $('#filterDiv input.cp[value="{{ cp }}"]').click();
+                    $('#filter-modal .filter[data-filter="cp"] .chip[data-value="{{ cp }}"]').addClass('selected')
                 {% endfor %}
 
-                // Get all filters for course type and click these
+                // Get all filters for course type and select these
                 {% for courseType in filterSettings.courseType %}
-                    if ($('#filterDiv input.courseType[value="{{ courseType }}"]').prop('checked') === false)
-                        $('#filterDiv input.courseType[value="{{ courseType }}"]').click();
+                    $('#filter-modal .filter[data-filter="course"] .chip[data-value="{{ courseType }}"]').addClass('selected')
                 {% endfor %}
 
-                // Get all filters for CP and click these
+                // Get all filters for CP and select these
                 {% for faculty in filterSettings.faculty %}
-                    if ($('#filterDiv input.faculty[value="{{ faculty }}"]').prop('checked') === false)
-                        $('#filterDiv input.faculty[value="{{ faculty }}"]').click();
+                    $('#filter-modal .filter[data-filter="faculty"] .chip[data-value="{{ faculty }}"]').addClass('selected')
                 {% endfor %}
+
+                $('#filter-modal .filter .chip').each(function () {
+                    manageFilterInput($(this));
+                });
             });
         {% endif %}
     </script>
