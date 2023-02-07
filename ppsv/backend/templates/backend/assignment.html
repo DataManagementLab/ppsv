@@ -226,16 +226,6 @@
                 <div class="filter-content">
                     <p>Choose CP:</p>
                     <div class="filter" data-filter="cp">
-                        <div class="filter-checkboxes">
-                            {% for i in range %}
-                                <label>
-                                    <input type="checkbox" class="cp" value="{{ i }}" name="cp"/>
-                                </label>
-                            {% endfor %}
-                            <label>
-                                <input type="checkbox" class="cp" value="-1" name="cp"/>
-                            </label>
-                        </div>
                         <div class="chips">
                             {% for i in range %}
                                 <div class="chip selected" data-filter="cp" data-value="{{ i }}">
@@ -247,14 +237,6 @@
 
                     <div class="filter" data-filter="course">
                         <p>Choose Course Type:</p>
-                        <div class="filter-checkboxes">
-                            {% for courseType in course_types %}
-                                <label>
-                                    <input type="checkbox" class="courseType"
-                                           value="{{ courseType }}" name="courseType"/>
-                                </label>
-                            {% endfor %}
-                        </div>
                         <div class="chips">
                             {% for courseType in course_types %}
                                 <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
@@ -265,19 +247,10 @@
 
                     <div class="filter" data-filter="faculty">
                         <p>Choose Faculty:</p>
-                        <div class="filter-checkboxes">
-                            {% for faculty in faculties %}
-                                <label>
-                                    <input type="checkbox" class="faculty" value="{{ faculty }}"
-                                           name="faculty"
-                                           checked/>{{ faculty }}
-                                </label>
-                            {% endfor %}
-                        </div>
                         <div class="chips">
                             {% for faculty in faculties %}
-                                <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}"><i
-                                        class="fa"></i>{{ faculty }}</div>
+                                <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}">
+                                    <i class="fa"></i>{{ faculty }}</div>
                             {% endfor %}
                         </div>
                     </div>
@@ -508,7 +481,7 @@
                 console.log(groupeID);
                 console.log(selectedGroupID);
                 if (groupeID === selectedGroupID) {
-                    this.div =  $('<div class="outer-item modalApplication selectedGroup" data-applicationid="' + applicationID + '"></div>');
+                    this.div = $('<div class="outer-item modalApplication selectedGroup" data-applicationid="' + applicationID + '"></div>');
                 } else {
                     this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
                 }
@@ -1471,6 +1444,104 @@
             userFeedback.replaceWith(userFeedbackClone)
         }
 
+
+        /**
+         * Handles a drop on applications.
+         * @return {(function(*, *): void)|*} the jquery drop handler
+         */
+        function handleDropOnApplications() {
+            return function (e, ui) {
+                const application = applications.get(parseInt(ui.draggable.attr("id").substring(11)));
+                if (application.slotID === -1) {
+                    return;
+                }
+                infoPopup("wait", "Waiting for server response")
+                $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "removeAssignment",
+                            applicationID: application.id,
+                            slotID: application.slotID
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: (data) => {
+                            if (data['requestStatus']) {
+                                $('#applications').append(ui.draggable);
+                                slots.get(application.slotID).removeApplication(application);
+
+                                // Update group details
+                                let selectedAppID = $('.application.selected').attr('id').replace('application', '');
+                                getApplicationGroupDetails(selectedAppID);
+
+                                infoPopup("good", data['text'])
+                            } else {
+                                infoPopup("bad", data['text'])
+                            }
+                        }
+                    }
+                );
+            }
+        }
+
+        // --- MAIN FUNCTION --- //
+        $(document).ready(
+            function () {
+
+                // --- TOPIC CHANGE HANDLING --- //
+                $('.topic:not(.selected)').click(function (e) {
+                    e.preventDefault();
+                    $('.topic').removeClass('selected');
+                    $(this).addClass('selected');
+
+                    $('#assignments').html('');
+                    $('#applications').html('');
+
+                    let topic_id = $(this).attr('data-topicid');
+
+                    handleTopicChange(topic_id);
+                })
+
+                // --- INIT DROPDOWN FILTERS --- //
+                $(".filter-dropdown").click(function () {
+                    $(this).toggleClass("is-active");
+                });
+
+                document.addEventListener("click", e => {
+                    if (!e.target.closest(".filter-dropdown")) {
+                        $(".filter-dropdown").removeClass("is-active")
+                    }
+                })
+
+                $(".filter-dropdown ul").click(function (e) {
+                    e.stopPropagation();
+                });
+
+                // --- INIT APPLICATIONS DIV --- //
+                $('#applications').droppable({
+                    accept: ".application",
+                    hoverClass: "drop-hover",
+                    drop: handleDropOnApplications()
+                })
+
+                // --- INIT APPLICATIONS DIV FOR MODAL --- //
+                $('#assignment-modal .applications').droppable({
+                    accept: ".modalApplication",
+                    hoverClass: "drop-hover",
+                    drop: handleDropOnModalApplications()
+                })
+
+                // --- PRESELECT TOPIC IF GETTER IS SET --- //
+                {% if topicid != False %}
+                    $('#topics .topic[data-topicid="{{ topicid }}"]').click();
+                {% endif %}
+            }
+        )
+    </script>
+
+    <!-- Script-block for managing filter for the assignment page -->
+    <script>
+
         selectedCP = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1];
 
         selectedCourseTypes = []
@@ -1585,11 +1656,11 @@
         /**
          * Handles when a choiceBox of the CP filter is clicked.
          */
-        function CPCheckBoxHandler() {
-            if (!this.checked) {
-                selectedCP.splice(selectedCP.findIndex(item => item === parseInt($(this).val())), 1);
+        function CPChangeHandler(cp) {
+            if (selectedCP.includes(cp)) {
+                selectedCP.splice(selectedCP.findIndex(item => item === cp), 1);
             } else {
-                selectedCP.push(parseInt($(this).val()));
+                selectedCP.push(parseInt(cp));
             }
 
             updateTopicsAndCourses();
@@ -1598,11 +1669,11 @@
         /**
          * Handles when a choiceBox of the course type filter is clicked.
          */
-        function courseTypeCheckBoxHandler() {
-            if (!this.checked) {
-                selectedCourseTypes.splice(selectedCourseTypes.findIndex(item => item === $(this).val()), 1);
+        function courseTypeChangeHandler(courseType) {
+            if (selectedCourseTypes.includes(courseType)) {
+                selectedCourseTypes.splice(selectedCourseTypes.findIndex(item => item === courseType), 1);
             } else {
-                selectedCourseTypes.push($(this).val());
+                selectedCourseTypes.push(courseType);
             }
 
             updateTopicsAndCourses();
@@ -1611,11 +1682,11 @@
         /**
          * Handles when a choiceBox of the faculty filter is clicked.
          */
-        function facultyCheckBoxHandler() {
-            if (!this.checked) {
-                selectedFaculties.splice(selectedFaculties.findIndex(item => item === $(this).val()), 1);
+        function facultyChangeHandler(faculty) {
+            if (selectedFaculties.includes(faculty)) {
+                selectedFaculties.splice(selectedFaculties.findIndex(item => item === faculty), 1);
             } else {
-                selectedFaculties.push($(this).val());
+                selectedFaculties.push(faculty);
             }
 
             updateTopicsAndCourses();
@@ -1685,119 +1756,6 @@
         }
 
         /**
-         * Handles a drop on applications.
-         * @return {(function(*, *): void)|*} the jquery drop handler
-         */
-        function handleDropOnApplications() {
-            return function (e, ui) {
-                const application = applications.get(parseInt(ui.draggable.attr("id").substring(11)));
-                if (application.slotID === -1) {
-                    return;
-                }
-                infoPopup("wait", "Waiting for server response")
-                $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeAssignment",
-                            applicationID: application.id,
-                            slotID: application.slotID
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: (data) => {
-                            if (data['requestStatus']) {
-                                $('#applications').append(ui.draggable);
-                                slots.get(application.slotID).removeApplication(application);
-
-                                // Update group details
-                                let selectedAppID = $('.application.selected').attr('id').replace('application', '');
-                                getApplicationGroupDetails(selectedAppID);
-
-                                infoPopup("good", data['text'])
-                            } else {
-                                infoPopup("bad", data['text'])
-                            }
-                        }
-                    }
-                );
-            }
-        }
-
-        // --- MAIN FUNCTION --- //
-        $(document).ready(
-            function () {
-                // --- SEARCHBAR HANDLING --- //
-                let searchbar = $('#assignment-topBar #searchbar');
-                searchbar.val('');
-                searchbar.keyup(updateTopicsAndCourses);
-
-                // --- Filter Handling --- //
-                $("input.cp").change(CPCheckBoxHandler);
-                $("input.courseType").change(courseTypeCheckBoxHandler);
-                $("input.faculty").change(facultyCheckBoxHandler);
-
-                // --- TOPIC CHANGE HANDLING --- //
-                $('.topic:not(.selected)').click(function (e) {
-                    e.preventDefault();
-                    $('.topic').removeClass('selected');
-                    $(this).addClass('selected');
-
-                    $('#assignments').html('');
-                    $('#applications').html('');
-
-                    let topic_id = $(this).attr('data-topicid');
-
-                    handleTopicChange(topic_id);
-                })
-
-                // --- INIT DROPDOWN FILTERS --- //
-                $(".filter-dropdown").click(function () {
-                    $(this).toggleClass("is-active");
-                });
-
-                document.addEventListener("click", e => {
-                    if (!e.target.closest(".filter-dropdown")) {
-                        $(".filter-dropdown").removeClass("is-active")
-                    }
-                })
-
-                $(".filter-dropdown ul").click(function (e) {
-                    e.stopPropagation();
-                });
-
-                // --- INIT APPLICATIONS DIV --- //
-                $('#applications').droppable({
-                    accept: ".application",
-                    hoverClass: "drop-hover",
-                    drop: handleDropOnApplications()
-                })
-
-                // --- INIT APPLICATIONS DIV FOR MODAL --- //
-                $('#assignment-modal .applications').droppable({
-                    accept: ".modalApplication",
-                    hoverClass: "drop-hover",
-                    drop: handleDropOnModalApplications()
-                })
-
-                // --- PRESELECT TOPIC IF GETTER IS SET --- //
-                {% if topicid != False %}
-                    $('#topics .topic[data-topicid="{{ topicid }}"]').click();
-                {% endif %}
-            }
-        )
-    </script>
-
-    <!-- Script-block for managing filter for the assignment page -->
-    <script>
-        // --- MAIN FUNCTION --- //
-        $(document).ready(function () {
-            // Check each filter chip at startup
-            $('#filter-modal .chips .chip').each(function () {
-                manageFilterInput($(this));
-            });
-        });
-
-        /**
          * Handles closing of the modal
          */
         function openFilterModal() {
@@ -1817,18 +1775,16 @@
             if (event.target === this || event.target === $('#filter-modal .title i.fa')[0]) closeFilterModal();
         })
 
-        // --- INIT DROPDOWN FILTERS --- //
-        // Handle click on a filter chip
-        $('#filter-modal .chips .chip').click(function () {
-            if ($(this).hasClass('selected'))
-                $(this).removeClass('selected');
-            else
-                $(this).addClass('selected');
-            manageFilterInput($(this));
-        });
-
         // Manage the input fields for the chips
-        function manageFilterInput(chip) {
+        function clickFilterHandler(chip) {
+
+            if (chip.hasClass('selected')) {
+                chip.removeClass('selected');
+            }
+            else {
+                chip.addClass('selected');
+            }
+
             let filterType = chip.data('filter');
             let filterValue = chip.data('value');
 
@@ -1839,12 +1795,28 @@
             }
 
             if (filterType === "cp")
-                chip.parent().siblings('.filter-checkboxes').find('input').each(CPCheckBoxHandler);
+                CPChangeHandler(filterValue);
             else if (filterType === "courseType")
-                chip.parent().siblings('.filter-checkboxes').find('input').each(courseTypeCheckBoxHandler);
+               courseTypeChangeHandler(filterValue);
             else if (filterType === "faculty")
-                chip.parent().siblings('.filter-checkboxes').find('input').each(facultyCheckBoxHandler);
+                facultyChangeHandler(filterValue);
         }
+
+        // --- MAIN FUNCTION --- //
+        $(document).ready(
+            function () {
+                // --- SEARCHBAR HANDLING --- //
+                let searchbar = $('#assignment-topBar #searchbar');
+                searchbar.val('');
+                searchbar.keyup(updateTopicsAndCourses);
+
+                // --- INIT DROPDOWN FILTERS --- //
+                // Handle click on a filter chip
+                $('#filter-modal .chips .chip').click(function () {
+                    clickFilterHandler($(this));
+                });
+            });
+
     </script>
 
     <!-- Script block for preselected filters -->
@@ -1874,7 +1846,7 @@
                 {% endfor %}
 
                 $('#filter-modal .filter .chip').each(function () {
-                    manageFilterInput($(this));
+                    FilterChangeHandler($(this));
                 });
             });
         {% endif %}
