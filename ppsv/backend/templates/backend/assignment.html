@@ -31,53 +31,9 @@
                 </label>
             </div>
             <div id="filterDiv">
-                <p>CP:</p>
-                <div class="filter-dropdown">
-                    Choose CP
-                    <ul class="filter-dropdown-list">
-                        {% for i in range %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" class="cp" value="{{ i }}" name="{{ i }}" checked/>{{ i }}
-                                </label>
-                            </li>
-                        {% endfor %}
-                        <li>
-                            <label>
-                                <input type="checkbox" class="cp" value="-1" name=">10" checked/>>10
-                            </label>
-                        </li>
-
-                    </ul>
-                </div>
-                <p>Course Type:</p>
-                <div class="filter-dropdown">
-                    Choose Course Type
-                    <ul class="filter-dropdown-list">
-                        {% for courseType in course_types %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" class="courseType" value="{{ courseType }}" name="courseType"
-                                           checked/>{{ courseType }}
-                                </label>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <p>Faculty:</p>
-                <div class="filter-dropdown">
-                    Choose Faculty
-                    <ul class="filter-dropdown-list">
-                        {% for faculty in faculties %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" class="faculty" value="{{ faculty }}" name="faculty"
-                                           checked/>{{ faculty }}
-                                </label>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                <p>Filter: </p>
+                <button id="filterButton" onclick="openFilterModal()"><i class="fa fa-filter" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
         <div id="user-feedback"></div>
@@ -167,60 +123,7 @@
             </div>
         </div>
 
-        <style>
-            #filter-modal .filter-checkboxes {
-                display: none;
-            }
-
-            #filter-modal .filter-content {
-                padding: 3px;
-            }
-
-            #filter-modal .chips {
-                margin: 6px;
-                display: flex;
-                flex-direction: row;
-                justify-content: flex-start;
-                gap: 3px;
-            }
-
-            #filter-modal .chips .chip {
-                border-radius: 16px;
-                padding: 3px 9px 3px 6px;
-                background-color: var(--blue);
-                color: white;
-                width: fit-content;
-                font-size: 16px;
-                user-select: none;
-                min-width: 50px;
-                cursor: pointer;
-            }
-
-            #filter-modal .chips .chip.selected {
-                background-color: var(--lightgreen);
-                color: black;
-            }
-
-            #filter-modal .chips .chip .fa {
-                background-color: white;
-                color: var(--blue);
-                margin: 0 3px;
-                border-radius: 100%;
-                width: 18px;
-                height: 18px;
-                text-align: center;
-            }
-
-            #filter-modal .chips .chip .fa:before {
-                content: "\f00d";
-            }
-
-            #filter-modal .chips .chip.selected .fa:before {
-                content: "\f00c";
-            }
-        </style>
-
-        <div id="filter-modal" class="modal-container" style="display: block;">
+        <div id="filter-modal" class="modal-container" style="display: none;">
             <div class="modal-content">
                 <div class="title"><span>Filter</span><i class="fa fa-times"></i></div>
                 <div class="filter-content">
@@ -825,7 +728,7 @@
                 choiceList.html('');
                 data['collection'].forEach(function (choice) {
                     let classes = '';
-                    if (choice['freeSpace'] < data['members'].length)
+                    if (choice['freeSlots'] < 1)
                         classes += ' full';
                     if (data['assigned'] === choice['id'])
                         classes += ' assigned';
@@ -836,7 +739,7 @@
                             '</div>' +
                             '<div class="details">' +
                             '<small>Free slots</small>' +
-                            choice['freeSpace'] +
+                            choice['freeSlots'] +
                             '<i class="info-button fa fa-info-circle"></i>' +
                             '</div>' +
                             '</div>');
@@ -1771,8 +1674,14 @@
             $('#assignment-content .section').removeClass('blur');
         }
 
-        $('#filter-modal').on('click', function (event) {
-            if (event.target === this || event.target === $('#filter-modal .title i.fa')[0]) closeFilterModal();
+        $(document).on('click', function (event) {
+            if (event.target === $('#filter-modal .title i.fa')[0])
+                closeFilterModal();
+            if ($(event.target).parent('#filterButton').length)
+                return
+            if ($(event.target).parents('#filter-modal .modal-content').length)
+                return
+            closeFilterModal();
         })
 
         // Manage the input fields for the chips

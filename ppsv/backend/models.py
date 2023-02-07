@@ -15,24 +15,26 @@ def possible_assignments_for_group(group_id, collection_number):
     possible_assignments_for_group = 0
     for application in all_applications:
         query_assignments_for_topic = Assignment.objects.filter(topic=application.topic)
-        if query_assignments_for_topic.count() < application.topic.max_slot_size:
+        if query_assignments_for_topic.count() < application.topic.max_slots:
             possible_assignments_for_group += 1
             continue
         for slot in query_assignments_for_topic:
             if slot.open_places_in_slot_count >= application.group.size:
                 possible_assignments_for_group += 1
-                continue
+                break
     return possible_assignments_for_group
 
 
-def possible_assignments_for_topic(topic):
+def possible_assignments_of_group_to_topic(topic, group):
     """
     Returns all assignments than ce be assigned to the given topic without exceeding its maximum slot size
     :param topic: the topic the search the possible assignments of
+    :param group: the group to search the possible assignments for
     """
-    open_assignment_count = topic.max_slot_size * topic.max_slots
+    open_assignment_count = topic.max_slots
     for assignment in Assignment.objects.filter(topic=topic):
-        open_assignment_count -= topic.max_slot_size - assignment.open_places_in_slot_count
+        if assignment.open_places_in_slot_count < group.size:
+            open_assignment_count -= 1
     return open_assignment_count
 
 

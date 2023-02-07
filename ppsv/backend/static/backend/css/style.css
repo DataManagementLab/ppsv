@@ -196,7 +196,7 @@ html, body {
 #pre-filtering .chips .chip {
     border-radius: 16px;
     padding: 3px 9px 3px 6px;
-    background-color: var(--blue);
+    background-color: var(--lightcoral);
     color: white;
     width: fit-content;
     font-size: 16px;
@@ -622,6 +622,8 @@ html, body {
 
 #filterButton {
     height: 100%;
+    border-radius: 3px;
+    font-size: 140%;
 }
 
 #filterDiv p {
@@ -779,4 +781,57 @@ html, body {
     background: #555;
 }
 
+/* --- Filter Modal ---*/
+
+#filter-modal .filter-checkboxes {
+    display: none;
+}
+
+#filter-modal .filter-content {
+    padding: 3px;
+    height: 100%;
+}
+
+#filter-modal .chips {
+    margin: 6px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 3px;
+}
+
+#filter-modal .chips .chip {
+    border-radius: 16px;
+    padding: 3px 9px 3px 6px;
+    background-color: var(--lightcoral);
+    color: white;
+    width: fit-content;
+    font-size: 16px;
+    user-select: none;
+    min-width: 50px;
+    cursor: pointer;
+}
+
+#filter-modal .chips .chip.selected {
+    background-color: var(--lightgreen);
+    color: black;
+}
+
+#filter-modal .chips .chip .fa {
+    background-color: white;
+    color: var(--blue);
+    margin: 0 3px;
+    border-radius: 100%;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+}
+
+#filter-modal .chips .chip .fa:before {
+    content: "\f00d";
+}
+
+#filter-modal .chips .chip.selected .fa:before {
+    content: "\f00c";
+}
 /* End of Assignment Page */
