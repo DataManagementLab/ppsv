@@ -228,6 +228,40 @@ html, body {
     content: "\f00c";
 }
 
+#selectbtn {
+    background: var(--blue);
+    max-width: 100px;
+    width: 100%;
+    padding: 3px 6px;
+    margin: 12px 3px;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 16px;
+    user-select: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+#selectbtn span {
+    border-bottom: none;
+}
+
+#selectbtn .sel {
+    display: block;
+}
+
+#selectbtn .unsel {
+    display: none;
+}
+
+#selectbtn.reverse .sel {
+    display: none;
+}
+
+#selectbtn.reverse .unsel {
+    display: block;
+}
+
 #error-list {
     width: 50%;
     height: 100%;
@@ -834,4 +868,5 @@ html, body {
 #filter-modal .chips .chip.selected .fa:before {
     content: "\f00c";
 }
+
 /* End of Assignment Page */

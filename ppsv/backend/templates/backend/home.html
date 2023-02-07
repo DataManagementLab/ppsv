@@ -134,6 +134,10 @@
                                 {% endfor %}
                             </div>
                         </div>
+                        <div id="selectbtn" class="reverse">
+                            <span class="sel">Select all</span>
+                            <span class="unsel">Unselect all</span>
+                        </div>
                         <input class="adminbtn btn btn-danger navbar-inline-list" type="submit"
                                value="Start assignment">
                     </form>
@@ -274,6 +278,19 @@
             else
                 $(this).addClass('selected');
             manageFilterInput($(this));
+        });
+
+        // Handle click on select/unselect all
+        $('#selectbtn').click(function () {
+            $(this).toggleClass('reverse');
+            let chips = $('#pre-filtering .chips .chip');
+            if ($(this).hasClass('reverse'))
+                chips.addClass('selected');
+            else
+                chips.removeClass('selected');
+            chips.each(function () {
+                manageFilterInput($(this));
+            });
         });
 
         // Manage the input fields for the chips

@@ -157,6 +157,10 @@
                             {% endfor %}
                         </div>
                     </div>
+                    <div id="selectbtn" class="reverse">
+                        <span class="sel">Select all</span>
+                        <span class="unsel">Unselect all</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1445,6 +1449,7 @@
     <!-- Script-block for managing filter for the assignment page -->
     <script>
 
+
         selectedCP = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1];
 
         selectedCourseTypes = []
@@ -1675,38 +1680,49 @@
         }
 
         $(document).on('click', function (event) {
+            if ($('#application-modal').is(':visible'))
+                return;
             if (event.target === $('#filter-modal .title i.fa')[0])
                 closeFilterModal();
-            if ($(event.target).parent('#filterButton').length)
-                return
-            if ($(event.target).parents('#filter-modal .modal-content').length)
-                return
+            if (event.target.id === "filterButton"
+                || $(event.target).parent('#filterButton').length !== 0
+                || $(event.target).parents('#filter-modal .modal-content').length !== 0)
+                return;
             closeFilterModal();
-        })
+        });
+
+        // Handle click on select/unselect all
+        $('#selectbtn').click(function () {
+            $(this).toggleClass('reverse');
+            let chips = $('#filter-modal .chips .chip');
+            if ($(this).hasClass('reverse'))
+                chips.each(function () {
+                    if (!$(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+            else
+                chips.each(function () {
+                    if ($(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+        });
 
         // Manage the input fields for the chips
         function clickFilterHandler(chip) {
+            console.log("CLICK ON CHIP" + chip.text())
 
             if (chip.hasClass('selected')) {
                 chip.removeClass('selected');
-            }
-            else {
+            } else {
                 chip.addClass('selected');
             }
-
             let filterType = chip.data('filter');
             let filterValue = chip.data('value');
-
-            if (chip.hasClass('selected')) {
-                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', true);
-            } else {
-                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', false);
-            }
 
             if (filterType === "cp")
                 CPChangeHandler(filterValue);
             else if (filterType === "courseType")
-               courseTypeChangeHandler(filterValue);
+                courseTypeChangeHandler(filterValue);
             else if (filterType === "faculty")
                 facultyChangeHandler(filterValue);
         }
@@ -1734,30 +1750,25 @@
             $(document).ready(function () {
                 // Set each filter option to false
                 $('#filter-modal .filter .chip').each(function () {
-                    if ($(this).hasClass('selected')) {
-                        $(this).removeClass('selected');
-                    }
+                    clickFilterHandler($(this))
                 });
 
                 // Get all filters for CP and select these
                 {% for cp in filterSettings.CP %}
-                    $('#filter-modal .filter[data-filter="cp"] .chip[data-value="{{ cp }}"]').addClass('selected')
+                    clickFilterHandler($('#filter-modal .filter[data-filter="cp"] .chip[data-value="{{ cp }}"]'));
                 {% endfor %}
 
                 // Get all filters for course type and select these
                 {% for courseType in filterSettings.courseType %}
-                    $('#filter-modal .filter[data-filter="course"] .chip[data-value="{{ courseType }}"]').addClass('selected')
+                    clickFilterHandler($('#filter-modal .filter[data-filter="course"] .chip[data-value="{{ courseType }}"]'));
                 {% endfor %}
 
                 // Get all filters for CP and select these
                 {% for faculty in filterSettings.faculty %}
-                    $('#filter-modal .filter[data-filter="faculty"] .chip[data-value="{{ faculty }}"]').addClass('selected')
+                    clickFilterHandler($('#filter-modal .filter[data-filter="faculty"] .chip[data-value="{{ faculty }}"]'));
                 {% endfor %}
 
-                $('#filter-modal .filter .chip').each(function () {
-                    FilterChangeHandler($(this));
-                });
             });
-        {% endif %}
+        {%  endif %}
     </script>
 {% endblock content %}
