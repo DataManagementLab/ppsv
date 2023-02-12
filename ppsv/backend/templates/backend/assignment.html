@@ -130,31 +130,49 @@
                     <p>Choose CP:</p>
                     <div class="filter" data-filter="cp">
                         <div class="chips">
-                            {% for i in range %}
-                                <div class="chip selected" data-filter="cp" data-value="{{ i }}">
-                                    <i class="fa"></i>{{ i }}</div>
-                            {% endfor %}
-                            <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>>10</div>
+                            <div class="single">
+                                {% for i in range %}
+                                    <div class="chip selected" data-filter="cp" data-value="{{ i }}">
+                                        <i class="fa"></i>{{ i }}</div>
+                                {% endfor %}
+                                <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>>10</div>
+                            </div>
+                            <div class="chip multi reverse selected" data-filter="cp"><i class="fa"></i>
+                                <span class="sel">Select all</span>
+                                <span class="unsel">Unselect all</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="filter" data-filter="course">
                         <p>Choose Course Type:</p>
                         <div class="chips">
-                            {% for courseType in course_types %}
-                                <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
-                                    <i class="fa"></i>{{ courseType }}</div>
-                            {% endfor %}
+                            <div class="single">
+                                {% for courseType in course_types %}
+                                    <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
+                                        <i class="fa"></i>{{ courseType }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="chip multi reverse selected" data-filter="courseType"><i class="fa"></i>
+                                <span class="sel">Select all</span>
+                                <span class="unsel">Unselect all</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="filter" data-filter="faculty">
                         <p>Choose Faculty:</p>
                         <div class="chips">
-                            {% for faculty in faculties %}
-                                <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}">
-                                    <i class="fa"></i>{{ faculty }}</div>
-                            {% endfor %}
+                            <div class="single">
+                                {% for faculty in faculties %}
+                                    <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}">
+                                        <i class="fa"></i>{{ faculty }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="chip multi reverse selected" data-filter="faculty"><i class="fa"></i>
+                                <span class="sel">Select all</span>
+                                <span class="unsel">Unselect all</span>
+                            </div>
                         </div>
                     </div>
                     <div id="selectbtn" class="reverse">
@@ -1691,6 +1709,23 @@
             closeFilterModal();
         });
 
+        // Handle click on select/unselect all by chip category
+        $('#filter-modal .chips .chip.multi').click(function () {
+            let filterType = $(this).data('filter');
+            $(this).toggleClass('selected');
+            let chips = $('#filter-modal .chips .single .chip[data-filter="' + filterType + '"]');
+            if ($(this).hasClass('selected'))
+                chips.each(function () {
+                    if (!$(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+            else
+                chips.each(function () {
+                    if ($(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+        });
+
         // Handle click on select/unselect all
         $('#selectbtn').click(function () {
             $(this).toggleClass('reverse');
@@ -1737,7 +1772,7 @@
 
                 // --- INIT DROPDOWN FILTERS --- //
                 // Handle click on a filter chip
-                $('#filter-modal .chips .chip').click(function () {
+                $('#filter-modal .chips .single .chip').click(function () {
                     clickFilterHandler($(this));
                 });
             });
@@ -1749,7 +1784,7 @@
         {% if preselectedFilter is True %}
             $(document).ready(function () {
                 // Set each filter option to false
-                $('#filter-modal .filter .chip').each(function () {
+                $('#filter-modal .filter .single .chip').each(function () {
                     clickFilterHandler($(this))
                 });
 
