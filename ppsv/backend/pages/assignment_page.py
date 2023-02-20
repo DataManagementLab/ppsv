@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
-    possible_assignments_for_topic, AcceptedApplications
+    possible_assignments_of_group_to_topic, AcceptedApplications
 from backend.pages.functions import handle_get_chart_data
 from course.models import TopicSelection, Topic, CourseType, Course, Group
 
@@ -263,7 +263,7 @@ def get_group_data(group_id, collection_id):
             'id': application.topic.id,
             'name': application.topic.title,
             'priority': application.priority,
-            'freeSpace': possible_assignments_for_topic(application.topic)
+            'freeSlots': possible_assignments_of_group_to_topic(application.topic, application.group)
         }
         application_in_collection.append(topic)
 

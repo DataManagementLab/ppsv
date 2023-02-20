@@ -103,6 +103,86 @@ html, body {
 
 /* End of Base Page */
 
+/* Cross-site styling */
+
+.filter-content .chips {
+    margin: 6px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.filter-content .chips .single {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.filter-content .chips .chip {
+    display: flex;
+    align-items: center;
+    border-radius: 16px;
+    padding: 3px 9px 3px 6px;
+    background-color: var(--lightcoral);
+    color: white;
+    width: fit-content;
+    font-size: 16px;
+    user-select: none;
+    min-width: 50px;
+    cursor: pointer;
+}
+
+.filter-content .chips .chip.multi {
+    max-width: 140px;
+    width: 100%;
+}
+
+.filter-content .chips .chip.multi span {
+    border-bottom: none;
+}
+
+.filter-content .chips .chip.multi .sel {
+    display: inline-block;
+}
+
+.filter-content .chips .chip.multi .unsel {
+    display: none;
+}
+
+.filter-content .chips .chip.multi.selected .sel {
+    display: none;
+}
+
+.filter-content .chips .chip.multi.selected .unsel {
+    display: inline-block;
+}
+
+.filter-content .chips .chip.selected {
+    background-color: var(--lightgreen);
+    color: black;
+}
+
+.filter-content .chips .chip .fa {
+    background-color: white;
+    color: var(--blue);
+    margin: 0 3px;
+    border-radius: 100%;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+}
+
+.filter-content .chips .chip .fa:before {
+    content: "\f00d";
+}
+
+.filter-content .chips .chip.selected .fa:before {
+    content: "\f00c";
+}
+
+/* End cross-site styling */
 
 /* --- Home Page --- */
 
@@ -185,47 +265,38 @@ html, body {
     padding: 3px;
 }
 
-#pre-filtering .chips {
-    margin: 6px;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 3px;
-}
-
-#pre-filtering .chips .chip {
-    border-radius: 16px;
-    padding: 3px 9px 3px 6px;
-    background-color: var(--blue);
-    color: white;
-    width: fit-content;
+#selectbtn {
+    background: var(--blue);
+    max-width: 100px;
+    width: 100%;
+    padding: 3px 6px;
+    margin: 12px 3px;
+    border-radius: 3px;
+    color: #fff;
     font-size: 16px;
     user-select: none;
-    min-width: 50px;
     cursor: pointer;
-}
-
-#pre-filtering .chips .chip.selected {
-    background-color: var(--lightgreen);
-    color: black;
-}
-
-#pre-filtering .chips .chip .fa {
-    background-color: white;
-    color: var(--blue);
-    margin: 0 3px;
-    border-radius: 100%;
-    width: 18px;
-    height: 18px;
     text-align: center;
 }
 
-#pre-filtering .chips .chip .fa:before {
-    content: "\f00d";
+#selectbtn span {
+    border-bottom: none;
 }
 
-#pre-filtering .chips .chip.selected .fa:before {
-    content: "\f00c";
+#selectbtn .sel {
+    display: block;
+}
+
+#selectbtn .unsel {
+    display: none;
+}
+
+#selectbtn.reverse .sel {
+    display: none;
+}
+
+#selectbtn.reverse .unsel {
+    display: block;
 }
 
 #error-list {
@@ -497,6 +568,15 @@ html, body {
     cursor: pointer;
 }
 
+#assignment-content .modalApplication.selectedGroup {
+    padding-left: 3px;
+    word-break: break-word;
+    background-color: var(--lightblue);
+    border-radius: 3px;
+    margin: 3px;
+    cursor: pointer;
+}
+
 #assignment-content .application:hover, #assignment-content .modalApplication:hover {
     opacity: 0.7;
 }
@@ -582,6 +662,10 @@ html, body {
     margin: 0 3px;
 }
 
+#assignment-content #groupdetails .section-inner .inner-list .choice .details .info-button {
+    margin-left: 6px;
+}
+
 #assignment-content #groupdetails .section-inner .inner-list .choice:hover {
     background-color: var(--lightblue);
     text-decoration: underline;
@@ -609,6 +693,8 @@ html, body {
 
 #filterButton {
     height: 100%;
+    border-radius: 3px;
+    font-size: 140%;
 }
 
 #filterDiv p {
@@ -686,7 +772,7 @@ html, body {
     color: black;
 }
 
-/* --- Assignment Modal ----*/
+/* --- Modal ----*/
 /* - Class for blurring background - */
 .blur {
     filter: blur(3px);
@@ -694,7 +780,7 @@ html, body {
     cursor: none;
 }
 
-#assignment-modal {
+.modal-container {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -703,7 +789,7 @@ html, body {
     display: none;
 }
 
-#assignment-modal .modal-content {
+.modal-container .modal-content {
     position: absolute;
     border-radius: 3px;
     border: 1px solid black;
@@ -719,22 +805,24 @@ html, body {
     bottom: 0;
 }
 
-#assignment-modal .modal-content .title {
+.modal-container .modal-content .title {
     border-bottom: 1px solid black;
     height: 40px;
 }
 
-#assignment-modal .modal-content .title span {
-    border: none;
+.modal-container .modal-content .title span {
+    border: none !important;
     line-height: 40px;
 }
 
-#assignment-modal .modal-content .title .fa {
+.modal-container .modal-content .title .fa {
     float: right;
     margin: 6px;
     padding: 3px;
     cursor: pointer;
 }
+
+/* --- Assignment Modal ----*/
 
 #assignment-modal .dragdrop-container {
     display: flex;
@@ -795,6 +883,13 @@ html, body {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* --- Filter Modal ---*/
+
+#filter-modal .filter-content {
+    padding: 3px;
+    height: 100%;
 }
 
 /* End of Assignment Page */

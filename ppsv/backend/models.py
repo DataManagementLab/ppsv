@@ -15,25 +15,37 @@ def possible_assignments_for_group(group_id, collection_number):
     possible_assignments_for_group = 0
     for application in all_applications:
         query_assignments_for_topic = Assignment.objects.filter(topic=application.topic)
-        if query_assignments_for_topic.count() < application.topic.max_slot_size:
+        if query_assignments_for_topic.count() < application.topic.max_slots:
             possible_assignments_for_group += 1
             continue
         for slot in query_assignments_for_topic:
             if slot.open_places_in_slot_count >= application.group.size:
                 possible_assignments_for_group += 1
-                continue
+                break
     return possible_assignments_for_group
 
 
-def possible_assignments_for_topic(topic):
-    open_assignment_count = topic.max_slot_size * topic.max_slots
+def possible_assignments_of_group_to_topic(topic, group):
+    """
+    Returns all assignments than ce be assigned to the given topic without exceeding its maximum slot size
+    :param topic: the topic the search the possible assignments of
+    :param group: the group to search the possible assignments for
+    """
+    open_assignment_count = topic.max_slots
     for assignment in Assignment.objects.filter(topic=topic):
-        open_assignment_count -= topic.max_slot_size - assignment.open_places_in_slot_count
+        if assignment.open_places_in_slot_count < group.size:
+            open_assignment_count -= 1
     return open_assignment_count
 
 
 def all_applications_from_group(group_id, collection_number):
-    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number))
+    """
+    Returns all applications in the collection of the given group.
+    :param group_id: the id of the group
+    :param collection_number: the number of the collection to return the applications of
+    :return: a list containing all applications in the given collection of the given group sorted by their priority
+    """
+    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number).order_by('priority'))
 
 
 def get_all_applications_by_collection():
@@ -143,10 +155,10 @@ class Assignment(models.Model):
 
     def __str__(self):
         if self.topic.is_group_topic:
-            return "Slot " + str(self.slot_id) + " of " + self.topic.title + " [" + str(
+            return "Slot " + str(self.slot_id) + " of topic \"" + self.topic.title + "\" [" + str(
                 self.assigned_student_to_slot_count) + "/" + str(self.topic.max_slot_size) + "]"
         else:
-            return "Slot " + str(self.slot_id) + " of " + self.topic.title
+            return "Slot " + str(self.slot_id) + " of topic \"" + self.topic.title + "\""
 
     def clean(self):
         # SlotID Unique

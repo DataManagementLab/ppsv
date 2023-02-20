@@ -17,7 +17,7 @@
         {% if user.is_staff %}
             <a href="{% url 'backend:home_page' %}"
                class="adminbtn btn btn-danger navbar-inline-list">
-                Assignment Home Page </a>
+                Home Page </a>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -31,53 +31,9 @@
                 </label>
             </div>
             <div id="filterDiv">
-                <p>CP:</p>
-                <div class="filter-dropdown">
-                    Choose CP
-                    <ul class="filter-dropdown-list">
-                        {% for i in range %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" class="cp" value="{{ i }}" name="{{ i }}" checked/>{{ i }}
-                                </label>
-                            </li>
-                        {% endfor %}
-                        <li>
-                            <label>
-                                <input type="checkbox" class="cp" value="-1" name=">10" checked/>>10
-                            </label>
-                        </li>
-
-                    </ul>
-                </div>
-                <p>Course Type:</p>
-                <div class="filter-dropdown">
-                    Choose Course Type
-                    <ul class="filter-dropdown-list">
-                        {% for courseType in course_types %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" class="courseType" value="{{ courseType }}" name="courseType"
-                                           checked/>{{ courseType }}
-                                </label>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <p>Faculty:</p>
-                <div class="filter-dropdown">
-                    Choose Faculty
-                    <ul class="filter-dropdown-list">
-                        {% for faculty in faculties %}
-                            <li>
-                                <label>
-                                    <input type="checkbox" class="faculty" value="{{ faculty }}" name="faculty"
-                                           checked/>{{ faculty }}
-                                </label>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                <p>Filter: </p>
+                <button id="filterButton" onclick="openFilterModal()"><i class="fa fa-filter" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
         <div id="user-feedback"></div>
@@ -129,7 +85,7 @@
                 </div>
             </div>
         </div>
-        <div class="section" id="groupdetails" data-applicationid="-1">
+        <div class="section" id="groupdetails" data-groupid="-1" data-applicationid="-1" data-collectionid="-1">
             <span>Group Details</span>
             <p class="description">Please click on the info button on an application.</p>
             <div class="section-inner members" style="display: none;">
@@ -147,7 +103,7 @@
             </div>
         </div>
 
-        <div id="assignment-modal">
+        <div id="assignment-modal" class="modal-container">
             <div class="modal-content">
                 <div class="title"><span>Topic Title Placeholder</span><i class="fa fa-times"></i></div>
                 <div class="dragdrop-container">
@@ -162,6 +118,66 @@
                         <div class="applications inner-list ui-droppable">
 
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="filter-modal" class="modal-container" style="display: none;">
+            <div class="modal-content">
+                <div class="title"><span>Filter</span><i class="fa fa-times"></i></div>
+                <div class="filter-content">
+                    <p>Choose CP:</p>
+                    <div class="filter" data-filter="cp">
+                        <div class="chips">
+                            <div class="single">
+                                {% for i in range %}
+                                    <div class="chip selected" data-filter="cp" data-value="{{ i }}">
+                                        <i class="fa"></i>{{ i }}</div>
+                                {% endfor %}
+                                <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>>10</div>
+                            </div>
+                            <div class="chip multi reverse selected" data-filter="cp"><i class="fa"></i>
+                                <span class="sel">Select all</span>
+                                <span class="unsel">Unselect all</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="course">
+                        <p>Choose Course Type:</p>
+                        <div class="chips">
+                            <div class="single">
+                                {% for courseType in course_types %}
+                                    <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
+                                        <i class="fa"></i>{{ courseType }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="chip multi reverse selected" data-filter="courseType"><i class="fa"></i>
+                                <span class="sel">Select all</span>
+                                <span class="unsel">Unselect all</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="faculty">
+                        <p>Choose Faculty:</p>
+                        <div class="chips">
+                            <div class="single">
+                                {% for faculty in faculties %}
+                                    <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}">
+                                        <i class="fa"></i>{{ faculty }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="chip multi reverse selected" data-filter="faculty"><i class="fa"></i>
+                                <span class="sel">Select all</span>
+                                <span class="unsel">Unselect all</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="selectbtn" class="reverse">
+                        <span class="sel">Select all</span>
+                        <span class="unsel">Unselect all</span>
                     </div>
                 </div>
             </div>
@@ -300,7 +316,7 @@
                 /*
                 * Handling if application is dropped on this slot while this slot is finalized.
                 */
-                if(this.finalized !== 0){
+                if (this.finalized !== 0) {
                     infoPopup('bad', "This slot is locked, application can't be added")
                     return;
                 }
@@ -461,7 +477,7 @@
          * A class to represent one Application in the modal
          */
         class ModalApplication {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic, finalized, topicID) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic, finalized, topicID, selectedGroupID) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
@@ -474,7 +490,13 @@
                 this.assignedTopic = assignedTopic;
                 this.finalized = finalized;
                 this.topicID = topicID;
-                this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
+                console.log(groupeID);
+                console.log(selectedGroupID);
+                if (groupeID === selectedGroupID) {
+                    this.div = $('<div class="outer-item modalApplication selectedGroup" data-applicationid="' + applicationID + '"></div>');
+                } else {
+                    this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
+                }
                 this.updateDiv()
 
                 let container = $('#assignment-modal .modal-content');
@@ -583,7 +605,7 @@
          * @param newTopicID the id of the new topic
          * @param groupName the name of the group that was used to open the modal
          */
-        function handleModalOpen(newTopicID, groupName) {
+        function handleApplicationModalOpen(newTopicID, groupName, groupID) {
             $('#assignment-modal').show();
             $('#assignment-content .section').addClass('blur');
             //Delete old Content
@@ -614,7 +636,7 @@
 
                         loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize'], data['topicSlotsFinalized'], data['topicID']);
 
-                        loadApplications(data['applications'], data["topicID"]);
+                        loadApplications(data['applications'], data["topicID"], groupID);
                     }
                 })
             }
@@ -624,10 +646,10 @@
              * @param loadedApplications the applications to load
              * @param topicID the applications associated topicID
              */
-            function loadApplications(loadedApplications, topicID) {
+            function loadApplications(loadedApplications, topicID, groupID) {
                 let application;
                 for (let app of loadedApplications) {
-                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], app['finalizedAssignment'], topicID, $('#assignment-modal .applications'));
+                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], app['finalizedAssignment'], topicID, groupID);
                     applicationsModal.set(application.id, application);
                     if (application.slotID !== -1)
                         slotsModal.get(application.slotID).addApplication(application);
@@ -692,13 +714,16 @@
         /**
          * Handles closing of the modal
          */
-        function closeModal() {
+        function closeApplicationModal() {
             $('#assignment-modal').hide();
             $('#assignment-content .section').removeClass('blur');
             let currentTopic = $('#assignment-content #topics .topic.selected').first().data('topicid');
             if (currentTopic != null)
                 handleTopicChange(currentTopic);
-            let appID = $('#assignment-content #groupdetails').attr('data-applicationid');
+            let groupDetailDiv = $('#assignment-content #groupdetails')
+            let appID = groupDetailDiv.attr('data-applicationid');
+            let groupID = groupDetailDiv.attr('data-groupid');
+            let collectionID = groupDetailDiv.attr('data-collectionid');
             if (appID !== '-1') {
                 getApplicationGroupDetails(appID);
                 let selApp = $('#application' + appID);
@@ -706,11 +731,13 @@
                 if (selApp.length > 0) {
                     selApp.addClass('selected');
                 }
+            } else if (groupID !== '-1' && collectionID !== '-1') {
+                getGroupDetails(groupID, collectionID);
             }
         }
 
         $('#assignment-modal').on('click', function (event) {
-            if (event.target === this || event.target === $('#assignment-modal .title i.fa')[0]) closeModal();
+            if (event.target === this || event.target === $('#assignment-modal .title i.fa')[0]) closeApplicationModal();
         })
     </script>
 
@@ -748,7 +775,10 @@
         function getApplicationGroupDetails(appID) {
             if ($('#assignment-modal').is(':visible'))
                 return;
-            $('#assignment-content #groupdetails').attr('data-applicationid', appID);
+            let groupDetailDiv = $('#assignment-content #groupdetails');
+            groupDetailDiv.attr('data-groupid', '-1');
+            groupDetailDiv.attr('data-applicationid', appID);
+            groupDetailDiv.attr('data-collectionid', '-1');
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -760,7 +790,6 @@
                     method: "POST",
                     dataType: "json",
                     success: handleGroupDetailServerResponse()
-
                 }
             );
         }
@@ -773,6 +802,10 @@
         function getGroupDetails(groupID, collectionID) {
             if ($('#assignment-modal').is(':visible'))
                 return;
+            let groupDetailDiv = $('#assignment-content #groupdetails');
+            groupDetailDiv.attr('data-groupid', groupID);
+            groupDetailDiv.attr('data-applicationid', '-1');
+            groupDetailDiv.attr('data-collectionid', collectionID);
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -804,7 +837,7 @@
                 choiceList.html('');
                 data['collection'].forEach(function (choice) {
                     let classes = '';
-                    if (choice['freeSpace'] < data['members'].length)
+                    if (choice['freeSlots'] < 1)
                         classes += ' full';
                     if (data['assigned'] === choice['id'])
                         classes += ' assigned';
@@ -815,12 +848,13 @@
                             '</div>' +
                             '<div class="details">' +
                             '<small>Free slots</small>' +
-                            choice['freeSpace'] +
+                            choice['freeSlots'] +
+                            '<i class="info-button fa fa-info-circle"></i>' +
                             '</div>' +
                             '</div>');
                     html.click(function (event) {
                         event.preventDefault();
-                        handleModalOpen(choice['id'], data['group_name']);
+                        handleApplicationModalOpen(choice['id'], data['group_name'], data['selectedGroup']);
                     });
                     choiceList.append(html);
                 })
@@ -912,7 +946,7 @@
                 /*
                 * Handling if application is dropped on this slot while this slot is finalized.
                 */
-                if(this.finalized !== 0){
+                if (this.finalized !== 0) {
                     infoPopup('bad', "This slot is locked, application can't be added")
                     return;
                 }
@@ -1200,7 +1234,7 @@
          * @param slot the corresponding slot
          * @param buttonID the id of the button element
          */
-        function handleButtonClickSlot(slot, buttonID){
+        function handleButtonClickSlot(slot, buttonID) {
             $(buttonID).on('click', {slot: slot}, function (event) {
                 let oldFinalized = event.data.slot.finalized;
                 if (oldFinalized === 0) {
@@ -1232,7 +1266,7 @@
                         if (!data['finalizationChanged']) {
                             event.data.slot.finalized = oldFinalized;
                         }
-                        if(data['finalizationValue'] === 0){
+                        if (data['finalizationValue'] === 0) {
                             event.data.slot.div.addClass('droppable');
                         } else {
                             event.data.slot.div.removeClass('droppable');
@@ -1247,7 +1281,7 @@
          * @param application the corresponding application
          * @param buttonID the id of the button element
          */
-        function handleButtonClickApplication(application, buttonID){
+        function handleButtonClickApplication(application, buttonID) {
             $(buttonID).on('click', {application: application}, function (event) {
                 $.ajax({
                     data: {
@@ -1422,6 +1456,105 @@
             userFeedback.replaceWith(userFeedbackClone)
         }
 
+
+        /**
+         * Handles a drop on applications.
+         * @return {(function(*, *): void)|*} the jquery drop handler
+         */
+        function handleDropOnApplications() {
+            return function (e, ui) {
+                const application = applications.get(parseInt(ui.draggable.attr("id").substring(11)));
+                if (application.slotID === -1) {
+                    return;
+                }
+                infoPopup("wait", "Waiting for server response")
+                $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "removeAssignment",
+                            applicationID: application.id,
+                            slotID: application.slotID
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: (data) => {
+                            if (data['requestStatus']) {
+                                $('#applications').append(ui.draggable);
+                                slots.get(application.slotID).removeApplication(application);
+
+                                // Update group details
+                                let selectedAppID = $('.application.selected').attr('id').replace('application', '');
+                                getApplicationGroupDetails(selectedAppID);
+
+                                infoPopup("good", data['text'])
+                            } else {
+                                infoPopup("bad", data['text'])
+                            }
+                        }
+                    }
+                );
+            }
+        }
+
+        // --- MAIN FUNCTION --- //
+        $(document).ready(
+            function () {
+
+                // --- TOPIC CHANGE HANDLING --- //
+                $('.topic:not(.selected)').click(function (e) {
+                    e.preventDefault();
+                    $('.topic').removeClass('selected');
+                    $(this).addClass('selected');
+
+                    $('#assignments').html('');
+                    $('#applications').html('');
+
+                    let topic_id = $(this).attr('data-topicid');
+
+                    handleTopicChange(topic_id);
+                })
+
+                // --- INIT DROPDOWN FILTERS --- //
+                $(".filter-dropdown").click(function () {
+                    $(this).toggleClass("is-active");
+                });
+
+                document.addEventListener("click", e => {
+                    if (!e.target.closest(".filter-dropdown")) {
+                        $(".filter-dropdown").removeClass("is-active")
+                    }
+                })
+
+                $(".filter-dropdown ul").click(function (e) {
+                    e.stopPropagation();
+                });
+
+                // --- INIT APPLICATIONS DIV --- //
+                $('#applications').droppable({
+                    accept: ".application",
+                    hoverClass: "drop-hover",
+                    drop: handleDropOnApplications()
+                })
+
+                // --- INIT APPLICATIONS DIV FOR MODAL --- //
+                $('#assignment-modal .applications').droppable({
+                    accept: ".modalApplication",
+                    hoverClass: "drop-hover",
+                    drop: handleDropOnModalApplications()
+                })
+
+                // --- PRESELECT TOPIC IF GETTER IS SET --- //
+                {% if topicid != False %}
+                    $('#topics .topic[data-topicid="{{ topicid }}"]').click();
+                {% endif %}
+            }
+        )
+    </script>
+
+    <!-- Script-block for managing filter for the assignment page -->
+    <script>
+
+
         selectedCP = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1];
 
         selectedCourseTypes = []
@@ -1471,7 +1604,7 @@
 
             let search_term = searchbar.val().toLowerCase();
             let topicName = $(topic).text().toLowerCase();
-            let courseName = $(topic).parent().text().toLowerCase();
+            let courseName = $(topic).parent().clone().children().remove().end().text().trim().toLowerCase()
 
             return topicName.includes(search_term) || courseName.includes(search_term);
         }
@@ -1530,11 +1663,11 @@
         /**
          * Handles when a choiceBox of the CP filter is clicked.
          */
-        function CPCheckBoxHandler() {
-            if (!this.checked) {
-                selectedCP.splice(selectedCP.findIndex(item => item === parseInt($(this).val())), 1);
+        function CPChangeHandler(cp) {
+            if (selectedCP.includes(cp)) {
+                selectedCP.splice(selectedCP.findIndex(item => item === cp), 1);
             } else {
-                selectedCP.push(parseInt($(this).val()));
+                selectedCP.push(parseInt(cp));
             }
 
             updateTopicsAndCourses();
@@ -1543,11 +1676,11 @@
         /**
          * Handles when a choiceBox of the course type filter is clicked.
          */
-        function courseTypeCheckBoxHandler() {
-            if (!this.checked) {
-                selectedCourseTypes.splice(selectedCourseTypes.findIndex(item => item === $(this).val()), 1);
+        function courseTypeChangeHandler(courseType) {
+            if (selectedCourseTypes.includes(courseType)) {
+                selectedCourseTypes.splice(selectedCourseTypes.findIndex(item => item === courseType), 1);
             } else {
-                selectedCourseTypes.push($(this).val());
+                selectedCourseTypes.push(courseType);
             }
 
             updateTopicsAndCourses();
@@ -1556,11 +1689,11 @@
         /**
          * Handles when a choiceBox of the faculty filter is clicked.
          */
-        function facultyCheckBoxHandler() {
-            if (!this.checked) {
-                selectedFaculties.splice(selectedFaculties.findIndex(item => item === $(this).val()), 1);
+        function facultyChangeHandler(faculty) {
+            if (selectedFaculties.includes(faculty)) {
+                selectedFaculties.splice(selectedFaculties.findIndex(item => item === faculty), 1);
             } else {
-                selectedFaculties.push($(this).val());
+                selectedFaculties.push(faculty);
             }
 
             updateTopicsAndCourses();
@@ -1630,42 +1763,84 @@
         }
 
         /**
-         * Handles a drop on applications.
-         * @return {(function(*, *): void)|*} the jquery drop handler
+         * Handles closing of the modal
          */
-        function handleDropOnApplications() {
-            return function (e, ui) {
-                const application = applications.get(parseInt(ui.draggable.attr("id").substring(11)));
-                if (application.slotID === -1) {
-                    return;
-                }
-                infoPopup("wait", "Waiting for server response")
-                $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeAssignment",
-                            applicationID: application.id,
-                            slotID: application.slotID
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: (data) => {
-                            if (data['requestStatus']) {
-                                $('#applications').append(ui.draggable);
-                                slots.get(application.slotID).removeApplication(application);
+        function openFilterModal() {
+            $('#filter-modal').slideDown(250);
+            $('#assignment-content .section').addClass('blur');
+        }
 
-                                // Update group details
-                                let selectedAppID = $('.application.selected').attr('id').replace('application', '');
-                                getApplicationGroupDetails(selectedAppID);
+        /**
+         * Handles closing of the modal
+         */
+        function closeFilterModal() {
+            $('#filter-modal').slideUp(250);
+            $('#assignment-content .section').removeClass('blur');
+        }
 
-                                infoPopup("good", data['text'])
-                            } else {
-                                infoPopup("bad", data['text'])
-                            }
-                        }
-                    }
-                );
+        $(document).on('click', function (event) {
+            if ($('#application-modal').is(':visible'))
+                return;
+            if (event.target === $('#filter-modal .title i.fa')[0])
+                closeFilterModal();
+            if (event.target.id === "filterButton"
+                || $(event.target).parent('#filterButton').length !== 0
+                || $(event.target).parents('#filter-modal .modal-content').length !== 0)
+                return;
+            closeFilterModal();
+        });
+
+        // Handle click on select/unselect all by chip category
+        $('#filter-modal .chips .chip.multi').click(function () {
+            let filterType = $(this).data('filter');
+            $(this).toggleClass('selected');
+            let chips = $('#filter-modal .chips .single .chip[data-filter="' + filterType + '"]');
+            if ($(this).hasClass('selected'))
+                chips.each(function () {
+                    if (!$(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+            else
+                chips.each(function () {
+                    if ($(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+        });
+
+        // Handle click on select/unselect all
+        $('#selectbtn').click(function () {
+            $(this).toggleClass('reverse');
+            let chips = $('#filter-modal .chips .chip');
+            if ($(this).hasClass('reverse'))
+                chips.each(function () {
+                    if (!$(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+            else
+                chips.each(function () {
+                    if ($(this).hasClass('selected'))
+                        clickFilterHandler($(this));
+                });
+        });
+
+        // Manage the input fields for the chips
+        function clickFilterHandler(chip) {
+            console.log("CLICK ON CHIP" + chip.text())
+
+            if (chip.hasClass('selected')) {
+                chip.removeClass('selected');
+            } else {
+                chip.addClass('selected');
             }
+            let filterType = chip.data('filter');
+            let filterValue = chip.data('value');
+
+            if (filterType === "cp")
+                CPChangeHandler(filterValue);
+            else if (filterType === "courseType")
+                courseTypeChangeHandler(filterValue);
+            else if (filterType === "faculty")
+                facultyChangeHandler(filterValue);
         }
 
         // --- MAIN FUNCTION --- //
@@ -1676,60 +1851,13 @@
                 searchbar.val('');
                 searchbar.keyup(updateTopicsAndCourses);
 
-                // --- Filter Handling --- //
-                $(".cp").change(CPCheckBoxHandler);
-                $(".courseType").change(courseTypeCheckBoxHandler);
-                $(".faculty").change(facultyCheckBoxHandler);
-
-                // --- TOPIC CHANGE HANDLING --- //
-                $('.topic:not(.selected)').click(function (e) {
-                    e.preventDefault();
-                    $('.topic').removeClass('selected');
-                    $(this).addClass('selected');
-
-                    $('#assignments').html('');
-                    $('#applications').html('');
-
-                    let topic_id = $(this).attr('data-topicid');
-
-                    handleTopicChange(topic_id);
-                })
-
                 // --- INIT DROPDOWN FILTERS --- //
-                $(".filter-dropdown").click(function () {
-                    $(this).toggleClass("is-active");
+                // Handle click on a filter chip
+                $('#filter-modal .chips .single .chip').click(function () {
+                    clickFilterHandler($(this));
                 });
+            });
 
-                document.addEventListener("click", e => {
-                    if (!e.target.closest(".filter-dropdown")) {
-                        $(".filter-dropdown").removeClass("is-active")
-                    }
-                })
-
-                $(".filter-dropdown ul").click(function (e) {
-                    e.stopPropagation();
-                });
-
-                // --- INIT APPLICATIONS DIV --- //
-                $('#applications').droppable({
-                    accept: ".application",
-                    hoverClass: "drop-hover",
-                    drop: handleDropOnApplications()
-                })
-
-                // --- INIT APPLICATIONS DIV FOR MODAL --- //
-                $('#assignment-modal .applications').droppable({
-                    accept: ".modalApplication",
-                    hoverClass: "drop-hover",
-                    drop: handleDropOnModalApplications()
-                })
-
-                // --- PRESELECT TOPIC IF GETTER IS SET --- //
-                {% if topicid != False %}
-                    $('#topics .topic[data-topicid="{{ topicid }}"]').click();
-                {% endif %}
-            }
-        )
     </script>
 
     <!-- Script block for preselected filters -->
@@ -1737,39 +1865,26 @@
         {% if preselectedFilter is True %}
             $(document).ready(function () {
                 // Set each filter option to false
-                $('#filterDiv input').each(function () {
-                    if ($(this).prop('checked') === true) {
-                        $(this).click();
-                    }
+                $('#filter-modal .filter .single .chip').each(function () {
+                    clickFilterHandler($(this))
                 });
 
-                // Get all filters for CP and click these
+                // Get all filters for CP and select these
                 {% for cp in filterSettings.CP %}
-                    if ($('#filterDiv input.cp[value="{{ cp }}"]').prop('checked') === false)
-                        $('#filterDiv input.cp[value="{{ cp }}"]').click();
+                    clickFilterHandler($('#filter-modal .filter[data-filter="cp"] .chip[data-value="{{ cp }}"]'));
                 {% endfor %}
 
-                // Get all filters for course type and click these
+                // Get all filters for course type and select these
                 {% for courseType in filterSettings.courseType %}
-                    if ($('#filterDiv input.courseType[value="{{ courseType }}"]').prop('checked') === false)
-                        $('#filterDiv input.courseType[value="{{ courseType }}"]').click();
+                    clickFilterHandler($('#filter-modal .filter[data-filter="course"] .chip[data-value="{{ courseType }}"]'));
                 {% endfor %}
 
-                // Get all filters for CP and click these
+                // Get all filters for CP and select these
                 {% for faculty in filterSettings.faculty %}
-                    if ($('#filterDiv input.faculty[value="{{ faculty }}"]').prop('checked') === false)
-                        $('#filterDiv input.faculty[value="{{ faculty }}"]').click();
+                    clickFilterHandler($('#filter-modal .filter[data-filter="faculty"] .chip[data-value="{{ faculty }}"]'));
                 {% endfor %}
-            });
-        {% endif %}
-    </script>
 
-    <!-- reload page when focusing -->
-    <script>
-        window.onblur = function () {
-            window.onfocus = function () {
-                location.reload(true)
-            }
-        };
+            });
+        {%  endif %}
     </script>
 {% endblock content %}

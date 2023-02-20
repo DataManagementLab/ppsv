@@ -24,7 +24,7 @@
 
 {% block content %}
     <div id="home-top-bar">
-        <form method="post">
+        <form method="post" style="display: none;">
             <div id="automatic-assignment" name="automatic-assignment">
                 <button href="/home/" class="adminbtn btn btn-danger navbar-inline-list">Automatic assignment</button>
             </div>
@@ -90,11 +90,19 @@
                                 </label>
                             </div>
                             <div class="chips">
-                                {% for i in range %}
-                                    <div class="chip selected" data-filter="cp" data-value="{{ i }}">
-                                        <i class="fa"></i>{{ i }}</div>
-                                {% endfor %}
-                                <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>>10</div>
+                                <div class="single">
+                                    {% for i in range %}
+                                        <div class="chip selected" data-filter="cp" data-value="{{ i }}">
+                                            <i class="fa"></i>{{ i }}</div>
+                                    {% endfor %}
+                                    <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>
+                                        >10
+                                    </div>
+                                </div>
+                                <div class="chip multi selected" data-filter="cp"><i class="fa"></i>
+                                    <span class="sel">Select all</span>
+                                    <span class="unsel">Unselect all</span>
+                                </div>
                             </div>
                         </div>
 
@@ -109,30 +117,47 @@
                                 {% endfor %}
                             </div>
                             <div class="chips">
-                                {% for courseType in course_types %}
-                                    <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
-                                        <i class="fa"></i>{{ courseType }}</div>
-                                {% endfor %}
+                                <div class="single">
+                                    {% for courseType in course_types %}
+                                        <div class="chip selected" data-filter="courseType"
+                                             data-value="{{ courseType }}">
+                                            <i class="fa"></i>{{ courseType }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="chip multi selected" data-filter="courseType"><i class="fa"></i>
+                                    <span class="sel">Select all</span>
+                                    <span class="unsel">Unselect all</span>
+                                </div>
                             </div>
                         </div>
 
                         <div class="filter" data-filter="faculty">
                             <p>Choose Faculty:</p>
                             <div class="filter-checkboxes">
-                                    {% for faculty in faculties %}
-                                            <label>
-                                                <input type="checkbox" class="faculty" value="{{ faculty }}"
-                                                       name="faculty"
-                                                       checked/>{{ faculty }}
-                                            </label>
-                                    {% endfor %}
-                            </div>
-                            <div class="chips">
                                 {% for faculty in faculties %}
-                                    <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}"><i
-                                            class="fa"></i>{{ faculty }}</div>
+                                    <label>
+                                        <input type="checkbox" class="faculty" value="{{ faculty }}"
+                                               name="faculty"
+                                               checked/>{{ faculty }}
+                                    </label>
                                 {% endfor %}
                             </div>
+                            <div class="chips">
+                                <div class="single">
+                                    {% for faculty in faculties %}
+                                        <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}"><i
+                                                class="fa"></i>{{ faculty }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="chip multi selected" data-filter="faculty"><i class="fa"></i>
+                                    <span class="sel">Select all</span>
+                                    <span class="unsel">Unselect all</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="selectbtn" class="reverse">
+                            <span class="sel">Select all</span>
+                            <span class="unsel">Unselect all</span>
                         </div>
                         <input class="adminbtn btn btn-danger navbar-inline-list" type="submit"
                                value="Start assignment">
@@ -268,7 +293,7 @@
 
         // --- INIT DROPDOWN FILTERS --- //
         // Handle click on a filter chip
-        $('#pre-filtering .chips .chip').click(function () {
+        $('#pre-filtering .chips .single .chip').click(function () {
             if ($(this).hasClass('selected'))
                 $(this).removeClass('selected');
             else
@@ -276,14 +301,41 @@
             manageFilterInput($(this));
         });
 
+        // Handle click on select/unselect all by chip category
+        $('#pre-filtering .chips .chip.multi').click(function () {
+            let filterType = $(this).data('filter');
+            $(this).toggleClass('selected');
+            let chips = $('#pre-filtering .chips .single .chip[data-filter="' + filterType + '"]');
+            if ($(this).hasClass('selected'))
+                chips.addClass('selected');
+            else
+                chips.removeClass('selected');
+            chips.each(function () {
+                manageFilterInput($(this));
+            });
+        });
+
+        // Handle click on select/unselect all
+        $('#selectbtn').click(function () {
+            $(this).toggleClass('reverse');
+            let chips = $('#pre-filtering .chips .chip');
+            if ($(this).hasClass('reverse'))
+                chips.addClass('selected');
+            else
+                chips.removeClass('selected');
+            chips.each(function () {
+                manageFilterInput($(this));
+            });
+        });
+
         // Manage the input fields for the chips
         function manageFilterInput(chip) {
             let filterType = chip.data('filter');
             let filterValue = chip.data('value');
             if (chip.hasClass('selected')) {
-                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', true);
+                chip.closest('.chips').siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', true);
             } else {
-                chip.parent().siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', false);
+                chip.closest('.chips').siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', false);
             }
         }
     </script>
