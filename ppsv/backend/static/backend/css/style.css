@@ -408,7 +408,6 @@ p {
     max-width: 400px;
 }
 
-
 #assignment-content span {
     border-bottom: 1px solid black;
 }
@@ -477,6 +476,7 @@ p {
     color: var(--teal);
 }
 
+
 #group-info-possible-assignments {
     border-bottom-right-radius: 3px;
     border-top-right-radius: 3px;
@@ -516,6 +516,27 @@ p {
 
 .ui-draggable {
     user-select: none;
+}
+
+/* Multi Assignments */
+
+.section.multi {
+    flex-direction: column;
+    height: 100%;
+    border: 0;
+    gap: 3px
+}
+
+.section.single {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    border: solid black 1px;
+}
+
+#assignment-application .single {
+
+
 }
 
 #assignments .ui-draggable-dragging {
@@ -820,17 +841,17 @@ p {
 
 
 /* Filter Styling */
-.filter-content{
+.filter-content {
     width: 100%;
 }
 
-.filter-content .filter{
+.filter-content .filter {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid black;
 }
 
-.filter-content .title-bar{
+.filter-content .title-bar {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
