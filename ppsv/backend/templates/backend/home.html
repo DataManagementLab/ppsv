@@ -97,7 +97,7 @@
                         <div class="chips">
                             <div class="single">
                                 {% for courseType in course_types %}
-                                    <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
+                                    <div class="chip" data-filter="courseType" data-value="{{ courseType }}">
                                         <i class="fa"></i>{{ courseType }}</div>
                                 {% endfor %}
                             </div>
@@ -119,7 +119,7 @@
                         <div class="chips">
                             <div class="single">
                                 {% for faculty in faculties %}
-                                    <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}">
+                                    <div class="chip" data-filter="faculty" data-value="{{ faculty }}">
                                         <i class="fa"></i>{{ faculty }}</div>
                                 {% endfor %}
                             </div>
@@ -485,33 +485,53 @@
                 {% endfor %}
             }
 
+            selectedCPMinID = "selectedCPMin:";
+            selectedCPMaxID = "selectedCPMax:";
+            selectedCourseTypesID = "selectedCourseTypes:";
+            selectedFacultiesID = "selectedFaculties:";
+
             readFromCookie() {
                 if (readCookie("filterSettings") != null) {
-                    let filterSplit = readCookie("filterSettings").split("♥");
-                    if (filterSplit.length !== 3 || filterSplit[0].split("♦").length !== 2) {
-                        eraseCookie("filterSettings");
-                        this.loadDefaultValues();
-                    }
-                    // CP
-                    this.selectedCPMin = filterSplit[0].split("♦")[0];
-                    this.selectedCPMax = filterSplit[0].split("♦")[1];
+                    // CHECK IF COOKIE IS CORRECT
 
-                    //Update Slider
+                    function cookieBroken(filterSettings) {
+                        console.log("The filter cookie seems to be broken. Loading Defaults!");
+                        eraseCookie("filterSettings");
+                        filterSettings.loadDefaultValues();
+                    }
+
+                    let filterSplit = readCookie("filterSettings").split("&");
+                    if (filterSplit.length !== 4) cookieBroken(this);
+
+                    let selectedCPMinIndex = filterSplit[0].lastIndexOf(this.selectedCPMinID);
+                    let selectedCPMaxIndex = filterSplit[1].lastIndexOf(this.selectedCPMaxID);
+                    let selectedCourseTypesIndex = filterSplit[2].lastIndexOf(this.selectedCourseTypesID);
+                    let selectedFacultiesIndex = filterSplit[3].lastIndexOf(this.selectedFacultiesID);
+                    if (selectedCPMinIndex === -1 || selectedCPMaxIndex === -1 || selectedCourseTypesIndex === -1 || selectedFacultiesIndex === -1) cookieBroken(this);
+
+
+                    // LOAD DATA FROM COOKIE
+                    // CP
+
+                    this.selectedCPMin = filterSplit[0].substring(selectedCPMinIndex + this.selectedCPMinID.length);
+                    this.selectedCPMax = filterSplit[1].substring(selectedCPMaxIndex + this.selectedCPMaxID.length);
                     let slider = $('#slider-range');
                     slider.slider("option", "values", [this.selectedCPMin, this.selectedCPMax == -1 ? 11 : this.selectedCPMax]);
                     //Show initial Text
                     $("#chosen-cp").text(this.selectedCPMin + " - " + (this.selectedCPMax == -1 ? '∞' : this.selectedCPMax) + " CP");
 
                     //CourseTypes
-                    let courseTypes = filterSplit[1].split("♦");
+                    let courseTypes = filterSplit[2].substring(selectedCourseTypesIndex + this.selectedCourseTypesID.length).split(",");
                     for (let i = 0; i < courseTypes.length; i++) {
-                        this.selectedCourseTypes.push(courseTypes[i]);
+                        if (courseTypes[i].length > 0)
+                            this.selectedCourseTypes.push(courseTypes[i]);
                     }
 
                     //Faculties
-                    let faculties = filterSplit[2].split("♦");
+                    let faculties = filterSplit[3].substring(selectedFacultiesIndex + this.selectedFacultiesID.length).split(",");
                     for (let i = 0; i < faculties.length; i++) {
-                        this.selectedFaculties.push(faculties[i]);
+                        if (faculties[i].length > 0)
+                            this.selectedFaculties.push(faculties[i]);
                     }
 
                     //Update Chips
@@ -528,18 +548,21 @@
             }
 
             saveToCookie() {
-                let cookieValue = "";
-                cookieValue += this.selectedCPMin + "♦" + this.selectedCPMax;
-                cookieValue += "♥";
+                let cookieValue = this.selectedCPMinID + this.selectedCPMin;
+                cookieValue += "&" + this.selectedCPMaxID + this.selectedCPMax;
+                cookieValue += "&" + this.selectedCourseTypesID;
                 this.selectedCourseTypes.forEach(e => {
-                    cookieValue += e + "♦";
+                    cookieValue += e + ",";
                 });
-                cookieValue = cookieValue.substring(0, cookieValue.length - 1);
-                cookieValue += "♥";
+                if (this.selectedCourseTypes.length > 0)
+                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                cookieValue += "&" + this.selectedFacultiesID;
                 this.selectedFaculties.forEach(e => {
-                    cookieValue += e + "♦";
+                    cookieValue += e + ",";
                 });
-                cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                if (this.selectedFaculties.length > 0)
+                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                console.log("Save cookie " + cookieValue);
                 createCookie("filterSettings", cookieValue, 5);
             }
 
