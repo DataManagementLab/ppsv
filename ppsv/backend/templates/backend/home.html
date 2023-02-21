@@ -23,6 +23,7 @@
 {% endblock %}
 
 {% block content %}
+
     <div id="home-top-bar">
         <form method="post" style="display: none;">
             <div id="automatic-assignment" name="automatic-assignment">
@@ -63,105 +64,76 @@
 
     <div id="home-content">
         <div id="stats-and-filter">
+            <div id="filter" class="section">
+                <div class="filter-content">
+                    <span>Filtered Assignment</span>
+                    <div class="filter" data-filter="cp">
+                        <div class="title-bar">
+                            <div class="text">
+                                <p>Choose CP: </p>
+                                <p id="chosen-cp" class="slider-info"></p>
+                            </div>
+                            <div class="chips">
+                                <div class="chip multi selected" data-filter="cp"><i class="fa"></i>Select all</div>
+                            </div>
+                        </div>
+                        <div class="slider multi">
+                            <div id="slider-range"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="course">
+                        <div class="title-bar">
+                            <div>
+                                <p>Choose Course Type:</p>
+                            </div>
+                            <div class="chips">
+                                <div class="chip multi" data-filter="courseType"><i class="fa"></i>
+                                    <div class="sel">Unselect all</div>
+                                    <div class="unsel">Select all</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chips">
+                            <div class="single">
+                                {% for courseType in course_types %}
+                                    <div class="chip selected" data-filter="courseType" data-value="{{ courseType }}">
+                                        <i class="fa"></i>{{ courseType }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="faculty">
+                        <div class="title-bar">
+                            <div>
+                                <p>Choose Faculty:</p>
+                            </div>
+                            <div class="chips">
+                                <div class="chip multi" data-filter="faculty"><i class="fa"></i>
+                                    <div class="sel">Unselect all</div>
+                                    <div class="unsel">Select all</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chips">
+                            <div class="single">
+                                {% for faculty in faculties %}
+                                    <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}">
+                                        <i class="fa"></i>{{ faculty }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="statistics" class="section">
                 <div id="statistics-score">
                     <span id="statistics-span">Statistics</span>
                 </div>
                 <div id="statistics-chart">
                     <canvas id="bar-chart"></canvas>
-                </div>
-            </div>
-            <div id="pre-filtering" class="section">
-                <span>Filtered Assignment</span>
-                <div class="filter-content">
-                    <form action="/assignment/" method="POST">
-                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                        <input type="hidden" name="action" value="preselectFilters">
-                        <p>Choose CP:</p>
-                        <div class="filter" data-filter="cp">
-                            <div class="filter-checkboxes">
-                                {% for i in range %}
-                                    <label>
-                                        <input type="checkbox" class="cp" value="{{ i }}" name="cp"/>
-                                    </label>
-                                {% endfor %}
-                                <label>
-                                    <input type="checkbox" class="cp" value="-1" name="cp"/>
-                                </label>
-                            </div>
-                            <div class="chips">
-                                <div class="single">
-                                    {% for i in range %}
-                                        <div class="chip selected" data-filter="cp" data-value="{{ i }}">
-                                            <i class="fa"></i>{{ i }}</div>
-                                    {% endfor %}
-                                    <div class="chip selected" data-filter="cp" data-value="-1"><i class="fa"></i>
-                                        >10
-                                    </div>
-                                </div>
-                                <div class="chip multi selected" data-filter="cp"><i class="fa"></i>
-                                    <span class="sel">Select all</span>
-                                    <span class="unsel">Unselect all</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="filter" data-filter="course">
-                            <p>Choose Course Type:</p>
-                            <div class="filter-checkboxes">
-                                {% for courseType in course_types %}
-                                    <label>
-                                        <input type="checkbox" class="courseType"
-                                               value="{{ courseType }}" name="courseType"/>
-                                    </label>
-                                {% endfor %}
-                            </div>
-                            <div class="chips">
-                                <div class="single">
-                                    {% for courseType in course_types %}
-                                        <div class="chip selected" data-filter="courseType"
-                                             data-value="{{ courseType }}">
-                                            <i class="fa"></i>{{ courseType }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="chip multi selected" data-filter="courseType"><i class="fa"></i>
-                                    <span class="sel">Select all</span>
-                                    <span class="unsel">Unselect all</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="filter" data-filter="faculty">
-                            <p>Choose Faculty:</p>
-                            <div class="filter-checkboxes">
-                                {% for faculty in faculties %}
-                                    <label>
-                                        <input type="checkbox" class="faculty" value="{{ faculty }}"
-                                               name="faculty"
-                                               checked/>{{ faculty }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                            <div class="chips">
-                                <div class="single">
-                                    {% for faculty in faculties %}
-                                        <div class="chip selected" data-filter="faculty" data-value="{{ faculty }}"><i
-                                                class="fa"></i>{{ faculty }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="chip multi selected" data-filter="faculty"><i class="fa"></i>
-                                    <span class="sel">Select all</span>
-                                    <span class="unsel">Unselect all</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="selectbtn" class="reverse">
-                            <span class="sel">Select all</span>
-                            <span class="unsel">Unselect all</span>
-                        </div>
-                        <input class="adminbtn btn btn-danger navbar-inline-list" type="submit"
-                               value="Start assignment">
-                    </form>
                 </div>
             </div>
         </div>
@@ -338,5 +310,252 @@
                 chip.closest('.chips').siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', false);
             }
         }
+    </script>
+
+    <!-- Script-block for managing filters -->
+    <script>
+        class FilterSettings {
+
+            constructor() {
+                this.selectedCPMin = 0;
+                this.selectedCPMax = 0;
+                this.selectedCourseTypes = [];
+                this.selectedFaculties = [];
+                this.searchbar = "";
+
+                this.createModalHandling($('#filter'));
+
+                if (readCookie("filterSettings") != null) {
+                    this.readFromCookie();
+                    this.filterChanged();
+                } else {
+                    this.loadDefaultValues();
+                    this.saveToCookie();
+                }
+
+            }
+
+            createModalHandling() {
+                const filterSettings = this;
+
+                function createSingleChipClickHandler(chip, filterSettings) {
+                    chip.click(() => {
+                        let filterType = chip.data('filter');
+                        let filterValue = chip.data('value');
+                        if (chip.hasClass('selected')) {
+                            chip.removeClass('selected');
+                            if (filterType === 'courseType') {
+                                filterSettings.removeCourseType(filterValue);
+                            } else if (filterType === 'faculty') {
+                                filterSettings.removeFaculty(filterValue);
+                            }
+                        } else {
+                            chip.addClass('selected');
+                            if (filterType === 'courseType') {
+                                filterSettings.addCourseType(filterValue);
+                            } else if (filterType === 'faculty') {
+                                filterSettings.addFaculty(filterValue);
+                            }
+                        }
+                        filterSettings.filterChanged();
+                    })
+                }
+
+                function createMultiChipClickHandler(chip, filterSettings) {
+                    chip.click(() => {
+                        let filterType = chip.data('filter');
+
+                        // slider stuff for cp
+                        if (filterType === 'cp') {
+                            filterSettings.selectedCPMin = 0;
+                            filterSettings.selectedCPMax = -1;
+                            slider.slider("option", "values", [0, 11]);
+                            $("#chosen-cp").text('0 - ∞ CP');
+                        }
+
+                        // toggle chips otherwise
+                        else {
+                            // Update the chips
+                            let chips = $('#filter .chips .single .chip[data-filter="' + filterType + '"]');
+                            if (chip.hasClass('selected')) {
+                                //Update class
+                                if (filterType === 'courseType') {
+                                    filterSettings.selectedCourseTypes = [];
+                                    filterSettings.loadAllCourses();
+                                } else if (filterType === 'faculty') {
+                                    filterSettings.selectedFaculties = [];
+                                    filterSettings.loadAllFaculties()
+                                }
+                                //update chips
+                                chips.each((index, chip1) => {
+                                    let chip = $(chip1)
+                                    if (!chip.hasClass('selected')) {
+                                        chip.addClass('selected');
+                                    }
+                                });
+                            } else {
+                                //Update class
+                                if (filterType === 'courseType')
+                                    filterSettings.selectedCourseTypes = [];
+                                else if (filterType === 'faculty')
+                                    filterSettings.selectedFaculties = [];
+                                //Update chips
+                                chips.each((index, chip1) => {
+                                    let chip = $(chip1)
+                                    if ($(chip).hasClass('selected')) {
+                                        chip.removeClass('selected');
+                                    }
+                                });
+                            }
+
+                            //Update multi chip
+                            $(chip).toggleClass('selected');
+                        }
+                        //Actually apply the changes
+                        filterSettings.filterChanged();
+                    });
+                }
+
+                // --- CP SLIDER --- //
+                //Create the slider and update on slide
+                let slider = $('#slider-range');
+                slider.slider({
+                    range: true,
+                    min: 0,
+                    max: 11,
+                    values: [filterSettings.selectedCPMin, filterSettings.selectedCPMax === -1 ? 11 : filterSettings.selectedCPMax],
+                    slide: function (event, ui) {
+                        $('#chosen-cp').text(ui.values[0] + " - " + (ui.values[1] == 11 ? '∞' : ui.values[1]) + " CP");
+                        filterSettings.selectedCPMin = ui.values[0];
+                        filterSettings.selectedCPMax = ui.values[1] == 11 ? -1 : ui.values[1];
+                        filterSettings.filterChanged();
+                    }
+                });
+
+                // --- MULTI CHIPS --- //
+                $('#filter .chip.multi').each((index, chip) => createMultiChipClickHandler($(chip), filterSettings));
+
+
+                // --- COURSE & FACULTY CHIPS --- //
+                $("#filter .single .chip ").each((index, chip) => createSingleChipClickHandler($(chip), filterSettings));
+            }
+
+            addCourseType(course) {
+                this.selectedCourseTypes.push(course);
+            }
+
+            addFaculty(faculty) {
+                this.selectedFaculties.push(faculty)
+            }
+
+            removeCourseType(course) {
+                const index = this.selectedCourseTypes.indexOf(course);
+                if (index > -1) {
+                    this.selectedCourseTypes.splice(index, 1);
+                }
+            }
+
+            removeFaculty(faculty) {
+                const index = this.selectedFaculties.indexOf(faculty);
+                if (index > -1) {
+                    this.selectedFaculties.splice(index, 1);
+                }
+            }
+
+            loadDefaultValues() {
+                this.selectedCPMin = 1;
+                this.selectedCPMax = -1;
+                this.loadAllCourses();
+                this.loadAllFaculties();
+                $("#filter .single .chip ").each((index, chip1) => {
+                    let chip = $(chip1);
+                    chip.addClass('selected');
+                });
+            }
+
+            loadAllCourses() {
+                {% for courseType in course_types %}
+                    this.selectedCourseTypes.push("{{ courseType }}")
+                {% endfor %}
+            }
+
+            loadAllFaculties() {
+                {% for faculty in faculties %}
+                    this.selectedFaculties.push("{{ faculty }}")
+                {% endfor %}
+            }
+
+            readFromCookie() {
+                if (readCookie("filterSettings") != null) {
+                    let filterSplit = readCookie("filterSettings").split("♥");
+                    if (filterSplit.length !== 3 || filterSplit[0].split("♦").length !== 2) {
+                        eraseCookie("filterSettings");
+                        this.loadDefaultValues();
+                    }
+                    // CP
+                    this.selectedCPMin = filterSplit[0].split("♦")[0];
+                    this.selectedCPMax = filterSplit[0].split("♦")[1];
+
+                    //Update Slider
+                    let slider = $('#slider-range');
+                    slider.slider("option", "values", [this.selectedCPMin, this.selectedCPMax == -1 ? 11 : this.selectedCPMax]);
+                    //Show initial Text
+                    $("#chosen-cp").text(this.selectedCPMin + " - " + (this.selectedCPMax == -1 ? '∞' : this.selectedCPMax) + " CP");
+
+                    //CourseTypes
+                    let courseTypes = filterSplit[1].split("♦");
+                    for (let i = 0; i < courseTypes.length; i++) {
+                        this.selectedCourseTypes.push(courseTypes[i]);
+                    }
+
+                    //Faculties
+                    let faculties = filterSplit[2].split("♦");
+                    for (let i = 0; i < faculties.length; i++) {
+                        this.selectedFaculties.push(faculties[i]);
+                    }
+
+                    //Update Chips
+                    let filterSettings = this;
+                    $("#filter .single .chip").each((index, chip1) => {
+                        let chip = $(chip1);
+                        if (filterSettings.selectedCourseTypes.some(item => item === chip.data('value')) ||
+                            filterSettings.selectedFaculties.some(item => item === chip.data('value')))
+                            chip.addClass('selected');
+                        else
+                            chip.removeClass('selected');
+                    });
+                }
+            }
+
+            saveToCookie() {
+                let cookieValue = "";
+                cookieValue += this.selectedCPMin + "♦" + this.selectedCPMax;
+                cookieValue += "♥";
+                this.selectedCourseTypes.forEach(e => {
+                    cookieValue += e + "♦";
+                });
+                cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                cookieValue += "♥";
+                this.selectedFaculties.forEach(e => {
+                    cookieValue += e + "♦";
+                });
+                cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                createCookie("filterSettings", cookieValue, 5);
+            }
+
+            filterChanged() {
+                this.saveToCookie()
+                // TODO: implement handling for errors and statistic
+            }
+
+
+        }
+
+        // --- INIT FILTER --- //
+        $(document).ready(
+            function () {
+                // --- INIT FILTER --- //
+                new FilterSettings();
+            });
     </script>
 {% endblock content %}

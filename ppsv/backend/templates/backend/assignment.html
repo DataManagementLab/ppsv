@@ -148,9 +148,9 @@
                                 <p>Choose Course Type:</p>
                             </div>
                             <div class="chips">
-                                <div class="chip multi" data-filter="courseType"><i class="fa"></i>
-                                    <p>Unselect all</p>
-                                    <p class="selected">Select all</p>
+                                <div class="chip multi selected" data-filter="courseType"><i class="fa"></i>
+                                    <div class="unsel">Unselect all</div>
+                                    <div class="sel">Select all</div>
                                 </div>
                             </div>
                         </div>
@@ -170,8 +170,9 @@
                                 <p>Choose Faculty:</p>
                             </div>
                             <div class="chips">
-                                <div class="chip multi" data-filter="faculty"><i class="fa"></i>
-                                    Unselect all
+                                <div class="chip multi selected" data-filter="faculty"><i class="fa"></i>
+                                    <div class="unsel">Unselect all</div>
+                                    <div class="sel">Select all</div>
                                 </div>
                             </div>
                         </div>
@@ -1604,11 +1605,8 @@
 
                         // toggle chips otherwise
                         else {
-                            //Update multi chip
-                            $(chip).toggleClass('selected');
-                            // Update the Chips
+                            // Update the chips
                             let chips = $('#filter-modal .chips .single .chip[data-filter="' + filterType + '"]');
-
                             if (chip.hasClass('selected')) {
                                 //Update class
                                 if (filterType === 'courseType') {
@@ -1625,7 +1623,8 @@
                                         chip.addClass('selected');
                                     }
                                 });
-                            } else {
+                            }
+                            else {
                                 //Update class
                                 if (filterType === 'courseType')
                                     filterSettings.selectedCourseTypes = [];
@@ -1639,6 +1638,9 @@
                                     }
                                 });
                             }
+
+                            //Update multi chip
+                            $(chip).toggleClass('selected');
                         }
                         //Actually apply the changes
                         filterSettings.filterChanged();
@@ -1775,6 +1777,7 @@
             filterChanged() {
                 this.saveToCookie()
                 this.updateTopicList();
+                // TODO: implement handling for statistic
             }
 
             updateTopicList() {

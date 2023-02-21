@@ -820,6 +820,9 @@ p {
 
 
 /* Filter Styling */
+.filter-content{
+    width: 100%;
+}
 
 .filter-content .filter{
     margin-bottom: 20px;
@@ -919,5 +922,22 @@ p {
 .filter-content .chip.selected .fa:before {
     content: "\f00c";
 }
+
+.filter-content .title-bar .chips .chip.multi.selected .sel {
+    display: block;
+}
+
+.filter-content .title-bar .chips .chip.multi.selected .unsel {
+    display: none;
+}
+
+.filter-content .title-bar .chips .chip.multi .sel {
+    display: none;
+}
+
+.filter-content .title-bar .chips .chip.multi .unsel {
+    display: block;
+}
+
 
 /* End Filter Styling styling */
