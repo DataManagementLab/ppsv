@@ -101,88 +101,11 @@ html, body {
     margin: 0;
 }
 
+p {
+    margin-bottom: 0;
+}
+
 /* End of Base Page */
-
-/* Cross-site styling */
-
-.filter-content .chips {
-    margin: 6px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.filter-content .chips .single {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 3px;
-}
-
-.filter-content .chips .chip {
-    display: flex;
-    align-items: center;
-    border-radius: 16px;
-    padding: 3px 9px 3px 6px;
-    background-color: var(--lightcoral);
-    color: white;
-    width: fit-content;
-    font-size: 16px;
-    user-select: none;
-    min-width: 50px;
-    cursor: pointer;
-}
-
-.filter-content .chips .chip.multi {
-    max-width: 140px;
-    width: 100%;
-}
-
-.filter-content .chips .chip.multi span {
-    border-bottom: none;
-}
-
-.filter-content .chips .chip.multi .sel {
-    display: inline-block;
-}
-
-.filter-content .chips .chip.multi .unsel {
-    display: none;
-}
-
-.filter-content .chips .chip.multi.selected .sel {
-    display: none;
-}
-
-.filter-content .chips .chip.multi.selected .unsel {
-    display: inline-block;
-}
-
-.filter-content .chips .chip.selected {
-    background-color: var(--lightgreen);
-    color: black;
-}
-
-.filter-content .chips .chip .fa {
-    background-color: white;
-    color: var(--blue);
-    margin: 0 3px;
-    border-radius: 100%;
-    width: 18px;
-    height: 18px;
-    text-align: center;
-}
-
-.filter-content .chips .chip .fa:before {
-    content: "\f00d";
-}
-
-.filter-content .chips .chip.selected .fa:before {
-    content: "\f00c";
-}
-
-/* End cross-site styling */
 
 /* --- Home Page --- */
 
@@ -889,7 +812,112 @@ html, body {
 
 #filter-modal .filter-content {
     padding: 3px;
-    height: 100%;
+    min-width: 500px;
+    height: fit-content;
 }
 
 /* End of Assignment Page */
+
+
+/* Filter Styling */
+
+.filter-content .filter{
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid black;
+}
+
+.filter-content .title-bar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 40px;
+    padding-top: 3px;
+    padding-bottom: 5px;
+}
+
+.filter-content .title-bar .chips {
+    display: flex;
+    flex-direction: row;
+}
+
+.filter-content .slider {
+    padding: 5px 20px 5px 20px;
+}
+
+
+.filter-content .title-bar .text {
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+}
+
+.filter-content .title-bar .slider-info {
+    border: 0;
+}
+
+.filter-content .title-bar .chip.multi {
+    display: flex;
+    align-items: center;
+    border-radius: 16px;
+    padding: 3px 9px 3px 6px;
+    width: fit-content;
+    font-size: 16px;
+    user-select: none;
+    min-width: 50px;
+    cursor: pointer;
+}
+
+.filter-content .chips {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.filter-content .chips .single {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.filter-content .chips .chip {
+    display: flex;
+    align-items: center;
+    border-radius: 16px;
+    padding: 3px 9px 3px 6px;
+    background-color: var(--lightcoral);
+    color: white;
+    width: fit-content;
+    font-size: 16px;
+    user-select: none;
+    min-width: 50px;
+    cursor: pointer;
+}
+
+.filter-content .chip.selected {
+    background-color: var(--lightgreen);
+    color: black;
+}
+
+
+.filter-content .chips .chip .fa {
+    background-color: white;
+    color: var(--blue);
+    margin: 0 3px;
+    border-radius: 100%;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+}
+
+.filter-content .chip .fa:before {
+    content: "\f00d";
+}
+
+.filter-content .chip.selected .fa:before {
+    content: "\f00c";
+}
+
+/* End Filter Styling styling */

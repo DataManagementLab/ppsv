@@ -414,6 +414,7 @@ def handle_post(request):
 def render_site(request, args=None):
     """
     handles the rendering of the assignment page.
+    parses additional information in the address and handles it accordingly
 
     :param request: the handled request
     :param args: Arguments for rendering. When none given, an empty array is created
