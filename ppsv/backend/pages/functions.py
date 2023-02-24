@@ -4,7 +4,7 @@ from backend.models import Assignment
 from course.models import TopicSelection
 
 
-def handle_get_chart_data():
+def handle_get_chart_data(request):
     """Creates the data for the assignment chart.
 
     :return: The data for the assignment chart.
@@ -20,17 +20,32 @@ def handle_get_chart_data():
         -1: 0
     }
 
+    min_cp = int(request.POST.get('minCP'))
+    max_cp = int(request.POST.get('maxCP'))
+    course_types = request.POST.getlist('courseTypes[]')
+    faculties = request.POST.getlist('faculties[]')
     assignment_priorities = {}
 
-    for assignment in Assignment.objects.all():
-        for application in assignment.accepted_applications.all():
-            key = (application.group.id, application.collection_number)
-            if key not in assignment_priorities:
-                assignment_priorities[key] = application.priority
-            else:
-                assignment_priorities[key] = min(assignment_priorities[key], application.priority)
+    if max_cp == -1:
+        assignment_query = Assignment.objects.filter(topic__course__cp__gte=min_cp,
+                                                     topic__course__type__in=course_types,
+                                                     topic__course__faculty__in=faculties)
+        application_query = TopicSelection.objects.filter(topic__course__cp__gte=min_cp,
+                                                          topic__course__type__in=course_types,
+                                                          topic__course__faculty__in=faculties)
+    else:
+        assignment_query = Assignment.objects.filter(topic__course__cp__range=(min_cp, max_cp),
+                                                     topic__course__type__in=course_types,
+                                                     topic__course__faculty__in=faculties)
+        application_query = TopicSelection.objects.filter(topic__course__cp__range=(min_cp, max_cp),
+                                                          topic__course__type__in=course_types,
+                                                          topic__course__faculty__in=faculties)
 
-    for topic_selection in TopicSelection.objects.all():
+    for assignment in assignment_query:
+        for application in assignment.accepted_applications.all():
+            assignment_priorities[(application.group.id, application.collection_number)] = application.priority
+
+    for topic_selection in application_query:
         key = (topic_selection.group.id, topic_selection.collection_number)
         if key not in assignment_priorities:
             assignment_priorities[key] = -1
