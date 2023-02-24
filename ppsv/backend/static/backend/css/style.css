@@ -624,6 +624,18 @@ p {
     background-color: var(--red);
 }
 
+#assignment-content .placeholder {
+    background: var(--lightblue);
+}
+
+#assignment-content .placeholder.optional {
+    color: white;
+    font-style: italic;
+    background: var(--purple)
+}
+
+
+
 #searchAndFilterDiv {
     display: flex;
     gap: 3px;
@@ -924,7 +936,6 @@ p {
     background-color: var(--lightgreen);
     color: black;
 }
-
 
 .filter-content .chips .chip .fa {
     background-color: white;

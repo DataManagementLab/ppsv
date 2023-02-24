@@ -545,8 +545,8 @@
                     if (doInfoItem) {
                         doInfoItem = false;
                         let infoItem = $('<div class="group-info"></div>')
-                        let preference = $('<div id="group-info-preference" title="preference ranking in affiliated collection">' + '<i class="fa fa-hashtag"></i>' + this.preference + '</div>');
-                        let remainingAssignments = $('<div id="group-info-possible-assignments" title="possible remaining assignments / size of affiliated collection"></div>');
+                        let preference = $('<div class="group-info-preference" title="preference ranking in affiliated collection">' + '<i class="fa fa-hashtag"></i>' + this.preference + '</div>');
+                        let remainingAssignments = $('<div class="group-info-possible-assignments" title="possible remaining assignments / size of affiliated collection"></div>');
                         let remainingAssignmentsTemp = "";
                         if (this.collectionFullfilled || (this.possibleAssignments <= 0 && this.div.parent().parent().attr("id") === "slot")) {
                             remainingAssignmentsTemp += '<i style="color: green" class="fa fa-check"></i>';
@@ -915,12 +915,12 @@
                 $('#assignment-application').append('' +
                     '<div class="section single" id="assignment-application-' + this.topicID + '">' +
                     '<div class="section-inner" id="assignments-' + this.topicID + '-div">' +
-                    '   <span>Assignments</span>' +
+                    '   <span>Assignments - ' + this.topicID + '</span>' +
                     '   <div id="assignments-' + this.topicID + '" class="inner-list">' +
                     '   </div>' +
                     '</div>' +
                     '<div class="section-inner" id="applications-' + this.topicID + '-div">' +
-                    '   <span>Applications</span>' +
+                    '   <span>Applications - ' + this.topicID + '</span>' +
                     '   <div id="applications-' + this.topicID + '" class="inner-list">' +
                     '   </div>' +
                     '</div>' +
@@ -976,7 +976,7 @@
                 this.topicID = topicID;
                 this.nowAssignedSize = 0;
                 this.applications = new Map();
-                this.div = $('<div id="slot' + this.id + '" class="inner-list-item droppable"></div>');
+                this.div = $('<div id="slot-' + this.topicID + "-" + this.id + '" class="inner-list-item droppable"></div>');
                 this.div.droppable({
                     accept: ".application",
                     hoverClass: "drop-hover",
@@ -1120,10 +1120,10 @@
              * Updates the div of this slot. Consist of a status (name + icon), current assignments and placeholders
              */
             updateDiv() {
-                $('#slot' + this.id + ' .field').detach();
-                $('#slot' + this.id + ' .status').remove();
+                $('#slot-' + this.topicID + "-" + this.id + ' .field').detach();
+                $('#slot-' + this.topicID + "-" + this.id + ' .status').remove();
 
-                let buttonID = 'slot-' + this.id + '-finalized';
+                let buttonID = 'slot-' + this.topicID + "-" + this.id + '-finalized';
                 let status = '<div class="status">'
                 /*
                 * Begin of adding/creating a button to lock or unlock this slot.
@@ -1154,9 +1154,9 @@
                 }
                 for (let i = this.nowAssignedSize + 1; i <= this.maxSlotSize; i++) {
                     if (i > this.minSlotSize)
-                        this.div.append($('<div class="placeholder field" style="color: white; font-style: italic; background: var(--purple)"> place ' + i + '</div>'))
+                        this.div.append($('<div class="placeholder field optional"> place ' + i + '</div>'))
                     else
-                        this.div.append($('<div class="placeholder field" style=" background: var(--lightblue)"> place ' + i + '</div>'))
+                        this.div.append($('<div class="placeholder field"> place ' + i + '</div>'))
                 }
 
                 handleLockButtonClickSlot(this, '#' + buttonID);
@@ -1207,9 +1207,9 @@
             }
 
             updateDiv() {
-                $('#application' + this.id + " .inner-item").detach();
+                $('#application-' + this.topicID + "-" + this.id + " .inner-item").detach();
                 let isFirstItem = true;
-                let buttonID = 'application-' + this.id + '-finalized';
+                let buttonID = 'application-' + this.topicID + "-" + this.id + '-finalized';
                 for (let student of this.students) {
                     let studItemString = '<div class="inner-item"><a>'
                     // LockButton for this Application
@@ -1232,8 +1232,8 @@
                     if (isFirstItem) {
                         isFirstItem = false;
                         let infoItem = $('<div class="group-info"></div>')
-                        let preference = $('<div id="group-info-preference" title="preference ranking in affiliated collection">' + '<i class="fa fa-hashtag"></i>' + this.preference + '</div>');
-                        let remainingAssignments = $('<div id="group-info-possible-assignments" title="possible remaining assignments / size of affiliated collection"></div>');
+                        let preference = $('<div class="group-info-preference" title="preference ranking in affiliated collection">' + '<i class="fa fa-hashtag"></i>' + this.preference + '</div>');
+                        let remainingAssignments = $('<div class="group-info-possible-assignments" title="possible remaining assignments / size of affiliated collection"></div>');
                         let remainingAssignmentsTemp = "";
                         if (this.collectionFullfilled || (this.possibleAssignments <= 0 && this.div.parent().parent().attr("id") === "slot")) {
                             remainingAssignmentsTemp += '<i style="color: green" class="fa fa-check"></i>';
@@ -1290,6 +1290,7 @@
          */
         function handleLockButtonClickSlot(slot, buttonID) {
             $(buttonID).on('click', {slot: slot}, function (event) {
+                console.log("clicked button");
                 let oldFinalized = event.data.slot.finalized;
                 if (oldFinalized === 0) {
                     if (event.data.slot.nowAssignedSize >= event.data.slot.minSlotSize) {
@@ -1336,7 +1337,10 @@
          * @param buttonID the id of the button element
          */
         function handleLockButtonClickApplication(application, buttonID) {
+
             $(buttonID).on('click', {application: application}, function (event) {
+                console.log("clicked button");
+
                 $.ajax({
                     data: {
                         csrfmiddlewaretoken: "{{ csrf_token }}",
