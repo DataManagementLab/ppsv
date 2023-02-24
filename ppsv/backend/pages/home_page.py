@@ -59,7 +59,7 @@ def handle_post(request):
     action = request.POST.get("action")
 
     if action == "getChartData":
-        return handle_get_chart_data()
+        return handle_get_chart_data(request)
 
     if action == "getProblemsListing":
         return handle_get_problems_listing()
@@ -88,7 +88,7 @@ def home_page(request):
 
     course_types = []
     for course_type in CourseType.objects.all():
-        course_types.append(course_type.type)
+        course_types.append(course_type)
 
     # --- EXPORT --- #
 

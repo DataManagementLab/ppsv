@@ -405,7 +405,7 @@ def handle_post(request):
     if action == "changeFinalizedValueApplication":
         return handle_change_finalized_value_application(request)
     if action == "getChartData":
-        return handle_get_chart_data()
+        return handle_get_chart_data(request)
 
     raise ValueError(f"invalid request action: {action}")
 
@@ -414,6 +414,7 @@ def handle_post(request):
 def render_site(request, args=None):
     """
     handles the rendering of the assignment page.
+    parses additional information in the address and handles it accordingly
 
     :param request: the handled request
     :param args: Arguments for rendering. When none given, an empty array is created
@@ -438,7 +439,7 @@ def render_site(request, args=None):
 
     course_types = []
     for course_type in CourseType.objects.all():
-        course_types.append(course_type.type)
+        course_types.append(course_type)
 
     faculties = []
     for course in Course.objects.all():
