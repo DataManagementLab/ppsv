@@ -448,7 +448,6 @@ def render_site(request, args=None):
     faculties.sort()
 
     args["topics_of_courses"] = topics_of_courses
-    args["show_course"] = True
     args["course_types"] = course_types
     args["faculties"] = faculties
     args["range"] = range(1, 11)
