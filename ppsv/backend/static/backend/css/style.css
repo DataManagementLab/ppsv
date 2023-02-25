@@ -24,10 +24,14 @@ html, body {
     margin-bottom: 20px;
 }
 
+a.default_look   {
+    color: white;
+
+}
+
 #header {
     height: 100px;
 }
-
 
 #header.header-background {
     background-color: var(--blue);
