@@ -631,14 +631,24 @@
                     const color6 = "#20506C"
                     const color7 = "#1B4965"
 
+                    const color1_1 = "#51cdb2";
+                    const color1_2 = "#47bea4";
+                    const color1_3 = "#3fb298";
+                    const color1_4 = "#35a28a";
+                    const color1_5 = "#2d967e";
+                    const color1_6 = "#248972";
+                    const color1_7 = "#1b7b65";
+
                     const black = "#000000";
+
                     new Chart(ctx, {
                         type: 'bar',
                         data: {
                             labels: ["1. Choice", "2. Choice", "3. Choice", "4. Choice", "5. Choice", "> 5. Choice", "No Assignment"],
                             datasets: [
                                 {
-                                    data: data.values,
+                                    label: 'Assigned Groups',
+                                    data: data.groups,
                                     backgroundColor: [
                                         color1,
                                         color2,
@@ -658,18 +668,26 @@
                                         black
                                     ],
                                     borderWidth: [1, 1, 1, 1, 1, 1, 1]
+                                },
+                                {
+                                    label: 'Assigned Students',
+                                    data: data.students,
+                                    backgroundColor: [
+                                        color1_1,
+                                        color1_2,
+                                        color1_3,
+                                        color1_4,
+                                        color1_5,
+                                        color1_6,
+                                        color1_7
+                                    ],
+                                    borderColor: black,
+                                    borderWidth: 1
                                 }
                             ]
                         },
                         options: {
                             responsive: true,
-                            legend: {
-                                display: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Assignment Distribution'
-                            }
                         }
                     });
                     if (barHidden) canvasElement.hide();
@@ -1984,9 +2002,5 @@
             }
         )
     </script>
-
-
-
-
 
 {% endblock content %}

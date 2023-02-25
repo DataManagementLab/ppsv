@@ -14,34 +14,47 @@ def handle_get_chart_data(request):
 
     application_query, assignment_query = get_filtered_query_from_request(request)
 
-    assignment_priorities = {}
     data = {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        -1: 0
+        'groups': {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            -1: 0
+        },
+        'students': {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            -1: 0
+        }
     }
 
+    accepted_application = []
     for assignment in assignment_query:
         for application in assignment.accepted_applications.all():
-            assignment_priorities[(application.group.id, application.collection_number)] = application.priority
+            if (application.group, application.collection_number) not in accepted_application:
+                accepted_application.append((application.group, application.collection_number))
+            if application.priority > 5:
+                data['groups'][6] += 1
+            else:
+                data['groups'][application.priority] += 1
+            data['students'][application.priority] += application.group.size
 
-    for topic_selection in application_query:
-        key = (topic_selection.group.id, topic_selection.collection_number)
-        if key not in assignment_priorities:
-            assignment_priorities[key] = -1
-
-    for priority in assignment_priorities.values():
-        if priority > 5:
-            data[6] += 1
-        else:
-            data[priority] += 1
+    for application in application_query:
+        if (application.group, application.collection_number) not in accepted_application:
+            accepted_application.append((application.group, application.collection_number))
+            data['groups'][-1] += 1
+            data['students'][-1] += application.group.size
 
     return JsonResponse(data={
-        'values': [i for i in data.values()]
+        'groups': [i for i in data['groups'].values()],
+        'students': [i for i in data['students'].values()]
     })
 
 
