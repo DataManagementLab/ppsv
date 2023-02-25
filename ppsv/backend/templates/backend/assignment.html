@@ -42,11 +42,11 @@
             <div class="section-inner">
                 <span>Topics</span>
                 <div class="inner-list">
-                    {# wenn false werden keine kurse mehr angezeigt sondern nur noch topics #}
-                    {% if show_course %}
-                        {% for topics_of_course in topics_of_courses %}
-                            <div class="topics_of_course inner-list-item"
-                                 data-courseid="{{ topics_of_course.course.id }}">{{ topics_of_course.course.title }}
+                    {% for topics_of_course in topics_of_courses %}
+                        <div class="topics_of_course inner-list-item"
+                             data-courseid="{{ topics_of_course.course.id }}">
+                            <details open>
+                                <summary>{{ topics_of_course.course.title }}</summary>
                                 {% for topic in topics_of_course.topics %}
                                     <div class="topic field"
                                          data-topicid="{{ topic.id }}"
@@ -55,18 +55,9 @@
                                          data-course_type="{{ topics_of_course.course.type.pk }}">
                                         {{ topic.title }}</div>
                                 {% endfor %}
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        {% for topics_of_course in topics_of_courses %}
-                            <div class="course topics_of_course inner-list-item">
-                                {% for topic in topics_of_course.topics %}
-                                    <div class="topic field"
-                                         data-topicid="{{ topic.id }}">{{ topic.title }}</div>
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                            </details>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -1818,36 +1809,30 @@
                 const filterSettings = this;
 
                 topics.each((index, topic1) => {
-                        let topic = $(topic1);
-                        //Apply Search Bar
-                        if (topic.parent().text().split("\n")[0].search(new RegExp(filterSettings.searchbar, "i")) !== -1)
-                            topic.show();
-                        else if (topic.text().search(new RegExp(filterSettings.searchbar, "i")) !== -1)
-                            topic.show()
-                        else
-                            topic.hide()
+                    let topic = $(topic1);
+                    //Apply Search Bar
+                    if (topic.parent().text().split("\n")[0].search(new RegExp(filterSettings.searchbar, "i")) !== -1)
+                        topic.show();
+                    else if (topic.text().search(new RegExp(filterSettings.searchbar, "i")) !== -1)
+                        topic.show()
+                    else
+                        topic.hide()
 
-                        //DONT TOUCH THE == WE WANT THIS
-                        if ((filterSettings.selectedCPMin <= topic.data('cp') && filterSettings.selectedCPMax >= topic.data('cp') ||
-                                filterSettings.selectedCPMax === -1 && topic.data('cp') >= filterSettings.selectedCPMin) &&
-                            filterSettings.selectedCourseTypes.some(item => item === topic.data('course_type')) &&
-                            filterSettings.selectedFaculties.some(item => item === topic.data('faculty'))) {
-                        } else
-                            topic.hide();
-                    }
-                );
-
+                    if ((filterSettings.selectedCPMin <= topic.data('cp') && filterSettings.selectedCPMax >= topic.data('cp') ||
+                            filterSettings.selectedCPMax === -1 && topic.data('cp') >= filterSettings.selectedCPMin) &&
+                        filterSettings.selectedCourseTypes.some(item => item === topic.data('course_type')) &&
+                        filterSettings.selectedFaculties.some(item => item === topic.data('faculty'))) {
+                    } else
+                        topic.hide();
+                });
 
                 courses.each((index, course1) => {
                         let course = $(course1);
                         let hasChild = false;
-                        $(course).children(".topic"
-                        ).each(function () {
-                                if ($(this).css("display") !== "none")
-                                    hasChild = true;
-                            }
-                        );
-
+                        $(course).find(".topic").each(function () {
+                            if ($(this).css("display") !== "none")
+                                hasChild = true;
+                        });
                         if (hasChild)
                             course.show();
                         else
