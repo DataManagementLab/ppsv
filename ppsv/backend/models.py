@@ -45,7 +45,8 @@ def all_applications_from_group(group_id, collection_number):
     :param collection_number: the number of the collection to return the applications of
     :return: a list containing all applications in the given collection of the given group sorted by their priority
     """
-    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number).order_by('priority'))
+    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number).order_by(
+        'priority'))
 
 
 def get_all_applications_by_collection():
@@ -68,6 +69,46 @@ def get_all_applications_in_assignments():
         for accepted_application in assignment.accepted_applications.all():
             all_accepted_applications.append((accepted_application.group, accepted_application.collection_number))
     return all_accepted_applications
+
+
+def get_broken_slots():
+    """returns a list of all broken slots with (topicID, String of the Slot, Error Message) Tuples"""
+    broken_slots = []
+    for slot in Assignment.objects.all():
+        try:
+            slot.clean()
+        except ValidationError as e:
+            broken_slots.append((slot.topic.id, str(slot), str(e)))
+        else:
+            if not slot.assigned_student_to_slot_count == 0 and \
+                    slot.assigned_student_to_slot_count < slot.topic.min_slot_size:
+                broken_slots.append(
+                    (slot.topic.id, str(slot), "Less than minimal amount of student in this slot"))
+    return broken_slots
+
+
+def get_score():
+    score = 0
+    accepted_applications = []
+    for assignment in Assignment.objects.all():
+        for accepted_application in assignment.accepted_applications.all():
+            score += get_score_for_assigned(accepted_application.priority)
+            accepted_applications.append((accepted_application.group, accepted_application.collection_number))
+
+    for application in TopicSelection.objects.all():
+        if (application.group, application.collection_number) not in accepted_applications:
+            score += get_score_for_not_assigned()
+    return score
+
+
+def get_max_score():
+    handled_applications = []
+    score = 0
+    for application in TopicSelection.objects.all():
+        if (application.group, application.collection_number) not in handled_applications:
+            handled_applications.append((application.group, application.collection_number))
+            score += get_score_for_assigned(1)
+    return score
 
 
 def get_score_for_assigned(priority):

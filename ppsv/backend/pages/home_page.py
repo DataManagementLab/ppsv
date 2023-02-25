@@ -4,7 +4,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.automatic_assignment import main
-from backend.models import Assignment, get_all_applications_by_collection, get_all_applications_in_assignments
+from backend.models import Assignment, get_all_applications_by_collection, get_all_applications_in_assignments, \
+    get_broken_slots
 from backend.pages.functions import handle_get_chart_data
 from course.models import Course, CourseType
 
@@ -18,18 +19,6 @@ def handle_do_automatic_assignments():
 
 
 def handle_get_problems_listing():
-    broken_slots = []
-    for slot in Assignment.objects.all():
-        try:
-            slot.clean()
-        except ValidationError as e:
-            broken_slots.append((slot.topic.id, str(e)))
-        else:
-            if not slot.assigned_student_to_slot_count == 0 and \
-                    slot.assigned_student_to_slot_count < slot.topic.min_slot_size:
-                broken_slots.append(
-                    (slot.topic.id, str(slot), "Less than minimal amount of student in this slot"))
-
     unfulfilled_collections = []
     all_applications_in_assignments = get_all_applications_in_assignments()
     for collection in get_all_applications_by_collection():
@@ -38,11 +27,10 @@ def handle_get_problems_listing():
 
     return JsonResponse(
         data={
-            'brokenSlots': broken_slots,
+            'brokenSlots': get_broken_slots(),
             'unfulfilledCollections': unfulfilled_collections,
         }
     )
-    pass
 
 
 def handle_post(request):
