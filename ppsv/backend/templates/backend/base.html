@@ -18,13 +18,14 @@
 
 
     <!-- Imports all important stylesheets and hyper references for all html pages which extend base.html -->
-    <link rel="stylesheet" href="{% static 'backend/css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/ppsv.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css?family=Arvo&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'backend/css/jQuery.css' %}">
     <link rel="stylesheet" href="{% static 'css/table.css' %}">
+    <link rel="stylesheet" href="{% static 'backend/css/style.css' %}">
+
 
     <!-- JQuery & JQuery UI Integration -->
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
@@ -50,7 +51,7 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
     <div id="header" class="header-background">
         <div class="white-strip"></div>
         <div id="header-content">
-            <h3> {% translate "Internship & Seminar Allocation" %} - {% block title %} {% endblock %} </h3>
+            <h3> <a class="default_look" href="{% url 'backend:home_page' %}"> {% translate "Internship & Seminar Allocation" %} - {% block title %} {% endblock %} </a></h3>
             <div id="controls">
                 {% block additional_buttons %}
                 {% endblock %}
