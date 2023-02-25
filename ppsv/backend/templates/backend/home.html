@@ -156,17 +156,17 @@
         /**
          * Loads the data of the assignment chart and displays it.
          */
-        function loadChart(minCP, maxCP, courseTypes, faculties) {
+        function loadChart() {
             const statisticsChartDiv = $("#statistics-chart");
 
             $.ajax({
                 data: {
                     csrfmiddlewaretoken: "{{ csrf_token }}",
                     action: 'getChartData',
-                    minCP: minCP,
-                    maxCP: maxCP,
-                    courseTypes: courseTypes,
-                    faculties: faculties
+                    minCP: filterSettings.selectedCPMin,
+                    maxCP: filterSettings.selectedCPMax,
+                    courseTypes: filterSettings.selectedCourseTypes,
+                    faculties: filterSettings.selectedFaculties
                 },
                 method: "POST",
                 dataType: "json",
@@ -323,23 +323,11 @@
     <!-- Script-block for managing filters -->
     <script>
         class FilterSettings {
-
             constructor() {
                 this.selectedCPMin = 0;
                 this.selectedCPMax = 0;
                 this.selectedCourseTypes = [];
                 this.selectedFaculties = [];
-
-                this.createModalHandling($('#filter'));
-
-                if (readCookie("filterSettings") != null) {
-                    this.readFromCookie();
-                    this.filterChanged();
-                } else {
-                    this.loadDefaultValues();
-                    this.saveToCookie();
-                }
-
             }
 
             createModalHandling() {
@@ -569,24 +557,45 @@
                 });
                 if (this.selectedFaculties.length > 0)
                     cookieValue = cookieValue.substring(0, cookieValue.length - 1);
-                console.log("Save cookie " + cookieValue);
                 createCookie("filterSettings", cookieValue, 5);
             }
 
-            filterChanged() {
-                this.saveToCookie()
-                // TODO: implement handling for errors
-                loadChart(this.selectedCPMin, this.selectedCPMax, this.selectedCourseTypes, this.selectedFaculties);
-            }
 
+            filterChangedQueue;
+
+            filterChanged() {
+                function filterChangedHelper(filterSettings) {
+                    return () => {
+                        filterSettings.saveToCookie()
+                        // TODO: implement handling for errors
+                        loadChart();
+
+                    }
+                }
+
+                if (this.filterChangedQueue != null) {
+                    clearTimeout(this.filterChangedQueue);
+                }
+                this.filterChangedQueue = setTimeout(filterChangedHelper(this), 250);
+            }
 
         }
 
-        // --- INIT FILTER --- //
+        // --- INIT FILTER  --- //
+        const filterSettings = new FilterSettings();
+
         $(document).ready(
             function () {
-                // --- INIT FILTER --- //
-                new FilterSettings();
+                // --- init filter --- //
+                filterSettings.createModalHandling($('#filter'));
+
+                if (readCookie("filterSettings") != null) {
+                    filterSettings.readFromCookie();
+                    filterSettings.filterChanged();
+                } else {
+                    filterSettings.loadDefaultValues();
+                    filterSettings.saveToCookie();
+                }
             });
     </script>
 {% endblock content %}

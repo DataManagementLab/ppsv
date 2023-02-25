@@ -26,12 +26,12 @@ html, body {
 
 a.default_look   {
     color: white;
-
 }
 
 #header {
     height: 100px;
 }
+
 
 #header.header-background {
     background-color: var(--blue);
@@ -605,7 +605,6 @@ p {
     background-color: var(--red);
 }
 
-/* searchbar and filter*/
 #searchAndFilterDiv {
     display: flex;
     gap: 3px;
@@ -627,7 +626,6 @@ p {
     font-size: 1.5em;
     margin: 0;
 }
-
 
 
 /* --- Modal ----*/
@@ -696,7 +694,31 @@ p {
     background-color: #fff;
     border: 1px solid black;
     border-radius: 3px;
-    width: 25%;
+    width: 30%;
+}
+
+#statistics-div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#statistics-numbers {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 3px;
+    padding-left: 3px;
+    padding-top: 30px;
+}
+
+#statistics-numbers p {
+    margin: 0;
+    font-size: 15px;
+}
+
+#statistics-chart {
+    min-width: 600px;
 }
 
 #statistics-window span {
@@ -755,17 +777,17 @@ p {
 
 
 /* Filter Styling */
-.filter-content{
+.filter-content {
     width: 100%;
 }
 
-.filter-content .filter{
+.filter-content .filter {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid black;
 }
 
-.filter-content .title-bar{
+.filter-content .title-bar {
     display: flex;
     flex-direction: row;
     justify-content: space-between;

@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
     possible_assignments_of_group_to_topic, AcceptedApplications
-from backend.pages.functions import handle_get_chart_data
+from backend.pages.functions import handle_get_chart_data, handle_get_score_data
 from course.models import TopicSelection, Topic, CourseType, Course, Group
 
 
@@ -394,6 +394,10 @@ def handle_post(request):
         return handle_new_assignment(request)
     if action == "removeAssignment":
         return handle_remove_assignment(request)
+    if action == "getChartData":
+        return handle_get_chart_data(request)
+    if action == "getScoreData":
+        return handle_get_score_data(request)
     if action == "preselectFilters":
         return handle_preselected_filters(request)
     if action == "selectTopic":
@@ -404,8 +408,6 @@ def handle_post(request):
         return handle_change_finalized_value_slot(request)
     if action == "changeFinalizedValueApplication":
         return handle_change_finalized_value_application(request)
-    if action == "getChartData":
-        return handle_get_chart_data(request)
 
     raise ValueError(f"invalid request action: {action}")
 

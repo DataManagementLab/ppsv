@@ -42,11 +42,11 @@
             <div class="section-inner">
                 <span>Topics</span>
                 <div class="inner-list">
-                    {% for topics_of_course in topics_of_courses %}
-                        <div class="topics_of_course inner-list-item"
-                             data-courseid="{{ topics_of_course.course.id }}">
-                            <details open>
-                                <summary>{{ topics_of_course.course.title }}</summary>
+                    {# wenn false werden keine kurse mehr angezeigt sondern nur noch topics #}
+                    {% if show_course %}
+                        {% for topics_of_course in topics_of_courses %}
+                            <div class="topics_of_course inner-list-item"
+                                 data-courseid="{{ topics_of_course.course.id }}">{{ topics_of_course.course.title }}
                                 {% for topic in topics_of_course.topics %}
                                     <div class="topic field"
                                          data-topicid="{{ topic.id }}"
@@ -55,9 +55,18 @@
                                          data-course_type="{{ topics_of_course.course.type.pk }}">
                                         {{ topic.title }}</div>
                                 {% endfor %}
-                            </details>
-                        </div>
-                    {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for topics_of_course in topics_of_courses %}
+                            <div class="course topics_of_course inner-list-item">
+                                {% for topic in topics_of_course.topics %}
+                                    <div class="topic field"
+                                         data-topicid="{{ topic.id }}">{{ topic.title }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -184,17 +193,406 @@
 
     <div id="statistics-window">
         <span title="influenced by current active filters">Statistics<i class="icon fa fa-chevron-up"></i></span>
-        <div id="statistics-chart">
-            <canvas id="bar-chart"></canvas>
+        <div id="statistics-div">
+            <div id="statistics-numbers">
+                <div>
+                    <p>
+                        Score:
+                    </p>
+                    <p id="statistics-score">
+                        {{ score }}/{{ maxscore }}
+                    </p>
+                </div>
+                <div>
+                    <p>
+                        Fehlerhafte Slots:
+                    </p>
+                    <p id="statistics-broken_slots">
+                        {{ broken_slots }}
+                    </p>
+                </div>
+            </div>
+            <div id="statistics-chart">
+                <canvas id="bar-chart"></canvas>
+            </div>
         </div>
     </div>
 
+    <!-- Script-block for managing filters and searchbar -->
+    <script>
+
+        class FilterSettings {
+
+            constructor() {
+                this.selectedCPMin = 0;
+                this.selectedCPMax = 0;
+                this.selectedCourseTypes = [];
+                this.selectedFaculties = [];
+                this.searchbar = "";
+                this.lastChangeTime = 0;
+            }
+
+            createModalHandling() {
+                const filterSettings = this;
+
+                function createSingleChipClickHandler(chip, filterSettings) {
+                    chip.click(() => {
+                        let filterType = chip.data('filter');
+                        let filterValue = chip.data('value');
+                        if (chip.hasClass('selected')) {
+                            chip.removeClass('selected');
+                            if (filterType === 'courseType') {
+                                filterSettings.removeCourseType(filterValue);
+                            } else if (filterType === 'faculty') {
+                                filterSettings.removeFaculty(filterValue);
+                            }
+                        } else {
+                            chip.addClass('selected');
+                            if (filterType === 'courseType') {
+                                filterSettings.addCourseType(filterValue);
+                            } else if (filterType === 'faculty') {
+                                filterSettings.addFaculty(filterValue);
+                            }
+                        }
+                        filterSettings.filterChanged();
+                    })
+                }
+
+                function createMultiChipClickHandler(chip, filterSettings) {
+                    chip.click(() => {
+                        let filterType = chip.data('filter');
+
+                        // slider stuff for cp
+                        if (filterType === 'cp') {
+                            filterSettings.selectedCPMin = 0;
+                            filterSettings.selectedCPMax = -1;
+                            slider.slider("option", "values", [0, 11]);
+                            $("#chosen-cp").text('0 - ∞ CP');
+                        }
+
+                        // toggle chips otherwise
+                        else {
+                            // Update the chips
+                            let chips = $('#filter-modal .chips .single .chip[data-filter="' + filterType + '"]');
+                            if (chip.hasClass('selected')) {
+                                //Update class
+                                if (filterType === 'courseType') {
+                                    filterSettings.selectedCourseTypes = [];
+                                    filterSettings.loadAllCourses();
+                                } else if (filterType === 'faculty') {
+                                    filterSettings.selectedFaculties = [];
+                                    filterSettings.loadAllFaculties()
+                                }
+                                //update chips
+                                chips.each((index, chip1) => {
+                                    let chip = $(chip1)
+                                    if (!chip.hasClass('selected')) {
+                                        chip.addClass('selected');
+                                    }
+                                });
+                            } else {
+                                //Update class
+                                if (filterType === 'courseType')
+                                    filterSettings.selectedCourseTypes = [];
+                                else if (filterType === 'faculty')
+                                    filterSettings.selectedFaculties = [];
+                                //Update chips
+                                chips.each((index, chip1) => {
+                                    let chip = $(chip1)
+                                    if ($(chip).hasClass('selected')) {
+                                        chip.removeClass('selected');
+                                    }
+                                });
+                            }
+
+                            //Update multi chip
+                            $(chip).toggleClass('selected');
+                        }
+                        //Actually apply the changes
+                        filterSettings.filterChanged();
+                    });
+                }
+
+                // --- CP SLIDER --- //
+                //Create the slider and update on slide
+                let slider = $('#slider-range');
+                slider.slider({
+                    range: true,
+                    min: 0,
+                    max: 11,
+                    values: [filterSettings.selectedCPMin, filterSettings.selectedCPMax === -1 ? 11 : filterSettings.selectedCPMax],
+                    slide: function (event, ui) {
+                        $('#chosen-cp').text(ui.values[0] + " - " + (ui.values[1] == 11 ? '∞' : ui.values[1]) + " CP");
+                        filterSettings.selectedCPMin = ui.values[0];
+                        filterSettings.selectedCPMax = ui.values[1] == 11 ? -1 : ui.values[1];
+                        filterSettings.filterChanged();
+                    }
+                });
+
+                // --- MULTI CHIPS --- //
+                $('#filter-modal .chip.multi').each((index, chip) => createMultiChipClickHandler($(chip), filterSettings));
+
+
+                // --- COURSE & FACULTY CHIPS --- //
+                $("#filter-modal .single .chip ").each((index, chip) => createSingleChipClickHandler($(chip), filterSettings));
+            }
+
+            addCourseType(course) {
+                this.selectedCourseTypes.push(course);
+            }
+
+            addFaculty(faculty) {
+                this.selectedFaculties.push(faculty)
+            }
+
+            removeCourseType(course) {
+                const index = this.selectedCourseTypes.indexOf(course);
+                if (index > -1) {
+                    this.selectedCourseTypes.splice(index, 1);
+                }
+            }
+
+            removeFaculty(faculty) {
+                const index = this.selectedFaculties.indexOf(faculty);
+                if (index > -1) {
+                    this.selectedFaculties.splice(index, 1);
+                }
+            }
+
+            loadDefaultValues() {
+                this.selectedCPMin = 1;
+                this.selectedCPMax = -1;
+                this.loadAllCourses();
+                this.loadAllFaculties();
+                $("#filter-modal .single .chip ").each((index, chip1) => {
+                    let chip = $(chip1);
+                    chip.addClass('selected');
+                });
+            }
+
+            loadAllCourses() {
+                {% for courseType in course_types %}
+                    this.selectedCourseTypes.push({{ courseType.pk }})
+                {% endfor %}
+            }
+
+            loadAllFaculties() {
+                {% for faculty in faculties %}
+                    this.selectedFaculties.push("{{ faculty }}")
+                {% endfor %}
+            }
+
+            selectedCPMinID = "selectedCPMin:";
+            selectedCPMaxID = "selectedCPMax:";
+            selectedCourseTypesID = "selectedCourseTypes:";
+            selectedFacultiesID = "selectedFaculties:";
+
+            readFromCookie() {
+                if (readCookie("filterSettings") != null) {
+                    // CHECK IF COOKIE IS CORRECT
+
+                    function cookieBroken(filterSettings) {
+                        console.log("The filter cookie seems to be broken. Loading Defaults!");
+                        eraseCookie("filterSettings");
+                        filterSettings.loadDefaultValues();
+                    }
+
+                    let filterSplit = readCookie("filterSettings").split("&");
+                    if (filterSplit.length !== 4) cookieBroken(this);
+
+                    let selectedCPMinIndex = filterSplit[0].lastIndexOf(this.selectedCPMinID);
+                    let selectedCPMaxIndex = filterSplit[1].lastIndexOf(this.selectedCPMaxID);
+                    let selectedCourseTypesIndex = filterSplit[2].lastIndexOf(this.selectedCourseTypesID);
+                    let selectedFacultiesIndex = filterSplit[3].lastIndexOf(this.selectedFacultiesID);
+                    if (selectedCPMinIndex === -1 || selectedCPMaxIndex === -1 || selectedCourseTypesIndex === -1 || selectedFacultiesIndex === -1) cookieBroken(this);
+
+
+                    // LOAD DATA FROM COOKIE
+                    // CP
+
+                    this.selectedCPMin = parseInt(filterSplit[0].substring(selectedCPMinIndex + this.selectedCPMinID.length));
+                    this.selectedCPMax = parseInt(filterSplit[1].substring(selectedCPMaxIndex + this.selectedCPMaxID.length));
+                    let slider = $('#slider-range');
+                    slider.slider("option", "values", [this.selectedCPMin, this.selectedCPMax === -1 ? 11 : this.selectedCPMax]);
+                    //Show initial Text
+                    $("#chosen-cp").text(this.selectedCPMin + " - " + (this.selectedCPMax === -1 ? '∞' : this.selectedCPMax) + " CP");
+
+                    //CourseTypes
+                    let courseTypes = filterSplit[2].substring(selectedCourseTypesIndex + this.selectedCourseTypesID.length).split(",");
+                    for (let i = 0; i < courseTypes.length; i++) {
+                        if (courseTypes[i].length > 0)
+                            this.selectedCourseTypes.push(parseInt(courseTypes[i]));
+                    }
+
+                    //Faculties
+                    let faculties = filterSplit[3].substring(selectedFacultiesIndex + this.selectedFacultiesID.length).split(",");
+                    for (let i = 0; i < faculties.length; i++) {
+                        if (faculties[i].length > 0)
+                            this.selectedFaculties.push(faculties[i]);
+                    }
+
+                    //Update Chips
+                    let filterSettings = this;
+                    $("#filter-modal .single .chip").each((index, chip1) => {
+                        let chip = $(chip1);
+                        if (filterSettings.selectedCourseTypes.some(item => item === chip.data('value')) ||
+                            filterSettings.selectedFaculties.some(item => item === chip.data('value')))
+                            chip.addClass('selected');
+                        else
+                            chip.removeClass('selected');
+                    });
+                }
+            }
+
+            saveToCookie() {
+                let cookieValue = this.selectedCPMinID + this.selectedCPMin;
+                cookieValue += "&" + this.selectedCPMaxID + this.selectedCPMax;
+                cookieValue += "&" + this.selectedCourseTypesID;
+                this.selectedCourseTypes.forEach(e => {
+                    cookieValue += e + ",";
+                });
+                if (this.selectedCourseTypes.length > 0)
+                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                cookieValue += "&" + this.selectedFacultiesID;
+                this.selectedFaculties.forEach(e => {
+                    cookieValue += e + ",";
+                });
+                if (this.selectedFaculties.length > 0)
+                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                createCookie("filterSettings", cookieValue, 5);
+            }
+
+
+            filterChangedQueue;
+
+            filterChanged() {
+                function filterChangedHelper(filterSettings) {
+                    return () => {
+                        filterSettings.saveToCookie();
+                        filterSettings.updateTopicList();
+                        loadChart();
+                        loadStats();
+                    }
+                }
+
+                if (this.filterChangedQueue != null) {
+                    clearTimeout(this.filterChangedQueue);
+                }
+                this.filterChangedQueue = setTimeout(filterChangedHelper(this), 250);
+            }
+
+            updateTopicList() {
+                let topics = $(".topic");
+                let courses = $(".topics_of_course.inner-list-item");
+                const filterSettings = this;
+
+                topics.each((index, topic1) => {
+                        let topic = $(topic1);
+                        //Apply Search Bar
+                        if (topic.parent().text().split("\n")[0].search(new RegExp(filterSettings.searchbar, "i")) !== -1)
+                            topic.show();
+                        else if (topic.text().search(new RegExp(filterSettings.searchbar, "i")) !== -1)
+                            topic.show()
+                        else
+                            topic.hide()
+
+                        //DONT TOUCH THE == WE WANT THIS
+                        if ((filterSettings.selectedCPMin <= topic.data('cp') && filterSettings.selectedCPMax >= topic.data('cp') ||
+                                filterSettings.selectedCPMax === -1 && topic.data('cp') >= filterSettings.selectedCPMin) &&
+                            filterSettings.selectedCourseTypes.some(item => item === topic.data('course_type')) &&
+                            filterSettings.selectedFaculties.some(item => item === topic.data('faculty'))) {
+                        } else
+                            topic.hide();
+                    }
+                );
+
+
+                courses.each((index, course1) => {
+                        let course = $(course1);
+                        let hasChild = false;
+                        $(course).children(".topic"
+                        ).each(function () {
+                                if ($(this).css("display") !== "none")
+                                    hasChild = true;
+                            }
+                        );
+
+                        if (hasChild)
+                            course.show();
+                        else
+                            course.hide();
+                    }
+                )
+            }
+        }
+
+        /**
+         * Handles closing of the modal
+         */
+        function openFilterModal() {
+            $('#filter-modal').slideDown(250);
+            $('#assignment-content .section').addClass('blur');
+        }
+
+        /**
+         * Handles closing of the modal
+         */
+        function closeFilterModal() {
+            $('#filter-modal').slideUp(250);
+            $('#assignment-content .section').removeClass('blur');
+        }
+
+        function getFilterValues() {
+            return (filterSettings.selectedCPMin, filterSettings.selectedCPMax, filterSettings.selectedCourseTypes, filterSettings.selectedFaculties);
+        }
+
+        $(document).on('mousedown', function (event) {
+            if ($('#application-modal').is(':visible'))
+                return;
+            if (event.target === $('#filter-modal .title i.fa')[0])
+                closeFilterModal();
+            if (event.target.id === "filterButton"
+                || $(event.target).parent('#filterButton').length !== 0
+                || $(event.target).parents('#filter-modal .modal-content').length !== 0)
+                return;
+            closeFilterModal();
+        });
+
+        // --- INIT FILTER & HANDLE SEARCHBAR --- //
+        const filterSettings = new FilterSettings();
+
+        $(document).ready(
+            function () {
+                // --- init filter --- //
+                filterSettings.createModalHandling($('filter-modal'));
+
+                if (readCookie("filterSettings") != null) {
+                    filterSettings.readFromCookie();
+                    filterSettings.filterChanged();
+                } else {
+                    filterSettings.loadDefaultValues();
+                    filterSettings.saveToCookie();
+                }
+
+                // --- SEARCHBAR HANDLING --- //
+                let searchbar = $('#assignment-topBar #searchbar');
+                if (searchbar != null) {
+                    searchbar.val('');
+                    searchbar.keyup(() => {
+                        filterSettings.searchbar = searchbar.val().toLowerCase();
+                        filterSettings.filterChanged();
+                    });
+                }
+            });
+
+
+    </script>
 
     <!-- Script block for statistics window -->
     <script>
         $(document).ready(function () {
             $('#statistics-window span').click(function () {
-                $('#statistics-chart #bar-chart').slideToggle();
+                $('#statistics-div').slideToggle();
                 $('#statistics-window span .icon').toggleClass('rotation');
             });
         });
@@ -202,17 +600,17 @@
         /**
          * Loads the data of the assignment chart and displays it.
          */
-        function loadChart(minCP, maxCP, courseTypes, faculties) {
+        function loadChart() {
             const statisticsChartDiv = $("#statistics-chart");
 
             $.ajax({
                 data: {
                     csrfmiddlewaretoken: "{{ csrf_token }}",
                     action: 'getChartData',
-                    minCP: minCP,
-                    maxCP: maxCP,
-                    courseTypes: courseTypes,
-                    faculties: faculties
+                    minCP: filterSettings.selectedCPMin,
+                    maxCP: filterSettings.selectedCPMax,
+                    courseTypes: filterSettings.selectedCourseTypes,
+                    faculties: filterSettings.selectedFaculties
                 },
                 method: "POST",
                 dataType: "json",
@@ -276,6 +674,28 @@
                     });
                     if (barHidden) canvasElement.hide();
 
+                }
+            });
+        }
+
+
+        function loadStats() {
+            const score = $('#statistics-score');
+            const brokenSlots = $('#statistics-broken_slots');
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: 'getScoreData',
+                    minCP: filterSettings.selectedCPMin,
+                    maxCP: filterSettings.selectedCPMax,
+                    courseTypes: filterSettings.selectedCourseTypes,
+                    faculties: filterSettings.selectedFaculties
+                },
+                method: "POST",
+                dataType: "json",
+                success: function (data) {
+                    score.text(data["score"] + "/" + data["maxScore"]);
+                    brokenSlots.text(data["brokenSlots"]);
                 }
             });
         }
@@ -379,6 +799,9 @@
                         slotsModal.get(application.slotID).removeApplication(application);
                         slot.addApplication(application);
                         infoPopup("good", applicationAcceptedText)
+                        //Update Statistic
+                        loadChart();
+                        loadStats();
                     } else
                         infoPopup("bad", applicationAcceptedText)
                 };
@@ -397,6 +820,9 @@
                     if (applicationAccepted) {
                         slot.addApplication(application);
                         infoPopup("good", applicationAcceptedText);
+                        //Update Statistic
+                        loadChart();
+                        loadStats();
                     } else
                         infoPopup("bad", applicationAcceptedText);
                 };
@@ -708,6 +1134,9 @@
                                 $('#assignment-modal .applications').append(ui.draggable);
                                 slotsModal.get(application.slotID).removeApplication(application);
                                 infoPopup("good", data['text'])
+                                //Update Statistic
+                                loadChart();
+                                loadStats();
                             } else {
                                 infoPopup("bad", data['text'])
                             }
@@ -1008,6 +1437,11 @@
                         slot.addApplication(application);
                         application.updateDiv();
                         infoPopup("good", applicationAcceptedText)
+
+
+                        //Update Statistic
+                        loadChart();
+                        loadStats();
                     } else
                         infoPopup("bad", applicationAcceptedText)
                 };
@@ -1026,6 +1460,10 @@
                     if (applicationAccepted) {
                         slot.addApplication(application);
                         infoPopup("good", applicationAcceptedText);
+
+                        //Update Statistic
+                        loadChart();
+                        loadStats();
                     } else
                         infoPopup("bad", applicationAcceptedText);
                 };
@@ -1463,7 +1901,6 @@
             userFeedback.replaceWith(userFeedbackClone)
         }
 
-
         /**
          * Handles a drop on applications.
          * @return {(function(*, *): void)|*} the jquery drop handler
@@ -1494,6 +1931,11 @@
                                 getApplicationGroupDetails(selectedAppID);
 
                                 infoPopup("good", data['text'])
+
+
+                                //Update Statistic
+                                loadChart();
+                                loadStats();
                             } else {
                                 infoPopup("bad", data['text'])
                             }
@@ -1543,350 +1985,7 @@
         )
     </script>
 
-    <!-- Script-block for managing filters and searchbar -->
-    <script>
-        class FilterSettings {
 
-            constructor() {
-                this.selectedCPMin = 0;
-                this.selectedCPMax = 0;
-                this.selectedCourseTypes = [];
-                this.selectedFaculties = [];
-                this.searchbar = "";
-
-                this.createModalHandling($('filter-modal'));
-
-                if (readCookie("filterSettings") != null) {
-                    this.readFromCookie();
-                    this.filterChanged();
-                } else {
-                    this.loadDefaultValues();
-                    this.saveToCookie();
-                }
-
-            }
-
-            createModalHandling() {
-                const filterSettings = this;
-
-                function createSingleChipClickHandler(chip, filterSettings) {
-                    chip.click(() => {
-                        let filterType = chip.data('filter');
-                        let filterValue = chip.data('value');
-                        if (chip.hasClass('selected')) {
-                            chip.removeClass('selected');
-                            if (filterType === 'courseType') {
-                                filterSettings.removeCourseType(filterValue);
-                            } else if (filterType === 'faculty') {
-                                filterSettings.removeFaculty(filterValue);
-                            }
-                        } else {
-                            chip.addClass('selected');
-                            if (filterType === 'courseType') {
-                                filterSettings.addCourseType(filterValue);
-                            } else if (filterType === 'faculty') {
-                                filterSettings.addFaculty(filterValue);
-                            }
-                        }
-                        filterSettings.filterChanged();
-                    })
-                }
-
-                function createMultiChipClickHandler(chip, filterSettings) {
-                    chip.click(() => {
-                        let filterType = chip.data('filter');
-
-                        // slider stuff for cp
-                        if (filterType === 'cp') {
-                            filterSettings.selectedCPMin = 0;
-                            filterSettings.selectedCPMax = -1;
-                            slider.slider("option", "values", [0, 11]);
-                            $("#chosen-cp").text('0 - ∞ CP');
-                        }
-
-                        // toggle chips otherwise
-                        else {
-                            // Update the chips
-                            let chips = $('#filter-modal .chips .single .chip[data-filter="' + filterType + '"]');
-                            if (chip.hasClass('selected')) {
-                                //Update class
-                                if (filterType === 'courseType') {
-                                    filterSettings.selectedCourseTypes = [];
-                                    filterSettings.loadAllCourses();
-                                } else if (filterType === 'faculty') {
-                                    filterSettings.selectedFaculties = [];
-                                    filterSettings.loadAllFaculties()
-                                }
-                                //update chips
-                                chips.each((index, chip1) => {
-                                    let chip = $(chip1)
-                                    if (!chip.hasClass('selected')) {
-                                        chip.addClass('selected');
-                                    }
-                                });
-                            } else {
-                                //Update class
-                                if (filterType === 'courseType')
-                                    filterSettings.selectedCourseTypes = [];
-                                else if (filterType === 'faculty')
-                                    filterSettings.selectedFaculties = [];
-                                //Update chips
-                                chips.each((index, chip1) => {
-                                    let chip = $(chip1)
-                                    if ($(chip).hasClass('selected')) {
-                                        chip.removeClass('selected');
-                                    }
-                                });
-                            }
-
-                            //Update multi chip
-                            $(chip).toggleClass('selected');
-                        }
-                        //Actually apply the changes
-                        filterSettings.filterChanged();
-                    });
-                }
-
-                // --- CP SLIDER --- //
-                //Create the slider and update on slide
-                let slider = $('#slider-range');
-                slider.slider({
-                    range: true,
-                    min: 0,
-                    max: 11,
-                    values: [filterSettings.selectedCPMin, filterSettings.selectedCPMax === -1 ? 11 : filterSettings.selectedCPMax],
-                    slide: function (event, ui) {
-                        $('#chosen-cp').text(ui.values[0] + " - " + (ui.values[1] == 11 ? '∞' : ui.values[1]) + " CP");
-                        filterSettings.selectedCPMin = ui.values[0];
-                        filterSettings.selectedCPMax = ui.values[1] == 11 ? -1 : ui.values[1];
-                        filterSettings.filterChanged();
-                    }
-                });
-
-                // --- MULTI CHIPS --- //
-                $('#filter-modal .chip.multi').each((index, chip) => createMultiChipClickHandler($(chip), filterSettings));
-
-
-                // --- COURSE & FACULTY CHIPS --- //
-                $("#filter-modal .single .chip ").each((index, chip) => createSingleChipClickHandler($(chip), filterSettings));
-            }
-
-            addCourseType(course) {
-                this.selectedCourseTypes.push(course);
-            }
-
-            addFaculty(faculty) {
-                this.selectedFaculties.push(faculty)
-            }
-
-            removeCourseType(course) {
-                const index = this.selectedCourseTypes.indexOf(course);
-                if (index > -1) {
-                    this.selectedCourseTypes.splice(index, 1);
-                }
-            }
-
-            removeFaculty(faculty) {
-                const index = this.selectedFaculties.indexOf(faculty);
-                if (index > -1) {
-                    this.selectedFaculties.splice(index, 1);
-                }
-            }
-
-            loadDefaultValues() {
-                this.selectedCPMin = 1;
-                this.selectedCPMax = -1;
-                this.loadAllCourses();
-                this.loadAllFaculties();
-                $("#filter-modal .single .chip ").each((index, chip1) => {
-                    let chip = $(chip1);
-                    chip.addClass('selected');
-                });
-            }
-
-            loadAllCourses() {
-                {% for courseType in course_types %}
-                    this.selectedCourseTypes.push({{ courseType.pk }})
-                {% endfor %}
-            }
-
-            loadAllFaculties() {
-                {% for faculty in faculties %}
-                    this.selectedFaculties.push("{{ faculty }}")
-                {% endfor %}
-            }
-
-            selectedCPMinID = "selectedCPMin:";
-            selectedCPMaxID = "selectedCPMax:";
-            selectedCourseTypesID = "selectedCourseTypes:";
-            selectedFacultiesID = "selectedFaculties:";
-
-            readFromCookie() {
-                if (readCookie("filterSettings") != null) {
-                    // CHECK IF COOKIE IS CORRECT
-
-                    function cookieBroken(filterSettings) {
-                        console.log("The filter cookie seems to be broken. Loading Defaults!");
-                        eraseCookie("filterSettings");
-                        filterSettings.loadDefaultValues();
-                    }
-
-                    let filterSplit = readCookie("filterSettings").split("&");
-                    if (filterSplit.length !== 4) cookieBroken(this);
-
-                    let selectedCPMinIndex = filterSplit[0].lastIndexOf(this.selectedCPMinID);
-                    let selectedCPMaxIndex = filterSplit[1].lastIndexOf(this.selectedCPMaxID);
-                    let selectedCourseTypesIndex = filterSplit[2].lastIndexOf(this.selectedCourseTypesID);
-                    let selectedFacultiesIndex = filterSplit[3].lastIndexOf(this.selectedFacultiesID);
-                    if (selectedCPMinIndex === -1 || selectedCPMaxIndex === -1 || selectedCourseTypesIndex === -1 || selectedFacultiesIndex === -1) cookieBroken(this);
-
-
-                    // LOAD DATA FROM COOKIE
-                    // CP
-
-                    this.selectedCPMin = parseInt(filterSplit[0].substring(selectedCPMinIndex + this.selectedCPMinID.length));
-                    this.selectedCPMax = parseInt(filterSplit[1].substring(selectedCPMaxIndex + this.selectedCPMaxID.length));
-                    let slider = $('#slider-range');
-                    slider.slider("option", "values", [this.selectedCPMin, this.selectedCPMax === -1 ? 11 : this.selectedCPMax]);
-                    //Show initial Text
-                    $("#chosen-cp").text(this.selectedCPMin + " - " + (this.selectedCPMax === -1 ? '∞' : this.selectedCPMax) + " CP");
-
-                    //CourseTypes
-                    let courseTypes = filterSplit[2].substring(selectedCourseTypesIndex + this.selectedCourseTypesID.length).split(",");
-                    for (let i = 0; i < courseTypes.length; i++) {
-                        if (courseTypes[i].length > 0)
-                            this.selectedCourseTypes.push(parseInt(courseTypes[i]));
-                    }
-
-                    //Faculties
-                    let faculties = filterSplit[3].substring(selectedFacultiesIndex + this.selectedFacultiesID.length).split(",");
-                    for (let i = 0; i < faculties.length; i++) {
-                        if (faculties[i].length > 0)
-                            this.selectedFaculties.push(faculties[i]);
-                    }
-
-                    //Update Chips
-                    let filterSettings = this;
-                    $("#filter-modal .single .chip").each((index, chip1) => {
-                        let chip = $(chip1);
-                        if (filterSettings.selectedCourseTypes.some(item => item === chip.data('value')) ||
-                            filterSettings.selectedFaculties.some(item => item === chip.data('value')))
-                            chip.addClass('selected');
-                        else
-                            chip.removeClass('selected');
-                    });
-                }
-            }
-
-            saveToCookie() {
-                let cookieValue = this.selectedCPMinID + this.selectedCPMin;
-                cookieValue += "&" + this.selectedCPMaxID + this.selectedCPMax;
-                cookieValue += "&" + this.selectedCourseTypesID;
-                this.selectedCourseTypes.forEach(e => {
-                    cookieValue += e + ",";
-                });
-                if (this.selectedCourseTypes.length > 0)
-                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
-                cookieValue += "&" + this.selectedFacultiesID;
-                this.selectedFaculties.forEach(e => {
-                    cookieValue += e + ",";
-                });
-                if (this.selectedFaculties.length > 0)
-                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
-                console.log("Save cookie " + cookieValue);
-                createCookie("filterSettings", cookieValue, 5);
-            }
-
-            filterChanged() {
-                this.saveToCookie()
-                this.updateTopicList();
-                loadChart(this.selectedCPMin, this.selectedCPMax, this.selectedCourseTypes, this.selectedFaculties);
-            }
-
-            updateTopicList() {
-                let topics = $(".topic");
-                let courses = $(".topics_of_course.inner-list-item");
-                const filterSettings = this;
-
-                topics.each((index, topic1) => {
-                    let topic = $(topic1);
-                    //Apply Search Bar
-                    if (topic.parent().text().split("\n")[0].search(new RegExp(filterSettings.searchbar, "i")) !== -1)
-                        topic.show();
-                    else if (topic.text().search(new RegExp(filterSettings.searchbar, "i")) !== -1)
-                        topic.show()
-                    else
-                        topic.hide()
-
-                    if ((filterSettings.selectedCPMin <= topic.data('cp') && filterSettings.selectedCPMax >= topic.data('cp') ||
-                            filterSettings.selectedCPMax === -1 && topic.data('cp') >= filterSettings.selectedCPMin) &&
-                        filterSettings.selectedCourseTypes.some(item => item === topic.data('course_type')) &&
-                        filterSettings.selectedFaculties.some(item => item === topic.data('faculty'))) {
-                    } else
-                        topic.hide();
-                });
-
-                courses.each((index, course1) => {
-                        let course = $(course1);
-                        let hasChild = false;
-                        $(course).find(".topic").each(function () {
-                            if ($(this).css("display") !== "none")
-                                hasChild = true;
-                        });
-                        if (hasChild)
-                            course.show();
-                        else
-                            course.hide();
-                    }
-                )
-            }
-        }
-
-        /**
-         * Handles closing of the modal
-         */
-        function openFilterModal() {
-            $('#filter-modal').slideDown(250);
-            $('#assignment-content .section').addClass('blur');
-        }
-
-        /**
-         * Handles closing of the modal
-         */
-        function closeFilterModal() {
-            $('#filter-modal').slideUp(250);
-            $('#assignment-content .section').removeClass('blur');
-        }
-
-        $(document).on('mousedown', function (event) {
-            if ($('#application-modal').is(':visible'))
-                return;
-            if (event.target === $('#filter-modal .title i.fa')[0])
-                closeFilterModal();
-            if (event.target.id === "filterButton"
-                || $(event.target).parent('#filterButton').length !== 0
-                || $(event.target).parents('#filter-modal .modal-content').length !== 0)
-                return;
-            closeFilterModal();
-        });
-
-        // --- INIT FILTER & HANDLE SEARCHBAR --- //
-        $(document).ready(
-            function () {
-                // --- INIT FILTER --- //
-                const filterSettings = new FilterSettings();
-
-                // --- SEARCHBAR HANDLING --- //
-                let searchbar = $('#assignment-topBar #searchbar');
-                if (searchbar != null) {
-                    searchbar.val('');
-                    searchbar.keyup(() => {
-                        filterSettings.searchbar = searchbar.val().toLowerCase();
-                        filterSettings.filterChanged();
-                    });
-                }
-            });
-    </script>
 
 
 
