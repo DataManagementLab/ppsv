@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
-    possible_assignments_of_group_to_topic, AcceptedApplications, get_broken_slots, get_max_score, get_score
+    possible_assignments_of_group_to_topic, AcceptedApplications
 from backend.pages.functions import handle_get_chart_data, handle_get_score_data
 from course.models import TopicSelection, Topic, CourseType, Course, Group
 

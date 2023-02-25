@@ -46,6 +46,11 @@ def handle_get_chart_data(request):
 
 
 def handle_get_score_data(request):
+    """Creates the data for the score and broken slots.
+
+        :return: The data for the score and broken slots.
+        :rtype: JsonResponse
+        """
     application_query, assignment_query = get_filtered_query_from_request(request)
 
     # score
@@ -89,11 +94,14 @@ def handle_get_score_data(request):
 
 
 def get_filtered_query_from_request(request):
+    """
+    Filters the DB for the given request and returns to queries, one for applications and one for assignments
+    """
     min_cp = int(request.POST.get('minCP'))
     max_cp = int(request.POST.get('maxCP'))
     course_types = request.POST.getlist('courseTypes[]')
     faculties = request.POST.getlist('faculties[]')
-    assignment_priorities = {}
+
     if max_cp == -1:
         assignment_query = Assignment.objects.filter(topic__course__cp__gte=min_cp,
                                                      topic__course__type__in=course_types,

@@ -1,8 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from course.models import TopicSelection
-from course.models import Topic
+
 from course.models import Group
+from course.models import Topic
+from course.models import TopicSelection
 
 
 def possible_assignments_for_group(group_id, collection_number):
@@ -85,20 +86,6 @@ def get_broken_slots():
                 broken_slots.append(
                     (slot.topic.id, str(slot), "Less than minimal amount of student in this slot"))
     return broken_slots
-
-
-def get_score():
-    score = 0
-    accepted_applications = []
-    for assignment in Assignment.objects.all():
-        for accepted_application in assignment.accepted_applications.all():
-            score += get_score_for_assigned(accepted_application.priority)
-            accepted_applications.append((accepted_application.group, accepted_application.collection_number))
-
-    for application in TopicSelection.objects.all():
-        if (application.group, application.collection_number) not in accepted_applications:
-            score += get_score_for_not_assigned()
-    return score
 
 
 def get_max_score():
