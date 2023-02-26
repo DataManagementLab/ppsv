@@ -524,7 +524,8 @@ p {
     flex-direction: column;
     height: 100%;
     border: 0;
-    gap: 3px
+    gap: 3px;
+    overflow-y: scroll;
 }
 
 .section.single {

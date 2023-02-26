@@ -270,472 +270,7 @@
         }
     </script>
 
-    <!-- Script block for modal assignment -->
-    <script>
-        const slotsModal = new Map();
-        const applicationsModal = new Map();
 
-        /**
-         * A class representing a slot in the modal
-         */
-        class ModalSlot {
-            constructor(slotID, minSlotSize, maxSlotSize, finalized, topicID) {
-                this.id = slotID;
-                this.minSlotSize = minSlotSize;
-                this.maxSlotSize = maxSlotSize;
-                this.finalized = finalized;
-                this.topicID = topicID;
-                this.nowAssignedSize = 0;
-                this.applications = new Map();
-                this.div = $('<div class="slot inner-list-item droppable" data-slotid="' + this.id + '"></div>');
-                this.div.droppable({
-                    accept: ".modalApplication",
-                    hoverClass: "drop-hover",
-                    drop: (event, ui) => this.handleDrop(event, ui)
-                })
-                this.updateDiv()
-                $('#assignment-modal .assignments').append(this.div);
-            }
-
-            /**
-             * Handles a drop on this slot
-             * @param event the drop event
-             * @param ui the ui
-             */
-            handleDrop(event, ui) {
-                const drag = ui.draggable;
-
-                let application = applicationsModal.get(parseInt(drag.data('applicationid')));
-                let oldSlotID = application.slotID;
-
-                if (oldSlotID === this.id)
-                    return;
-
-                /*
-                * Handling if application is dropped on this slot while this slot is finalized.
-                */
-                if (this.finalized !== 0) {
-                    infoPopup('bad', "This slot is locked, application can't be added")
-                    return;
-                }
-
-                infoPopup("wait", "Waiting for server response");
-
-                if (oldSlotID !== -1) {
-                    //switch from slot to another
-                    $.ajax({
-                            data: {
-                                csrfmiddlewaretoken: "{{ csrf_token }}",
-                                action: "changeAssignment",
-                                applicationID: application.id,
-                                oldSlotID: oldSlotID,
-                                newSlotID: this.id
-                            },
-                            method: "POST",
-                            dataType: "json",
-                            success: this.handelDropServerResponseChange(application)
-                        }
-                    );
-                } else {
-                    //new assignment
-                    $.ajax({
-                            data: {
-                                csrfmiddlewaretoken: "{{ csrf_token }}",
-                                action: "newAssignment",
-                                applicationID: application.id,
-                                slotID: this.id
-                            },
-                            method: "POST",
-                            dataType: "json",
-                            success: this.handleDropServerResponseNew(application)
-                        }
-                    );
-                }
-            }
-
-            /**
-             * The handler for a drop when the application was previously in another slot
-             * @param application The application
-             * @return {(function(*): void)|*} the ajax success handler
-             */
-            handelDropServerResponseChange(application) {
-                const slot = this
-                return function (data) {
-                    const applicationAccepted = data["requestStatus"];
-                    const applicationAcceptedText = data["text"];
-
-                    if (applicationAccepted) {
-                        slotsModal.get(application.slotID).removeApplication(application);
-                        slot.addApplication(application);
-                        infoPopup("good", applicationAcceptedText)
-                    } else
-                        infoPopup("bad", applicationAcceptedText)
-                };
-            }
-
-            /**
-             * The handler for a drop when the application was previously not assigned
-             * @param application The application
-             * @return {(function(*): void)|*} the ajax success handler
-             */
-            handleDropServerResponseNew(application) {
-                const slot = this
-                return function (data) {
-                    const applicationAccepted = data["requestStatus"];
-                    const applicationAcceptedText = data["text"];
-                    if (applicationAccepted) {
-                        slot.addApplication(application);
-                        infoPopup("good", applicationAcceptedText);
-                    } else
-                        infoPopup("bad", applicationAcceptedText);
-                };
-            }
-
-            /**
-             * Adds an application to this slot and updates the application accordingly. This does not check for any regulations
-             * @param application the application to add
-             */
-            addApplication(application) {
-                this.applications.set(application.id, application);
-                this.nowAssignedSize += application.students.length;
-                if (application.slotID === -1) {
-                    application.collectionFullfilled = true;
-                    updateApplicationsPossibleAssignments(applicationsModal);
-                }
-                application.slotID = this.id;
-                this.updateDiv();
-            }
-
-            /**
-             * Removes an application from this slot and updates the application accordingly. This does not check for any regulations
-             * @param application the application to remove
-             */
-            removeApplication(application) {
-                this.applications.delete(application.id);
-                this.nowAssignedSize -= application.students.length;
-                application.collectionFullfilled = false;
-                updateApplicationsPossibleAssignments(applicationsModal);
-                application.slotID = -1;
-                this.updateDiv();
-            }
-
-            /**
-             * Updates the div of this slot. Consist of a status (name + icon), current assignments and placeholders
-             */
-            updateDiv() {
-                $('.slot[data-slotid="' + this.id + '"] .field').detach();
-                $('.slot[data-slotid="' + this.id + '"] .status').remove();
-
-                let buttonID = 'modal-slot-' + this.id + '-finalized'
-                let status = '<div class="status">';
-                /*
-                * Begin of adding/creating a button to lock or unlock this slot.
-                */
-                status += '<a><button ';
-                if (this.finalized === 0) {
-                    status += 'class="fa fa-unlock-alt lock-open"'
-                } else {
-                    status += 'class="fa fa-lock lock-closed"'
-                }
-                status += 'aria-hidden="true" id="' + buttonID + '"></button>';
-                /*
-                * End of adding/creating a button to lock or unlock this slot.
-                */
-                status += ' Slot ' + this.id + '</a>';
-                if (this.nowAssignedSize === this.maxSlotSize) {
-                    status += '<i class="fa  fa-check-circle-o" title="slot fully assigned"></i>';
-                } else if (this.nowAssignedSize >= this.minSlotSize) {
-                    status += '<i class="fa fa-check" title="slot has remaining unoccupied places"></i>';
-                } else {
-                    status += '<i class="fa fa-times" title="not enough students assigned"></i>';
-                }
-                status += '</div>'
-
-
-                this.div.append($(status))
-                for (let application of this.applications.values()) {
-                    this.div.append(application.div)
-                }
-                for (let i = this.nowAssignedSize + 1; i <= this.maxSlotSize; i++) {
-                    if (i > this.minSlotSize)
-                        this.div.append($('<div class="placeholder field" style="color: white; font-style: italic; background: var(--purple)"> place ' + i + '</div>'))
-                    else
-                        this.div.append($('<div class="placeholder field" style=" background: var(--lightblue)"> place ' + i + '</div>'))
-                }
-
-                handleLockButtonClickSlot(this, '#' + buttonID);
-            }
-
-            remainingSpace() {
-                return this.maxSlotSize - this.nowAssignedSize;
-            }
-        }
-
-        /**
-         * A class to represent one Application in the modal
-         */
-        class ModalApplication {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, groupeID, collectionID, assignedTopic, finalized, topicID, selectedGroupID) {
-                this.id = applicationID;
-                this.preference = preference;
-                this.possibleAssignments = possibleAssignments;
-                this.collectionSize = collectionSize
-                this.slotID = slotID;
-                this.students = students;
-                this.collectionFullfilled = collectionFullfilled;
-                this.groupeID = groupeID;
-                this.collectionID = collectionID;
-                this.assignedTopic = assignedTopic;
-                this.finalized = finalized;
-                this.topicID = topicID;
-                if (groupeID === selectedGroupID) {
-                    this.div = $('<div class="outer-item modalApplication selectedGroup" data-applicationid="' + applicationID + '"></div>');
-                } else {
-                    this.div = $('<div class="outer-item modalApplication" data-applicationid="' + applicationID + '"></div>');
-                }
-                this.updateDiv()
-
-                let container = $('#assignment-modal .modal-content');
-                this.div.draggable({
-                    revert: 'invalid',
-                    helper: 'clone',
-                    scroll: false,
-                    containment: [
-                        container.left,
-                        container.top,
-                        container.left,
-                        container.top
-                    ],
-                    start: function (event, ui) {
-                        ui.helper.width($(this).width());
-                        getApplicationGroupDetails(applicationID);
-                    }
-                })
-            }
-
-            /**
-             * Updates the div of this application.
-             */
-            updateDiv() {
-                $('.modalApplication[data-applicationid="' + this.id + '"] .inner-item').detach();
-                let doInfoItem = true;
-                let buttonID = 'modal-application-' + this.id + '-finalized'
-                for (let student of this.students) {
-                    let studItemString = '<div class="inner-item"><a>'
-                    /*
-                    * Begin of adding/creating a button to lock or unlock this assigned application.
-                    */
-                    if (doInfoItem) {
-                        studItemString += '<button '
-                        if (this.slotID !== -1 && this.finalized) {
-                            studItemString += 'class="fa fa-lock lock-closed"'
-                        } else {
-                            studItemString += 'class="fa fa-unlock-alt lock-open"'
-                        }
-                        studItemString += ' aria-hidden="true"'
-                        studItemString += (this.slotID === -1) ? ' style="display:none"' : ''
-                        studItemString += ' id="' + buttonID + '"></button> '
-                    }
-                    /*
-                    * End of adding/creating a button to lock or unlock this assigned application.
-                    */
-                    studItemString += student + '</a></div>'
-
-                    let studItem = $(studItemString);
-                    if (doInfoItem) {
-                        doInfoItem = false;
-                        let infoItem = $('<div class="group-info"></div>')
-                        let preference = $('<div class="group-info-preference" title="preference ranking in affiliated collection">' + '<i class="fa fa-hashtag"></i>' + this.preference + '</div>');
-                        let remainingAssignments = $('<div class="group-info-possible-assignments" title="possible remaining assignments / size of affiliated collection"></div>');
-                        let remainingAssignmentsTemp = "";
-                        if (this.collectionFullfilled || (this.possibleAssignments <= 0 && this.div.parent().parent().attr("id") === "slot")) {
-                            remainingAssignmentsTemp += '<i style="color: green" class="fa fa-check"></i>';
-                        } else if (this.possibleAssignments <= 0) {
-                            remainingAssignmentsTemp += '<i style="color: var(--lightcoral)" class="fa fa-times"></i>';
-                        } else {
-                            remainingAssignmentsTemp += '<i class="fa fa-th"></i>';
-                        }
-                        remainingAssignments.append(remainingAssignmentsTemp += this.possibleAssignments + "/" + this.collectionSize)
-                        let forwardingLink = '/assignment/?'
-                        if (this.collectionFullfilled) {
-                            forwardingLink += 'topic=' + this.assignedTopic
-                        } else {
-                            forwardingLink += 'topic=' + -1
-                        }
-                        forwardingLink += '&group=' + this.groupeID + '&collection=' + this.collectionID
-                        let forwardingItem = $('<div title="open this group' + (this.collectionFullfilled ? " and topic " : " ") + 'in another page"><a class="fa fa-share-square-o" aria-hidden="true" href="' + forwardingLink + '" target="_blank" style="color: var(--blue)"></a></div>')
-                        infoItem.append(preference);
-                        infoItem.append(remainingAssignments);
-                        infoItem.append(forwardingItem);
-                        studItem.append(infoItem);
-                    }
-                    this.div.append(studItem);
-
-                    handleLockButtonClickApplication(this, '#' + buttonID)
-                }
-            }
-
-            /**
-             * Updates the possible assignments of this application
-             */
-            updatePossibleAssignment() {
-                $.ajax({
-                    data: {
-                        csrfmiddlewaretoken: "{{ csrf_token }}",
-                        action: "getPossibleAssignmentsForTopic",
-                        applicationID: this.id,
-                    },
-                    method: "POST",
-                    dataType: "json",
-                    success: data => {
-                        this.possibleAssignments = data['possibleAssignments'];
-                        this.updateDiv();
-                    }
-                })
-
-            }
-        }
-
-        /**
-         * Handles the modal popup when its opened, loads new slots, assignments and applications
-         * @param newTopicID the id of the new topic
-         * @param groupName the name of the group that was used to open the modal
-         */
-        function handleApplicationModalOpen(newTopicID, groupName, groupID) {
-            $('#assignment-modal').show();
-            $('#assignment-content .section').addClass('blur');
-            //Delete old Content
-            $('#assignment-modal .assignments').html("");
-            $('#assignment-modal .applications').html("");
-            slotsModal.clear();
-            applicationsModal.clear();
-
-            infoPopup("wait", "retrieving topic data")
-            //Get and load new Data
-            doServerRequest();
-            infoPopup("good", "loaded topic data")
-
-            /**
-             * Request data for the new topic from the server
-             */
-            function doServerRequest() {
-                $.ajax({
-                    data: {
-                        csrfmiddlewaretoken: "{{ csrf_token }}",
-                        action: "selectTopic",
-                        topicID: newTopicID,
-                    },
-                    method: "POST",
-                    dataType: "json",
-                    success: data => {
-                        $('#assignment-modal .title span').text(data['topicName'] + ' - via group: ' + groupName);
-
-                        loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize'], data['topicSlotsFinalized'], data['topicID']);
-
-                        loadApplications(data['applications'], data["topicID"], groupID);
-                    }
-                })
-            }
-
-            /**
-             * Creates {@link Application}s and adds them to either their slot or applications.
-             * @param loadedApplications the applications to load
-             * @param topicID the applications associated topicID
-             */
-            function loadApplications(loadedApplications, topicID, groupID) {
-                let application;
-                for (let app of loadedApplications) {
-                    application = new ModalApplication(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['groupID'], app['collectionID'], app['assignedTopic'], app['finalizedAssignment'], topicID, groupID);
-                    applicationsModal.set(application.id, application);
-                    if (application.slotID !== -1)
-                        slotsModal.get(application.slotID).addApplication(application);
-                    else
-                        $('#assignment-modal .applications').append(application.div);
-
-                    application.updateDiv()
-                }
-            }
-
-            /**
-             * Creates {@link Slot}s and adds them to assignments
-             * @param count how many slots will be created
-             * @param minSize minSize of a slot
-             * @param maxSize maxSize of a Slot
-             * @param finalized whether a Slot is finalized
-             * @param topicID id of the topic the slot is associated with
-             */
-            function loadSlots(count, minSize, maxSize, finalized, topicID) {
-                for (let slotID = 1; slotID <= count; slotID++) {
-                    slotsModal.set(slotID, new ModalSlot(slotID, minSize, maxSize, finalized[slotID - 1], topicID, $('#assignment-modal .assignments')))
-                }
-
-            }
-        }
-
-        /**
-         * Handles a drop on applications in modal.
-         * @return {(function(*, *): void)|*} the jquery drop handler
-         */
-        function handleDropOnModalApplications() {
-            return function (e, ui) {
-                const application = applicationsModal.get(parseInt(ui.draggable.data('applicationid')));
-                if (application.slotID === -1) {
-                    return;
-                }
-                infoPopup("wait", "Waiting for server response")
-                $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeAssignment",
-                            applicationID: application.id,
-                            slotID: application.slotID
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: (data) => {
-                            if (data['requestStatus']) {
-                                $('#assignment-modal .applications').append(ui.draggable);
-                                slotsModal.get(application.slotID).removeApplication(application);
-                                infoPopup("good", data['text'])
-                            } else {
-                                infoPopup("bad", data['text'])
-                            }
-                        }
-                    }
-                );
-            }
-        }
-
-
-        /**
-         * Handles closing of the modal
-         */
-        function closeApplicationModal() {
-            $('#assignment-modal').hide();
-            $('#assignment-content .section').removeClass('blur');
-            let currentTopic = $('#assignment-content #topics .topic.selected').first().data('topicid');
-            if (currentTopic != null)
-                handleTopicChange(currentTopic);
-            let groupDetailDiv = $('#assignment-content #groupdetails')
-            let appID = groupDetailDiv.attr('data-applicationid');
-            let groupID = groupDetailDiv.attr('data-groupid');
-            let collectionID = groupDetailDiv.attr('data-collectionid');
-            if (appID !== '-1') {
-                getApplicationGroupDetails(appID);
-                let selApp = $('#application' + appID);
-                selApp.addClass('selected');
-                if (selApp.length > 0) {
-                    selApp.addClass('selected');
-                }
-            } else if (groupID !== '-1' && collectionID !== '-1') {
-                getGroupDetails(groupID, collectionID);
-            }
-        }
-
-        $('#assignment-modal').on('click', function (event) {
-            if (event.target === this || event.target === $('#assignment-modal .title i.fa')[0]) closeApplicationModal();
-        })
-    </script>
 
     <!-- Script block for group details -->
     <script>
@@ -755,7 +290,7 @@
                 $('.application.selected').removeClass('selected');
                 $(this).addClass('selected');
                 let appID = $(this).attr('id').replace('application', '');
-                getApplicationGroupDetails(appID);
+                updateApplicationGroupDetails(appID);
             });
 
             // --- Preselect group information --- //
@@ -768,7 +303,7 @@
          * Function for retrieving details about the applications group and displaying it
          * @param appID the application id
          */
-        function getApplicationGroupDetails(appID) {
+        function updateApplicationGroupDetails(appID) {
             if ($('#assignment-modal').is(':visible'))
                 return;
             let groupDetailDiv = $('#assignment-content #groupdetails');
@@ -898,7 +433,7 @@
         }
     </script>
 
-    <!-- Script block for the assignments and topic handling and filters-->
+    <!-- Script block for the assignments and topic handling -->
     <script>
         const shownTopics = new Map();
 
@@ -926,6 +461,60 @@
                     '</div>' +
                     '</div>'
                 )
+                let slotAppRel = this
+                // make application div droppable
+                $('#applications-' + this.topicID).droppable({
+                    accept: function (dropElem) {
+                        let application = slotAppRel.applications.get(parseInt(dropElem.attr('id').substring(12)));
+                        if (application == null) {
+                            infoPopup("info", "Can only change items in the same Topic");
+                            return false;
+                        }
+                        if (application.slotID === -1) {
+                            infoPopup("info", "This application is already not assigned");
+                            return false;
+                        }
+                        return true;
+                    },
+                    hoverClass: "drop-hover",
+                    drop: this.handleDropOnApplicationDiv()
+                })
+            }
+
+            /**
+             * Handles a drop on applications.
+             * @return {(function(*, *): void)|*} the jquery drop handler
+             */
+            handleDropOnApplicationDiv() {
+                let slotAppRel = this
+                return function (e, ui) {
+                    const application = slotAppRel.applications.get(parseInt(ui.draggable.attr("id").substring(12)));
+                    infoPopup("wait", "Waiting for server response")
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "removeAssignment",
+                            applicationID: application.id,
+                            slotID: application.slotID
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: (data) => {
+                            if (data['requestStatus']) {
+                                $('#applications-' + slotAppRel.topicID).append(ui.draggable);
+                                slotAppRel.slots.get(application.slotID).removeApplication(application);
+
+                                // Update group details
+                                let selectedAppID = $('.application.selected').attr('id').replace('application', '');
+                                updateApplicationGroupDetails(selectedAppID);
+
+                                infoPopup("good", data['text'])
+                            } else {
+                                infoPopup("bad", data['text'])
+                            }
+                        }
+                    });
+                }
             }
 
             deleteSectionDiv() {
@@ -939,12 +528,12 @@
             loadApplications(loadedApplications) {
                 let application;
                 for (let app of loadedApplications) {
-                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['finalizedAssignment'], this.topicID);
+                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['finalizedAssignment'], this);
                     this.applications.set(application.id, application);
                     if (application.slotID !== -1)
                         this.slots.get(application.slotID).addApplication(application);
                     else
-                        $('#applications').append(application.div);
+                        $('#applications' + "-" + this.topicID).append(application.div);
 
                     application.updateDiv();
                 }
@@ -959,7 +548,7 @@
              */
             loadSlots(count, minSize, maxSize, finalized) {
                 for (let slotID = 1; slotID <= count; slotID++) {
-                    this.slots.set(slotID, new Slot(slotID, minSize, maxSize, finalized[slotID - 1], this.topicID))
+                    this.slots.set(slotID, new Slot(slotID, minSize, maxSize, finalized[slotID - 1], this))
                 }
             }
         }
@@ -968,22 +557,40 @@
          * A class representing a slot
          */
         class Slot {
-            constructor(slotID, minSlotSize, maxSlotSize, finalized, topicID) {
+            constructor(slotID, minSlotSize, maxSlotSize, finalized, slotAppRel) {
                 this.id = slotID;
                 this.minSlotSize = minSlotSize;
                 this.maxSlotSize = maxSlotSize;
                 this.finalized = finalized;
-                this.topicID = topicID;
+                this.slotAppRel = slotAppRel;
+                this.topicID = slotAppRel.topicID;
                 this.nowAssignedSize = 0;
-                this.applications = new Map();
+                this.accepted_applications = new Map();
                 this.div = $('<div id="slot-' + this.topicID + "-" + this.id + '" class="inner-list-item droppable"></div>');
+                let slot = this
                 this.div.droppable({
-                    accept: ".application",
+                    accept: function (dropElem) {
+                        let application = slot.slotAppRel.applications.get(parseInt(dropElem.attr('id').substring(12)));
+
+                        if (application == null) {
+                            infoPopup("info", "Can only change items in the same Topic");
+                            return false;
+                        }
+                        if (application.oldSlotID === slotID) {
+                            infoPopup("info", "This application is already in this slot");
+                            return false;
+                        }
+                        if (slot.finalized !== 0) {
+                            infoPopup('bad', "This slot is locked, application can't be added")
+                            return false;
+                        }
+                        return true;
+                    },
                     hoverClass: "drop-hover",
                     drop: (event, ui) => this.handleDrop(event, ui)
                 })
                 this.updateDiv()
-                $('#assignments-' + topicID).append(this.div);
+                $('#assignments-' + this.topicID).append(this.div);
             }
 
             /**
@@ -994,15 +601,16 @@
             handleDrop(event, ui) {
                 const drag = ui.draggable;
 
-                let application = applications.get(parseInt(drag.attr('id').substring(11)));
+                let application = this.slotAppRel.applications.get(parseInt(drag.attr('id').substring(12)));
+
+
                 let oldSlotID = application.slotID;
 
+                // Do nothing if the slot is the same as the origin
                 if (oldSlotID === this.id)
                     return;
 
-                /*
-                * Handling if application is dropped on this slot while this slot is finalized.
-                */
+                // Do nothing if slot is locked
                 if (this.finalized !== 0) {
                     infoPopup('bad', "This slot is locked, application can't be added")
                     return;
@@ -1054,7 +662,7 @@
                     const applicationAcceptedText = data["text"];
 
                     if (applicationAccepted) {
-                        slots.get(application.slotID).removeApplication(application);
+                        slot.slotAppRel.slots.get(application.slotID).removeApplication(application);
                         slot.addApplication(application);
                         application.updateDiv();
                         infoPopup("good", applicationAcceptedText)
@@ -1086,11 +694,11 @@
              * @param application the application to add
              */
             addApplication(application) {
-                this.applications.set(application.id, application);
+                this.accepted_applications.set(application.id, application);
                 this.nowAssignedSize += application.students.length;
                 if (application.slotID === -1) {
                     application.collectionFullfilled = true;
-                    updateApplicationsPossibleAssignments(applications);
+                    updateApplicationsPossibleAssignments();
                 }
                 application.slotID = this.id;
                 this.updateDiv();
@@ -1099,7 +707,7 @@
                 let selectedApp = $('.application.selected');
                 if (selectedApp.length > 0) {
                     let selectedAppID = selectedApp.attr('id').replace('application', '');
-                    getApplicationGroupDetails(selectedAppID);
+                    updateApplicationGroupDetails(selectedAppID);
                 }
             }
 
@@ -1108,10 +716,10 @@
              * @param application the application to remove
              */
             removeApplication(application) {
-                this.applications.delete(application.id);
+                this.accepted_applications.delete(application.id);
                 this.nowAssignedSize -= application.students.length;
                 application.collectionFullfilled = false;
-                updateApplicationsPossibleAssignments(applications);
+                updateApplicationsPossibleAssignments();
                 application.slotID = -1;
                 this.updateDiv();
             }
@@ -1149,7 +757,7 @@
                 status += '</div>'
 
                 this.div.append($(status))
-                for (let application of this.applications.values()) {
+                for (let application of this.accepted_applications.values()) {
                     this.div.append(application.div)
                 }
                 for (let i = this.nowAssignedSize + 1; i <= this.maxSlotSize; i++) {
@@ -1171,7 +779,7 @@
          * A class to represent one Application
          */
         class Application {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, finalized, topicID) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, finalized, slotAppRel) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
@@ -1180,8 +788,9 @@
                 this.students = students;
                 this.collectionFullfilled = collectionFullfilled;
                 this.finalized = finalized;
-                this.topicID = topicID;
-                this.div = $('<div id="application' + applicationID + '" class="outer-item application"></div>');
+                this.slotAppRel = slotAppRel;
+                this.topicID = slotAppRel.topicID;
+                this.div = $('<div id="application-' + applicationID + '" class="outer-item application"></div>');
                 this.updateDiv()
 
                 let container = $('#assignment-application');
@@ -1200,16 +809,16 @@
                         $('.application.selected').removeClass('selected');
                         $(this).addClass('selected');
                         ui.helper.addClass('selected');
-                        getApplicationGroupDetails(applicationID);
+                        updateApplicationGroupDetails(applicationID);
                     }
                 })
 
             }
 
             updateDiv() {
-                $('#application-' + this.topicID + "-" + this.id + " .inner-item").detach();
+                $('#application-' + this.id + " .inner-item").detach();
                 let isFirstItem = true;
-                let buttonID = 'application-' + this.topicID + "-" + this.id + '-finalized';
+                let buttonID = 'application-' + this.id + '-finalized';
                 for (let student of this.students) {
                     let studItemString = '<div class="inner-item"><a>'
                     // LockButton for this Application
@@ -1274,17 +883,18 @@
         }
 
         /**
-         * Function for updating possible assignments
-         * @param applicationsMap The map containing all applications which should get refreshed
+         * Updates all possibleAssignmentValues for all shown Topics
          */
-        function updateApplicationsPossibleAssignments(applicationsMap) {
+        function updateApplicationsPossibleAssignments() {
             shownTopics.forEach(slotAppRel => {
-                slotAppRel.applications.updatePossibleAssignment();
+                slotAppRel.applications.forEach(application => {
+                    application.updatePossibleAssignment();
+                });
             });
         }
 
         /**
-         * Handling the click and visual representation of the button to lock and unlock this slot.
+         * Handling the click and visual representation of the button to lock and unlock a slot.
          * @param slot the corresponding slot
          * @param buttonID the id of the button element
          */
@@ -1332,7 +942,7 @@
         }
 
         /**
-         * Handling the click and visual representation of the button to lock and unlock this assigned application.
+         * Handling the click and visual representation of a button to lock and unlock an assigned application.
          * @param application the corresponding application
          * @param buttonID the id of the button element
          */
@@ -1500,44 +1110,6 @@
             userFeedback.replaceWith(userFeedbackClone)
         }
 
-        /**
-         * Handles a drop on applications.
-         * @return {(function(*, *): void)|*} the jquery drop handler
-         */
-        function handleDropOnApplications() {
-            return function (e, ui) {
-                const application = applications.get(parseInt(ui.draggable.attr("id").substring(11)));
-                if (application.slotID === -1) {
-                    return;
-                }
-                infoPopup("wait", "Waiting for server response")
-                $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeAssignment",
-                            applicationID: application.id,
-                            slotID: application.slotID
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: (data) => {
-                            if (data['requestStatus']) {
-                                $('#applications').append(ui.draggable);
-                                slots.get(application.slotID).removeApplication(application);
-
-                                // Update group details
-                                let selectedAppID = $('.application.selected').attr('id').replace('application', '');
-                                getApplicationGroupDetails(selectedAppID);
-
-                                infoPopup("good", data['text'])
-                            } else {
-                                infoPopup("bad", data['text'])
-                            }
-                        }
-                    }
-                );
-            }
-        }
 
         // --- MAIN FUNCTION --- //
         $(document).ready(
@@ -1557,13 +1129,6 @@
                             topic.addClass('selected')
                         }
                     }
-                })
-
-                // --- INIT APPLICATIONS DIV --- //
-                $('#applications').droppable({
-                    accept: ".application",
-                    hoverClass: "drop-hover",
-                    drop: handleDropOnApplications()
                 })
 
                 // --- INIT APPLICATIONS DIV FOR MODAL --- //
