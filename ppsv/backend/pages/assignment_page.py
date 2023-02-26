@@ -215,9 +215,13 @@ def handle_remove_assignment(request):
 
 def handle_get_possible_assignments_for_topic(request):
     application = TopicSelection.objects.get(pk=request.POST.get("applicationID"))
-    _possibleAssignments = possible_assignments_for_group(application.group.id, application.collection_number)
+    possible_assignments = possible_assignments_for_group(application.group.id, application.collection_number)
+    collection_fulfilled = Assignment.objects.filter(accepted_applications__group=application.group,
+                                                     accepted_applications__collection_number=application.collection_number).exists()
+
     return JsonResponse({
-        "possibleAssignments": _possibleAssignments,
+        "possibleAssignments": possible_assignments,
+        "collectionFulfilled": collection_fulfilled
     })
 
 
@@ -447,15 +451,26 @@ def render_site(request, args=None):
             faculties.append(course.faculty)
     faculties.sort()
 
+    # load information from url
+    topic_ids = False
+    group_id = False
+    collection_id = False
+    if request.method == "GET":
+        if "topic" in request.GET:
+            topic_ids = request.GET["topic"].split(" ")
+        if "group" in request.GET:
+            group_id = request.GET["group"]
+        if "collection" in request.GET:
+            collection_id = request.GET["collection"]
+
     args["topics_of_courses"] = topics_of_courses
     args["show_course"] = True
     args["course_types"] = course_types
     args["faculties"] = faculties
     args["range"] = range(1, 11)
-    args["topicid"] = request.GET["topic"] if (request.method == "GET") and ("topic" in request.GET) else False
-    args["groupid"] = request.GET["group"] if (request.method == "GET") and ("group" in request.GET) else False
-    args["collectionid"] = request.GET["collection"] if (request.method == "GET") and (
-            "collection" in request.GET) else False
+    args["topicids"] = topic_ids
+    args["groupid"] = group_id
+    args["collectionid"] = collection_id
 
     return render(request, template_name, args)
 
