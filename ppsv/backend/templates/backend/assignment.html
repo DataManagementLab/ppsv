@@ -52,7 +52,8 @@
                                          data-topicid="{{ topic.id }}"
                                          data-cp="{{ topics_of_course.course.cp }}"
                                          data-faculty="{{ topics_of_course.course.faculty }}"
-                                         data-course_type="{{ topics_of_course.course.type.pk }}">
+                                         data-course_type="{{ topics_of_course.course.type.pk }}"
+                                         data-course_name="{{ topics_of_course.course.title }}">
                                         {{ topic.title }}</div>
                                 {% endfor %}
                             </details>
@@ -480,7 +481,7 @@
                 topics.each((index, topic1) => {
                         let topic = $(topic1);
                         //Apply Search Bar
-                        if (topic.parent().text().split("\n")[0].search(new RegExp(filterSettings.searchbar, "i")) !== -1)
+                        if (topic.data('course_name').search(new RegExp(filterSettings.searchbar, "i")) !== -1)
                             topic.show();
                         else if (topic.text().search(new RegExp(filterSettings.searchbar, "i")) !== -1)
                             topic.show()
