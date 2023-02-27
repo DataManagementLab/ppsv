@@ -75,7 +75,7 @@
             </div>
         </div>
         <div id="assignment-application" class="section multi">
-
+            <div id="no-topic-selected" class="section">Select a topic to start assigning</div>
         </div>
         <div class="section" id="groupdetails" data-groupid="-1" data-applicationid="-1" data-collectionid="-1">
             <span>Group Details</span>
@@ -1053,7 +1053,8 @@
          * @return true when the topic was added, otherwise false
          */
         function handleTopicAdd(topicID) {
-            if (shownTopics.size >= 5) {
+
+            if (shownTopics.size >= 25) {
                 infoPopup("info", "Max 5 Topics");
                 return false;
             }
@@ -1083,7 +1084,6 @@
                     method: "POST",
                     dataType: "json",
 
-                    // TODO remove data['topicID'] from django
                     success: data => {
                         slotAppRel.loadSlots(data['topicSlots'], data['topicMinSlotSize'], data['topicMaxSlotSize'], data['topicSlotsFinalized']);
                         slotAppRel.loadApplications(data['applications'])
@@ -1092,13 +1092,22 @@
                 })
             }
 
+            //Hide initial div
+            if (shownTopics.size === 1) {
+                $('#no-topic-selected').hide();
+            }
+
             return true;
         }
 
         function handleTopicRemove(topicID) {
             shownTopics.get(topicID).deleteSectionDiv();
             shownTopics.delete(topicID);
-            updateURL(getLoadedTopicIDs(), null, null)
+            //Show initial div
+            if (shownTopics.size === 0) {
+                $('#no-topic-selected').show();
+            }
+            updateURL(getLoadedTopicIDs(), null, null);
         }
 
         function getLoadedTopicIDs() {
