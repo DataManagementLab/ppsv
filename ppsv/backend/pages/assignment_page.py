@@ -310,7 +310,7 @@ def handle_change_finalized_value_slot(request):
         finalization_changed = False
         finalization_value = old_finalized_value
         finalization_changed_status = "bad"
-        finalization_changed_text = "Slot can't be locked"
+        finalization_changed_text = "Only slots with the minimum amount of needed applications can be locked"
     else:
         assignment.finalized_slot = request.POST.get("newFinalized")
         assignment.save()

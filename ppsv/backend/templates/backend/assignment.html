@@ -461,6 +461,7 @@
 
                             infoPopup("good", data['text'])
                         } else {
+                            $(drag).draggable("option", "revert", true);
                             infoPopup("bad", data['text'])
                         }
                     }
