@@ -352,7 +352,6 @@ p {
 /* Eine scrollable Liste. Nur diese sollte einen Overflow haben */
 
 .inner-list {
-    overflow-y: scroll;
     overflow-x: hidden;
     min-width: 200px;
     width: 100%;
