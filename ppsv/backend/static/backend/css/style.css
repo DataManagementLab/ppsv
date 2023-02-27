@@ -293,6 +293,15 @@ p {
     animation-fill-mode: forwards
 }
 
+#user-feedback.info {
+    background-color: white;
+    animation-name: user-feedback-fade-out;
+    animation-delay: 5s;
+    animation-duration: 1s;
+    animation-fill-mode: forwards
+}
+
+
 #user-feedback.wait {
     background-color: white;
 }
