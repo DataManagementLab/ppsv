@@ -546,11 +546,6 @@ p {
     border: solid black 1px;
 }
 
-#assignment-application .single {
-
-
-}
-
 #assignments .ui-draggable-dragging {
     padding-left: 3px;
     padding-right: 3px;
@@ -646,98 +641,34 @@ p {
     background: var(--purple)
 }
 
-
-
-#searchAndFilterDiv {
+.topBar .group {
     display: flex;
-    gap: 3px;
+    gap: 12px;
 }
 
-#filterDiv {
+.topBar .text-button {
     display: flex;
     align-items: center;
     gap: 3px;
 }
 
-#filterButton {
+.topBar .text-button .button {
     height: 100%;
     border-radius: 3px;
     font-size: 140%;
 }
 
-#filterDiv p {
+.topBar .text-button p {
     font-size: 1.5em;
     margin: 0;
 }
 
-#filterDiv .filter-dropdown {
-    width: 200px;
-    border: 1px solid var(--lightgrey);
-    padding: 8px;
-    position: relative;
-    margin: 0 auto;
-
-    user-select: none;
+#overrideControl .fa:before {
+    content: "\f00d";
 }
 
-/* Display CSS arrow to the right of the dropdown text */
-#filterDiv .filter-dropdown:after {
-    content: '';
-    height: 0;
-    position: absolute;
-    width: 0;
-    border: 6px solid transparent;
-    border-top-color: black;
-    top: 50%;
-    right: 10px;
-    margin-top: -3px;
-}
-
-/* Reverse the CSS arrow when the dropdown is active */
-#filterDiv .filter-dropdown.is-active:after {
-    border-bottom-color: black;
-    border-top-color: white;
-    margin-top: -9px;
-}
-
-#filterDiv .filter-dropdown-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    top: 100%; /* align the dropdown right below the dropdown text */
-    border: inherit;
-    border-top: none;
-    left: -1px; /* align the dropdown to the left */
-    right: -1px; /* align the dropdown to the right */
-    opacity: 0; /* hide the dropdown */
-    z-index: 10;
-
-    transition: opacity 0.4s ease-in-out;
-    height: 200px;
-    overflow: scroll;
-    overflow-x: hidden;
-    pointer-events: none; /* avoid mouse click events inside the dropdown */
-}
-
-#filterDiv .is-active .filter-dropdown-list {
-    opacity: 1; /* display the dropdown */
-    background-color: white;
-    pointer-events: auto; /* make sure that the user still can select checkboxes */
-}
-
-#filterDiv .filter-dropdown-list li label {
-    display: block;
-    border-bottom: 1px solid var(--lightgrey);
-    padding: 10px;
-    margin: 0;
-
-    transition: all 0.2s ease-out;
-}
-
-#filterDiv .filter-dropdown-list li label:hover {
-    background-color: var(--aliceblue);
-    color: black;
+#overrideControl.selected .fa:before {
+    content: "\f00c";
 }
 
 /* --- Modal ----*/

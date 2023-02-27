@@ -21,20 +21,25 @@
 {% endblock %}
 
 {% block content %}
-    <div id="assignment-topBar">
-        <div id="searchAndFilterDiv">
+    <div id="assignment-topBar" class="topBar">
+        <div class="group">
             <div id="searchbarDiv">
                 <label>
                     <input id="searchbar" type="text" placeholder="{% translate "Search course/topic" %}">
                 </label>
             </div>
-            <div id="filterDiv">
+            <div id="filterDiv" class="text-button">
                 <p>Filter: </p>
                 <button id="filterButton" onclick="openFilterModal()"><i class="fa fa-filter" aria-hidden="true"></i>
                 </button>
             </div>
+            <div id="overrideControlDiv" class="text-button">
+                <p>Always Override:</p>
+                <button id="overrideControl" onclick="overrideControl()"><i class="fa fa-times"></i></button>
+            </div>
         </div>
         <div id="user-feedback"></div>
+
     </div>
 
     <div id="assignment-content">
@@ -377,6 +382,7 @@
     <!-- Script block for the assignments and topic handling -->
     <script>
         const shownTopics = new Map();
+        let overrideApplications = false;
 
         class SlotAppRel {
             constructor(topicID, name) {
@@ -537,6 +543,7 @@
                 const application = this.slotAppRel.applications.get(parseInt(drag.attr('id').substring(12)));
                 let revert = false;
 
+                // Test if we can drop. if not we revert for nice user feedback
                 if (application == null) {
                     infoPopup("info", "Can only change items in the same Topic");
                     revert = true;
@@ -550,8 +557,52 @@
                     infoPopup('bad', "This slot is locked, application can't be added");
                     revert = true;
                 } else if (this.nowAssignedSize + application.students.length > this.maxSlotSize) {
-                    infoPopup('bad', "This applications does not fit into this slot");
-                    revert = true;
+                    //Test if we can exchange.
+                    for (const accepted_application of this.accepted_applications.values()) {
+                        if (!accepted_application.finalized && application.students.length === accepted_application.students.length) {
+                            //found something to exchange. ask user if he wants to
+                            if (overrideApplications || confirm("Do you want to override the application of " + accepted_application.students + "?")) {
+                                infoPopup("wait", "Waiting for server response")
+                                $.ajax({
+                                    data: {
+                                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                                        action: "removeAssignment",
+                                        applicationID: accepted_application.id,
+                                        slotID: accepted_application.slotID
+                                    },
+                                    method: "POST",
+                                    dataType: "json",
+                                    success: (data) => {
+                                        if (data['requestStatus']) {
+                                            $('#applications-' + this.topicID).append(accepted_application.div);
+                                            this.removeApplication(accepted_application);
+                                            //new assignment
+                                            $.ajax({
+                                                    data: {
+                                                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                                                        action: "newAssignment",
+                                                        applicationID: application.id,
+                                                        slotID: this.id
+                                                    },
+                                                    method: "POST",
+                                                    dataType: "json",
+                                                    success: this.handleDropServerResponseNew(application)
+                                                }
+                                            );
+
+                                        } else {
+                                            $(drag).draggable("option", "revert", true);
+                                            infoPopup("bad", data['text'])
+                                        }
+                                    }
+                                });
+
+                            } else {
+                                infoPopup('bad', "This applications does not fit into this slot");
+                                revert = true;
+                            }
+                        }
+                    }
                 }
 
                 if (revert)
@@ -1081,6 +1132,11 @@
             userFeedback.replaceWith(userFeedbackClone)
         }
 
+        function overrideControl() {
+            const button = $('#overrideControl')
+            button.toggleClass('selected')
+            overrideApplications = !!button.hasClass('selected');
+        }
 
         // --- MAIN FUNCTION --- //
         $(document).ready(
