@@ -1,0 +1,679 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% load i18n %}
+
+
+
+{% block tab_name %}
+    Homepage
+{% endblock tab_name %}
+
+{% block title %}
+    Homepage
+{% endblock title %}
+
+{% block additional_buttons %}
+    {% if user.is_authenticated %}
+        {% if user.is_staff %}
+            <a href="{% url 'backend:assignment_page' %}"
+               class="adminbtn btn btn-danger navbar-inline-list">
+                Assignment Page </a>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="home-top-bar">
+        <form method="post" style="display: none;">
+            <div id="automatic-assignment" name="automatic-assignment">
+                <button href="/home/" class="adminbtn btn btn-danger navbar-inline-list">Automatic assignment</button>
+            </div>
+        </form>
+        <script>
+            $(document).ready(function () {
+                $("#automatic-assignment").click(e => {
+                        e.preventDefault();
+                        $.ajax({
+                            data: {
+                                csrfmiddlewaretoken: "{{ csrf_token }}",
+                                action: "doAutomaticAssignments",
+                            },
+                            method: "POST",
+                            dataType: "json",
+                            success: result => alert("Successfull: " + result),
+                        })
+                    }
+                )
+            });
+
+        </script>
+        <div id="import-export">
+            <form action="{% url 'backend:export_applications_and_assignments_page' %}" method="get">
+                <label for="export-filter-faculty"> Faculty: </label>
+                <select name="faculty" id="export-filter-faculty" class="Filter-dropdown">
+                    <option value="all">all</option>
+                    {% for faculty in faculties %}
+                        <option value={{ faculty }}>{{ faculty }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="adminbtn btn btn-danger navbar-inline-list">Export</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="home-content">
+        <div id="stats-and-filter">
+            <div id="filter" class="section">
+                <div class="filter-content">
+                    <span>Filtered Assignment</span>
+                    <div class="filter" data-filter="cp">
+                        <div class="title-bar">
+                            <div class="text">
+                                <p>Choose CP: </p>
+                                <p id="chosen-cp" class="slider-info"></p>
+                            </div>
+                            <div class="chips">
+                                <div class="chip multi selected" data-filter="cp"><i class="fa"></i>Select all</div>
+                            </div>
+                        </div>
+                        <div class="slider multi">
+                            <div id="slider-range"></div>
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="course">
+                        <div class="title-bar">
+                            <div>
+                                <p>Choose Course Type:</p>
+                            </div>
+                            <div class="chips">
+                                <div class="chip multi" data-filter="courseType"><i class="fa"></i>
+                                    <div class="unsel">Unselect all</div>
+                                    <div class="sel">Select all</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chips">
+                            <div class="single">
+                                {% for courseType in course_types %}
+                                    <div class="chip" data-filter="courseType" data-value="{{ courseType.pk }}">
+                                        <i class="fa"></i>{{ courseType.type }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter" data-filter="faculty">
+                        <div class="title-bar">
+                            <div>
+                                <p>Choose Faculty:</p>
+                            </div>
+                            <div class="chips">
+                                <div class="chip multi" data-filter="faculty"><i class="fa"></i>
+                                    <div class="unsel">Unselect all</div>
+                                    <div class="sel">Select all</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chips">
+                            <div class="single">
+                                {% for faculty in faculties %}
+                                    <div class="chip" data-filter="faculty" data-value="{{ faculty }}">
+                                        <i class="fa"></i>{{ faculty }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statistics" class="section">
+                <div id="statistics-score">
+                    <span id="statistics-span">Statistics</span>
+                </div>
+                <div id="statistics-chart">
+                    <canvas id="bar-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div id="problems-listing" class="section">
+            <div id="unfulfilled-collections-div" class="section-inner">
+                <span>Unassigned Groups</span>
+                <div id="unfulfilled-collections" class="inner-list">
+                </div>
+            </div>
+            <div id="broken-slots-div" class="section-inner">
+                <span>Slots with Errors</span>
+                <div id="broken-slots" class="inner-list">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script-block for loading the statistics chart -->
+    <script>
+        /**
+         * Loads the data of the assignment chart and displays it.
+         */
+        function loadChart() {
+            const statisticsChartDiv = $("#statistics-chart");
+
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: 'getChartData',
+                    minCP: filterSettings.selectedCPMin,
+                    maxCP: filterSettings.selectedCPMax,
+                    courseTypes: filterSettings.selectedCourseTypes,
+                    faculties: filterSettings.selectedFaculties
+                },
+                method: "POST",
+                dataType: "json",
+                success: function (data) {
+                    statisticsChartDiv.find('#bar-chart').remove();
+                    statisticsChartDiv.find('.chartjs-size-monitor').remove();
+                    let canvasElement = $('<canvas id="bar-chart"></canvas>');
+                    canvasElement.appendTo(statisticsChartDiv);
+
+                    const ctx = canvasElement[0].getContext("2d");
+
+                    const color1 = "#519BB2"
+                    const color2 = "#3F8098"
+                    const color3 = "#36738C"
+                    const color4 = "#2D657F"
+                    const color5 = "#245772"
+                    const color6 = "#20506C"
+                    const color7 = "#1B4965"
+
+                    const color1_1 = "#51cdb2";
+                    const color1_2 = "#47bea4";
+                    const color1_3 = "#3fb298";
+                    const color1_4 = "#35a28a";
+                    const color1_5 = "#2d967e";
+                    const color1_6 = "#248972";
+                    const color1_7 = "#1b7b65";
+
+                    const black = "#000000";
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ["1. Choice", "2. Choice", "3. Choice", "4. Choice", "5. Choice", "> 5. Choice", "No Assignment"],
+                            datasets: [
+                                {
+                                    label: 'Assigned Groups',
+                                    data: data.groups,
+                                    backgroundColor: [
+                                        color1,
+                                        color2,
+                                        color3,
+                                        color4,
+                                        color5,
+                                        color6,
+                                        color7
+                                    ],
+                                    borderColor: [
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black,
+                                        black
+                                    ],
+                                    borderWidth: [1, 1, 1, 1, 1, 1, 1]
+                                },
+                                {
+                                    label: 'Assigned Students',
+                                    data: data.students,
+                                    backgroundColor: [
+                                        color1_1,
+                                        color1_2,
+                                        color1_3,
+                                        color1_4,
+                                        color1_5,
+                                        color1_6,
+                                        color1_7
+                                    ],
+                                    borderColor: black,
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                        }
+                    });
+                    if (barHidden) canvasElement.hide();
+
+                }
+            });
+        }
+
+        /**
+         * Loads and displays the list of all slots with error and the list of all unassigned groups
+         */
+        function loadProblemsListing() {
+            const brokenSlots = $("#broken-slots");
+            const unfulfilledCollections = $("#unfulfilled-collections")
+
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: 'getProblemsListing'
+                },
+                method: "POST",
+                dataType: "json",
+                success: function (data) {
+                    for (let brokenSlot of data["brokenSlots"]) {
+                        let item = $('<a href="/assignment/?topic=' + brokenSlot[0] + '"><div class="inner-list-item broken-slot"><div class="slot-str">' + brokenSlot[1] + '</div><div class="cause"> Caused by: ' + brokenSlot[2] + '</div></div></a>')
+                        brokenSlots.append(item)
+                    }
+                    for (let unfulfilledCollection of data["unfulfilledCollections"]) {
+                        let item = $('<a href="/assignment/?group=' + unfulfilledCollection[2] + '&collection=' + unfulfilledCollection[1] + '"><div class="inner-list-item unfulfilled-collection"> <div class="group">' + unfulfilledCollection[0] + '</div><div class="collection-id"> Collection ' + unfulfilledCollection[1] + '</div></div></a>')
+                        unfulfilledCollections.append(item)
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            loadProblemsListing();
+        });
+    </script>
+
+    <!-- Script-block for managing filter for the assignment page -->
+    <script>
+        // --- MAIN FUNCTION --- //
+        $(document).ready(function () {
+            // Check each filter chip at startup
+            $('#pre-filtering .chips .chip').each(function () {
+                manageFilterInput($(this));
+            });
+        })
+
+        // --- INIT DROPDOWN FILTERS --- //
+        // Handle click on a filter chip
+        $('#pre-filtering .chips .single .chip').click(function () {
+            if ($(this).hasClass('selected'))
+                $(this).removeClass('selected');
+            else
+                $(this).addClass('selected');
+            manageFilterInput($(this));
+        });
+
+        // Handle click on select/unselect all by chip category
+        $('#pre-filtering .chips .chip.multi').click(function () {
+            let filterType = $(this).data('filter');
+            $(this).toggleClass('selected');
+            let chips = $('#pre-filtering .chips .single .chip[data-filter="' + filterType + '"]');
+            if ($(this).hasClass('selected'))
+                chips.addClass('selected');
+            else
+                chips.removeClass('selected');
+            chips.each(function () {
+                manageFilterInput($(this));
+            });
+        });
+
+        // Handle click on select/unselect all
+        $('#selectbtn').click(function () {
+            $(this).toggleClass('reverse');
+            let chips = $('#pre-filtering .chips .chip');
+            if ($(this).hasClass('reverse'))
+                chips.addClass('selected');
+            else
+                chips.removeClass('selected');
+            chips.each(function () {
+                manageFilterInput($(this));
+            });
+        });
+
+        // Manage the input fields for the chips
+        function manageFilterInput(chip) {
+            let filterType = chip.data('filter');
+            let filterValue = chip.data('value');
+            if (chip.hasClass('selected')) {
+                chip.closest('.chips').siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', true);
+            } else {
+                chip.closest('.chips').siblings('.filter-checkboxes').find('input.' + filterType + '[value="' + filterValue + '"]').prop('checked', false);
+            }
+        }
+    </script>
+
+    <!-- Script-block for managing filters -->
+    <script>
+
+        /**
+         * A class for storing the current selected settings of the filter
+         */
+        class FilterSettings {
+            constructor() {
+                this.selectedCPMin = 0;
+                this.selectedCPMax = 0;
+                this.selectedCourseTypes = [];
+                this.selectedFaculties = [];
+            }
+
+            /**
+             * Creates the model for displaying and selecting the filter options
+             */
+            createModalHandling() {
+                const filterSettings = this;
+
+                /**
+                 * Creates and sets the click handler of the given normal chip
+                 * @param chip the chip to set the click handler of
+                 * @param filterSettings the current filterSettings object
+                 */
+                function createSingleChipClickHandler(chip, filterSettings) {
+                    chip.click(() => {
+                        let filterType = chip.data('filter');
+                        let filterValue = chip.data('value');
+                        if (chip.hasClass('selected')) {
+                            chip.removeClass('selected');
+                            if (filterType === 'courseType') {
+                                filterSettings.removeCourseType(filterValue);
+                            } else if (filterType === 'faculty') {
+                                filterSettings.removeFaculty(filterValue);
+                            }
+                        } else {
+                            chip.addClass('selected');
+                            if (filterType === 'courseType') {
+                                filterSettings.addCourseType(filterValue);
+                            } else if (filterType === 'faculty') {
+                                filterSettings.addFaculty(filterValue);
+                            }
+                        }
+                        filterSettings.filterChanged();
+                    })
+                }
+
+                /**
+                 * Creates and sets the click handler of the given chip
+                 * The given chip will be a select all or unselect all chip
+                 * @param chip the chip to set the click handler of
+                 * @param filterSettings the current filterSettings object
+                 */
+                function createMultiChipClickHandler(chip, filterSettings) {
+                    chip.click(() => {
+                        let filterType = chip.data('filter');
+
+                        // slider stuff for cp
+                        if (filterType === 'cp') {
+                            filterSettings.selectedCPMin = 0;
+                            filterSettings.selectedCPMax = -1;
+                            slider.slider("option", "values", [0, 11]);
+                            $("#chosen-cp").text('0 - ∞ CP');
+                        }
+
+                        // toggle chips otherwise
+                        else {
+                            // Update the chips
+                            let chips = $('#filter .chips .single .chip[data-filter="' + filterType + '"]');
+                            if (chip.hasClass('selected')) {
+                                //Update class
+                                if (filterType === 'courseType') {
+                                    filterSettings.selectedCourseTypes = [];
+                                    filterSettings.loadAllCourses();
+                                } else if (filterType === 'faculty') {
+                                    filterSettings.selectedFaculties = [];
+                                    filterSettings.loadAllFaculties()
+                                }
+                                //update chips
+                                chips.each((index, chip1) => {
+                                    let chip = $(chip1)
+                                    if (!chip.hasClass('selected')) {
+                                        chip.addClass('selected');
+                                    }
+                                });
+                            } else {
+                                //Update class
+                                if (filterType === 'courseType')
+                                    filterSettings.selectedCourseTypes = [];
+                                else if (filterType === 'faculty')
+                                    filterSettings.selectedFaculties = [];
+                                //Update chips
+                                chips.each((index, chip1) => {
+                                    let chip = $(chip1)
+                                    if ($(chip).hasClass('selected')) {
+                                        chip.removeClass('selected');
+                                    }
+                                });
+                            }
+
+                            //Update multi chip
+                            $(chip).toggleClass('selected');
+                        }
+                        //Actually apply the changes
+                        filterSettings.filterChanged();
+                    });
+                }
+
+                // --- CP SLIDER --- //
+                //Create the slider and update on slide
+                let slider = $('#slider-range');
+                slider.slider({
+                    range: true,
+                    min: 0,
+                    max: 11,
+                    values: [filterSettings.selectedCPMin, filterSettings.selectedCPMax === -1 ? 11 : filterSettings.selectedCPMax],
+                    slide: function (event, ui) {
+                        $('#chosen-cp').text(ui.values[0] + " - " + (ui.values[1] === 11 ? '∞' : ui.values[1]) + " CP");
+                        filterSettings.selectedCPMin = ui.values[0];
+                        filterSettings.selectedCPMax = ui.values[1] === 11 ? -1 : ui.values[1];
+                        filterSettings.filterChanged();
+                    }
+                });
+
+                // --- MULTI CHIPS --- //
+                $('#filter .chip.multi').each((index, chip) => createMultiChipClickHandler($(chip), filterSettings));
+
+
+                // --- COURSE & FACULTY CHIPS --- //
+                $("#filter .single .chip ").each((index, chip) => createSingleChipClickHandler($(chip), filterSettings));
+            }
+
+            /**
+             * A method to add a CourseType to the selected CourseTypes
+             *
+             * @param course: the course to add
+             */
+            addCourseType(course) {
+                this.selectedCourseTypes.push(course);
+            }
+
+            /**
+             * A method to add a faculty to the selected facultys
+             *
+             * @param faculty: the faculty to add
+             */
+            addFaculty(faculty) {
+                this.selectedFaculties.push(faculty)
+            }
+
+            /**
+             * A method to remove a CourseType from the selected CourseTypes
+             *
+             * @param course: the course to remove
+             */
+            removeCourseType(course) {
+                const index = this.selectedCourseTypes.indexOf(course);
+                if (index > -1) {
+                    this.selectedCourseTypes.splice(index, 1);
+                }
+            }
+
+            /**
+             * A method to remove a faculty from the selected facultys
+             *
+             * @param faculty: the faculty to remove
+             */
+            removeFaculty(faculty) {
+                const index = this.selectedFaculties.indexOf(faculty);
+                if (index > -1) {
+                    this.selectedFaculties.splice(index, 1);
+                }
+            }
+
+            /**
+             * loads all courses and faculties provided by the backend as arguments and stores them
+             */
+            loadDefaultValues() {
+                this.selectedCPMin = 1;
+                this.selectedCPMax = -1;
+                this.loadAllCourses();
+                this.loadAllFaculties();
+                $("#filter .single .chip ").each((index, chip1) => {
+                    let chip = $(chip1);
+                    chip.addClass('selected');
+                });
+            }
+
+            /**
+             * loads all courses provided by the backend as arguments and stores them
+             */
+            loadAllCourses() {
+                {% for courseType in course_types %}
+                    this.selectedCourseTypes.push({{ courseType.pk }})
+                {% endfor %}
+            }
+
+            /**
+             * loads all faculties provided by the backend as arguments and stores them
+             */
+            loadAllFaculties() {
+                {% for faculty in faculties %}
+                    this.selectedFaculties.push("{{ faculty }}")
+                {% endfor %}
+            }
+
+            selectedCPMinID = "selectedCPMin:";
+            selectedCPMaxID = "selectedCPMax:";
+            selectedCourseTypesID = "selectedCourseTypes:";
+            selectedFacultiesID = "selectedFaculties:";
+
+            /**
+             * reads the filter settings which are stored in the cookie
+             */
+            readFromCookie() {
+                if (readCookie("filterSettings") != null) {
+                    // CHECK IF COOKIE IS CORRECT
+
+                    function cookieBroken(filterSettings) {
+                        console.log("The filter cookie seems to be broken. Loading Defaults!");
+                        eraseCookie("filterSettings");
+                        filterSettings.loadDefaultValues();
+                    }
+
+                    let filterSplit = readCookie("filterSettings").split("&");
+                    if (filterSplit.length !== 4) cookieBroken(this);
+
+                    let selectedCPMinIndex = filterSplit[0].lastIndexOf(this.selectedCPMinID);
+                    let selectedCPMaxIndex = filterSplit[1].lastIndexOf(this.selectedCPMaxID);
+                    let selectedCourseTypesIndex = filterSplit[2].lastIndexOf(this.selectedCourseTypesID);
+                    let selectedFacultiesIndex = filterSplit[3].lastIndexOf(this.selectedFacultiesID);
+                    if (selectedCPMinIndex === -1 || selectedCPMaxIndex === -1 || selectedCourseTypesIndex === -1 || selectedFacultiesIndex === -1) cookieBroken(this);
+
+
+                    // LOAD DATA FROM COOKIE
+                    // CP
+
+                    this.selectedCPMin = parseInt(filterSplit[0].substring(selectedCPMinIndex + this.selectedCPMinID.length));
+                    this.selectedCPMax = parseInt(filterSplit[1].substring(selectedCPMaxIndex + this.selectedCPMaxID.length));
+                    let slider = $('#slider-range');
+                    slider.slider("option", "values", [this.selectedCPMin, this.selectedCPMax === -1 ? 11 : this.selectedCPMax]);
+                    //Show initial Text
+                    $("#chosen-cp").text(this.selectedCPMin + " - " + (this.selectedCPMax === -1 ? '∞' : this.selectedCPMax) + " CP");
+
+                    //CourseTypes
+                    let courseTypes = filterSplit[2].substring(selectedCourseTypesIndex + this.selectedCourseTypesID.length).split(",");
+                    for (let i = 0; i < courseTypes.length; i++) {
+                        if (courseTypes[i].length > 0)
+                            this.selectedCourseTypes.push(parseInt(courseTypes[i]));
+                    }
+
+                    //Faculties
+                    let faculties = filterSplit[3].substring(selectedFacultiesIndex + this.selectedFacultiesID.length).split(",");
+                    for (let i = 0; i < faculties.length; i++) {
+                        if (faculties[i].length > 0)
+                            this.selectedFaculties.push(faculties[i]);
+                    }
+
+                    //Update Chips
+                    let filterSettings = this;
+                    $("#filter .single .chip").each((index, chip1) => {
+                        let chip = $(chip1);
+                        if (filterSettings.selectedCourseTypes.some(item => item === chip.data('value')) ||
+                            filterSettings.selectedFaculties.some(item => item === chip.data('value')))
+                            chip.addClass('selected');
+                        else
+                            chip.removeClass('selected');
+                    });
+                }
+            }
+
+            /**
+             * Saves the filter settings to the cookie
+             */
+            saveToCookie() {
+                let cookieValue = this.selectedCPMinID + this.selectedCPMin;
+                cookieValue += "&" + this.selectedCPMaxID + this.selectedCPMax;
+                cookieValue += "&" + this.selectedCourseTypesID;
+                this.selectedCourseTypes.forEach(e => {
+                    cookieValue += e + ",";
+                });
+                if (this.selectedCourseTypes.length > 0)
+                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                cookieValue += "&" + this.selectedFacultiesID;
+                this.selectedFaculties.forEach(e => {
+                    cookieValue += e + ",";
+                });
+                if (this.selectedFaculties.length > 0)
+                    cookieValue = cookieValue.substring(0, cookieValue.length - 1);
+                createCookie("filterSettings", cookieValue, 5);
+            }
+
+
+            filterChangedQueue;
+
+            /**
+             * Handles the change of filters, even if multiple changes are mad
+             */
+            filterChanged() {
+                function filterChangedHelper(filterSettings) {
+                    return () => {
+                        filterSettings.saveToCookie()
+                        // TODO: implement handling for errors
+                        loadChart();
+
+                    }
+                }
+
+                if (this.filterChangedQueue != null) {
+                    clearTimeout(this.filterChangedQueue);
+                }
+                this.filterChangedQueue = setTimeout(filterChangedHelper(this), 250);
+            }
+
+        }
+
+        // --- INIT FILTER  --- //
+        const filterSettings = new FilterSettings();
+
+        $(document).ready(
+            function () {
+                // --- init filter --- //
+                filterSettings.createModalHandling($('#filter'));
+
+                if (readCookie("filterSettings") != null) {
+                    filterSettings.readFromCookie();
+                    filterSettings.filterChanged();
+                } else {
+                    filterSettings.loadDefaultValues();
+                    filterSettings.saveToCookie();
+                }
+            });
+    </script>
+{% endblock content %}

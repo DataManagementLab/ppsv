@@ -1,8 +1,11 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 
-from backend.models import Assignment, possible_assignments
-from course.models import TopicSelection, Topic
+from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
+    possible_assignments_of_group_to_topic, AcceptedApplications
+from backend.pages.functions import handle_get_chart_data, handle_get_score_data
+from course.models import TopicSelection, Topic, CourseType, Course, Group
 
 
 # ----------Database Interactions---------- #
@@ -58,7 +61,7 @@ def remove_assignment(application_id, slot_id):
     """
 
     if not TopicSelection.objects.filter(pk=application_id).exists():
-        return False, "This Assignment does not exist"
+        return False, "This Application does not exist"
 
     application = TopicSelection.objects.get(pk=application_id)
 
@@ -66,6 +69,14 @@ def remove_assignment(application_id, slot_id):
         return True, "Assignment does not exist"
 
     assignment = Assignment.objects.get(topic=application.topic, slot_id=slot_id)
+
+    if assignment.finalized_slot > 0:
+        return False, "Slot is locked, application can't be removed"
+
+    if AcceptedApplications.objects.filter(assignment=assignment,
+                                           topic_selection=application).get().finalized_assignment:
+        return False, "Application is locked and can't be removed"
+
     assignment.accepted_applications.remove(application)
 
     if assignment.accepted_applications.count() == 0:
@@ -86,31 +97,64 @@ def handle_select_topic(request):
 
     topic = Topic.objects.get(id=int(request.POST.get("topicID")))
     applications = []
+    slots_finalized = []
+
+    for i in range(0, topic.max_slots):
+        slots_finalized.append(0)
 
     for application in TopicSelection.objects.filter(topic=topic):
+        assigned_topic = None
+        filtered_for_assignment = Assignment.objects.filter(accepted_applications__group_id__in=[application.group],
+                                                            accepted_applications__collection_number=application.collection_number)
+        if filtered_for_assignment.exists():
+            assigned_topic = filtered_for_assignment.get().topic.id
+
         data = {
             'students': list(map(lambda x: x.pk, application.group.members)),
             'applicationID': application.id,
-            'possibleAssignmentsForCollection': possible_assignments(application.group.id,
-                                                                     application.collection_number),
+            'possibleAssignmentsForCollection': possible_assignments_for_group(application.group.id,
+                                                                               application.collection_number),
+            'collectionCount': TopicSelection.objects.filter(group=application.group,
+                                                             collection_number=application.collection_number).count(),
             'preference': application.priority,
+            'collectionFulfilled': filtered_for_assignment.exists(),
+            'groupID': application.group.id,
+            'collectionID': application.collection_number,
+            'assignedTopic': assigned_topic
         }
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():
             data['slotID'] = assignment.get().slot_id
+            slots_finalized[assignment.get().slot_id - 1] = assignment.get().finalized_slot
+            data['finalizedAssignment'] = AcceptedApplications.objects.get(topic_selection=application.id,
+                                                                           assignment_id=assignment.get().id).finalized_assignment
         else:
             data['slotID'] = -1
+            data['finalizedAssignment'] = None
         applications.append(data)
 
     return JsonResponse(
         {
             'topicName': topic.title,
+            'topicID': topic.id,
             'topicMinSlotSize': topic.min_slot_size,
             'topicMaxSlotSize': topic.max_slot_size,
+            'topicSlotsFinalized': slots_finalized,
             'topicSlots': topic.max_slots,
             'topicCourseName': topic.course.title,
             'applications': applications
         })
+
+
+def handle_select_application(request):
+    """
+    Handles an application selection request.
+
+    :return: the information about the group of the selected application.
+    :rtype: JsonResponse
+    """
+    application = TopicSelection.objects.get(id=int(request.POST.get("applicationID")))
+    return get_group_data(application.group_id, application.collection_number)
 
 
 def handle_new_assignment(request):
@@ -169,6 +213,180 @@ def handle_remove_assignment(request):
     })
 
 
+def handle_get_possible_assignments_for_topic(request):
+    """
+    Handles the request for getting possible assignments of a topic.
+
+    :param request: the handled request
+    return: the possible assignments for a topic
+    :rtype: JsonResponse
+    """
+    application = TopicSelection.objects.get(pk=request.POST.get("applicationID"))
+    _possibleAssignments = possible_assignments_for_group(application.group.id, application.collection_number)
+    return JsonResponse({
+        "possibleAssignments": _possibleAssignments,
+    })
+
+
+def handle_preselected_filters(request):
+    """
+    Handles preselected filters.
+
+    :param request: the handled request
+    :return: The rendered site with more arguments for preselected filters
+    :rtype: render() object
+    """
+    args = {}
+    filter_settings = {"CP": request.POST.getlist("cp"), "courseType": request.POST.getlist("courseType"),
+                       "faculty": request.POST.getlist("faculty")}
+
+    args['preselectedFilter'] = True
+    args['filterSettings'] = filter_settings
+
+    return render_site(request, args)
+
+
+def handle_load_group_data(request):
+    """
+
+    :param request: the handled request
+    :return: The group data of the group and collection specified by the request
+    :rtype: JsonResponse
+    """
+    return get_group_data(request.POST.get("groupID"), request.POST.get("collectionID"))
+
+
+# --- POST HANDLING HELPER --- #
+def get_group_data(group_id, collection_id):
+    """
+    :return: all the group data connected to the given collection of the given group
+    :rtype: JsonResponse
+    """
+    group = Group.objects.get(id=group_id)
+
+    members = []
+    group_name = ""
+    for member in group.members:
+        members.append(member.tucan_id + ": " + member.firstname + ' ' + member.lastname)
+        group_name += str(member) + ' '
+
+    assignment_query = Assignment.objects.filter(accepted_applications__group__in=[group],
+                                                 accepted_applications__collection_number=collection_id)
+    assigned = assignment_query.get().topic.id if assignment_query.exists() else None
+
+    application_in_collection = []
+    for application in all_applications_from_group(group_id, collection_id):
+        topic = {
+            'id': application.topic.id,
+            'name': application.topic.title,
+            'priority': application.priority,
+            'freeSlots': possible_assignments_of_group_to_topic(application.topic, application.group)
+        }
+        application_in_collection.append(topic)
+
+    return JsonResponse(
+        {
+            'selectedGroup': group_id,
+            'selectedCollection': collection_id,
+            'group_name': group_name,
+            'members': members,
+            'assigned': assigned,
+            'collection': application_in_collection
+        }
+    )
+
+
+def handle_change_finalized_value_slot(request):
+    """
+    Handles a change of the finalized value of a slot.
+
+    :param request: the handled request
+    :return: If the finalized_slot value was changed successfully, the new finalized_slot value, a status and text
+    depicting if and how the finalized_slot value was changed
+    :rtype: JsonResponse
+    """
+
+    assignment = Assignment.objects.get_or_create(slot_id=request.POST.get("slotID"),
+                                                  topic_id=request.POST.get("slotTopicID"))[0]
+    old_finalized_value = assignment.__getattribute__("finalized_slot")
+
+    finalization_changed = None
+    finalization_value = None
+    finalization_changed_status = None
+    finalization_changed_text = None
+
+    if old_finalized_value >= 2:
+        finalization_changed = False
+        finalization_value = old_finalized_value
+        finalization_changed_status = "bad"
+        finalization_changed_text = "Slot can't be unlocked"
+    elif (assignment.assigned_student_to_slot_count < assignment.topic.min_slot_size) and (old_finalized_value == 0):
+        finalization_changed = False
+        finalization_value = old_finalized_value
+        finalization_changed_status = "bad"
+        finalization_changed_text = "Slot can't be locked"
+    else:
+        assignment.finalized_slot = request.POST.get("newFinalized")
+        assignment.save()
+        finalization_changed = True
+        finalization_value = request.POST.get("newFinalized")
+        finalization_changed_status = "good"
+        finalization_changed_text = "Slot has been locked" if (
+                old_finalized_value == 0) else "Slot has been unlocked"
+
+    return JsonResponse({
+        'finalizationChanged': finalization_changed,
+        'finalizationValue': finalization_value,
+        'finalizationChangedStatus': finalization_changed_status,
+        'finalizationChangedText': finalization_changed_text,
+    })
+
+
+def handle_change_finalized_value_application(request):
+    """
+    Handles a change of the finalized value of an application.
+
+    :param request: the handled request
+    :return: If the finalized_assignment value was changed successfully, the new finalized_assignment value, a status
+    and text depicting if and how the finalized_assignment value was changed
+    :rtype: JsonResponse
+    """
+
+    assignmentSlot = Assignment.objects.filter(slot_id=request.POST.get("slotID"),
+                                               topic_id=request.POST.get("slotTopicID"))[0]
+    oldFinalizedValueSlot = assignmentSlot.__getattribute__("finalized_slot")
+
+    finalization_changed = None
+    finalization_value = None
+    finalization_changed_status = None
+    finalization_changed_text = None
+
+    if oldFinalizedValueSlot < 2:
+        assignment = AcceptedApplications.objects.filter(topic_selection=request.POST.get("applicationID"),
+                                                         assignment=assignmentSlot)[0]
+        oldFinalizedValueApplication = assignment.__getattribute__("finalized_assignment")
+        assignment.finalized_assignment = not oldFinalizedValueApplication
+        assignment.save()
+        finalization_changed = True
+        finalization_value = assignment.finalized_assignment
+        finalization_changed_status = "good"
+        finalization_changed_text = "Assignment has been locked" if not oldFinalizedValueApplication else "Assignment has been unlocked"
+    else:
+        finalization_changed = False
+        finalization_value = AcceptedApplications.objects.filter(topic_selection=request.POST.get("applicationID"),
+                                                                 assignment=assignmentSlot)[0].__getattribute__(
+            "finalized_assignment")
+        finalization_changed_status = "bad"
+        finalization_changed_text = "Application can't be (un)locked"
+
+    return JsonResponse({
+        'finalizationChanged': finalization_changed,
+        'finalizationValue': finalization_value,
+        'finalizationChangedStatus': finalization_changed_status,
+        'finalizationChangedText': finalization_changed_text,
+    })
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -183,48 +401,49 @@ def handle_post(request):
 
     action = request.POST.get("action")
 
-    if action == "selectTopic":
-        return handle_select_topic(request)
-
-    if action == "newAssignment":
-        return handle_new_assignment(request)
-
+    if action == "getPossibleAssignmentsForTopic":
+        return handle_get_possible_assignments_for_topic(request)
+    if action == "selectApplication":
+        return handle_select_application(request)
     if action == "changeAssignment":
         return handle_change_assignment(request)
-
+    if action == "newAssignment":
+        return handle_new_assignment(request)
     if action == "removeAssignment":
         return handle_remove_assignment(request)
+    if action == "getChartData":
+        return handle_get_chart_data(request)
+    if action == "getScoreData":
+        return handle_get_score_data(request)
+    if action == "preselectFilters":
+        return handle_preselected_filters(request)
+    if action == "selectTopic":
+        return handle_select_topic(request)
+    if action == "loadGroupData":
+        return handle_load_group_data(request)
+    if action == "changeFinalizedValueSlot":
+        return handle_change_finalized_value_slot(request)
+    if action == "changeFinalizedValueApplication":
+        return handle_change_finalized_value_application(request)
 
     raise ValueError(f"invalid request action: {action}")
 
 
-# ----------Main Function---------- #
-
-def assignment_page(request):
-    """The view for the assignment page.
-
-    :param request: the given request send by the assignment html-page
-    In case of the request methode being a 'POST' there are the following cases:
-        select_topic:   the request was sent because a topic was selected; all relevant data regarding the rendering of
-                        the webpage with the newly selected topic now displayed are retrieved from the database
-        assign_group:    the request was sent because a group was assigned to a slot; the assignment will be stored
-                            in the database if valid
-        unassign_group:    the request was sent because a group was unassigned from a slot; the database entry corresponding
-                            to the group assignment to the slot gets removed
-
-    In case of the request methode not being a POST all topics will be returned grouped by their corresponding course
-
-    :return: a JsonResponse containing the information about the request if the request was a POST or a render()
-    object otherwise
+# ----------Site rendering--------- #
+def render_site(request, args=None):
     """
+    handles the rendering of the assignment page.
+    parses additional information in the address and handles it accordingly
+
+    :param request: the handled request
+    :param args: Arguments for rendering. When none given, an empty array is created
+
+    :return: The rendered site
+    :rtype: render() object
+    """
+    if args is None:
+        args = {}
     template_name = 'backend/assignment.html'
-    args = {}
-
-    # check if the request is a post
-    if request.method == "POST":
-        return handle_post(request)
-
-    # if the request is not a post return a render of the default page
     topics_of_courses = []
     topics = []
     last_course = ""
@@ -237,7 +456,50 @@ def assignment_page(request):
                 topics_of_courses.append(topics_of_course)
             topics.append(topic)
 
+    course_types = []
+    for course_type in CourseType.objects.all():
+        course_types.append(course_type)
+
+    faculties = []
+    for course in Course.objects.all():
+        if course.faculty not in faculties:
+            faculties.append(course.faculty)
+    faculties.sort()
+
     args["topics_of_courses"] = topics_of_courses
-    args["show_course"] = True
+    args["course_types"] = course_types
+    args["faculties"] = faculties
+    args["range"] = range(1, 11)
+    args["topicid"] = request.GET["topic"] if (request.method == "GET") and ("topic" in request.GET) else False
+    args["groupid"] = request.GET["group"] if (request.method == "GET") and ("group" in request.GET) else False
+    args["collectionid"] = request.GET["collection"] if (request.method == "GET") and (
+            "collection" in request.GET) else False
 
     return render(request, template_name, args)
+
+
+# ----------Main Function---------- #
+
+def assignment_page(request):
+    """The view for the assignment page.
+
+    :param request: the given request send by the assignment html-page
+    In case of the request type being a 'POST' it will be handled by the handle_post method
+
+    In case of the request method not being a POST all topics will be returned grouped by their corresponding course.
+    In case of the request specifying a user who is not allowed to access this download-page redirects to the
+    login page.
+
+    :return: a JsonResponse containing the information about the request if the request was a POST or a render()
+    object otherwise
+    """
+
+    if not request.user.is_staff:
+        return redirect(reverse('admin:login') + '?next=' + reverse('backend:assignment_page'))
+
+    # check if the request is a post
+    if request.method == "POST":
+        return handle_post(request)
+
+    # if the request is not a post return a render of the default page
+    return render_site(request)
