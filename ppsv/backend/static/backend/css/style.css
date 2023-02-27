@@ -554,6 +554,7 @@ p {
     border: solid black 1px;
 }
 
+
 #assignments .ui-draggable-dragging {
     padding-left: 3px;
     padding-right: 3px;
@@ -678,6 +679,15 @@ p {
 }
 
 #overrideControl.selected .fa:before {
+    content: "\f00c";
+}
+
+#ignoreAssigned .fa:before {
+    content: "\f00d";
+    margin-left: -1px;
+}
+
+#ignoreAssigned.selected .fa:before {
     content: "\f00c";
 }
 

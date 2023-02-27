@@ -34,8 +34,12 @@
                 </button>
             </div>
             <div id="overrideControlDiv" class="text-button">
-                <p>Always Override:</p>
+                <p>Always Override Slot:</p>
                 <button id="overrideControl" onclick="overrideControl()"><i class="fa fa-times"></i></button>
+            </div>
+            <div id="ignoreAssigned" class="text-button">
+                <p>Always Override Application:</p>
+                <button id="ignoreAssigned" onclick="ignoreAssigned()"><i class="fa fa-times"></i></button>
             </div>
         </div>
         <div id="user-feedback"></div>
@@ -383,7 +387,11 @@
     <script>
         const shownTopics = new Map();
         let overrideApplications = false;
+        let overrideFulfilled = false;
 
+        /**
+         * A class representing on Slot and Application in relationship
+         */
         class SlotAppRel {
             constructor(topicID, name) {
                 this.slots = new Map();
@@ -393,6 +401,10 @@
                 this.createSectionDiv(name);
             }
 
+            /**
+             * Creates the div for this relation
+             * @param name
+             */
             createSectionDiv(name) {
                 let closeID = "close-" + this.topicID;
                 $('#assignment-application').prepend('' +
@@ -474,6 +486,9 @@
                 });
             }
 
+            /**
+             * Deletes the div for this relation
+             */
             deleteSectionDiv() {
                 $('#assignment-application-' + this.topicID).remove();
             }
@@ -485,7 +500,7 @@
             loadApplications(loadedApplications) {
                 let application;
                 for (let app of loadedApplications) {
-                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['finalizedAssignment'], this);
+                    application = new Application(app['applicationID'], app['students'], app['preference'], app['possibleAssignmentsForCollection'], app['collectionCount'], app['slotID'], app['collectionFulfilled'], app['finalizedAssignment'], this, app['collectionID']);
                     this.applications.set(application.id, application);
                     if (application.slotID !== -1)
                         this.slots.get(application.slotID).addApplication(application);
@@ -506,6 +521,17 @@
             loadSlots(count, minSize, maxSize, finalized) {
                 for (let slotID = 1; slotID <= count; slotID++) {
                     this.slots.set(slotID, new Slot(slotID, minSize, maxSize, finalized[slotID - 1], this))
+                }
+            }
+
+            /**
+             * Calls the remove application method of the right slot
+             * @param application
+             */
+            removeApplication(application) {
+                for (const slot of this.slots.values()) {
+                    if (slot.accepted_applications.has(application.id))
+                        slot.removeApplication(application);
                 }
             }
         }
@@ -541,8 +567,11 @@
             handleDrop(event, ui) {
                 const drag = ui.draggable;
                 const application = this.slotAppRel.applications.get(parseInt(drag.attr('id').substring(12)));
+                const slot = this;
                 let revert = false;
-                let exchanged = false;
+                let exchange = false;
+                let exchangeItem = null;
+                let override = false;
 
                 // Test if we can drop. if not we revert for nice user feedback
                 if (application == null) {
@@ -551,54 +580,29 @@
                 } else if (application.oldSlotID === this.id) {
                     infoPopup("info", "This application is already in this slot");
                     revert = true;
-                } else if (application.collectionFullfilled) {
-                    infoPopup("info", "The collection of this application is already satisfied");
-                    revert = true;
                 } else if (this.finalized !== 0) {
                     infoPopup('bad', "This slot is locked, application can't be added");
                     revert = true;
-                } else if (this.nowAssignedSize + application.students.length > this.maxSlotSize) {
+                }
+
+                if (!revert && application.collectionFullfilled && application.slotID === -1) {
+                    //test if we override fulfilled
+                    if (overrideFulfilled) {
+                        override = true;
+                    } else {
+                        infoPopup("info", "The collection of this application is already satisfied");
+                        revert = true;
+                    }
+                }
+
+                if (!revert && this.nowAssignedSize + application.students.length > this.maxSlotSize) {
                     //Test if we can exchange.
                     for (const accepted_application of this.accepted_applications.values()) {
-                        if (!accepted_application.finalized && application.students.length === accepted_application.students.length) {
+                        if (!accepted_application.finalized && application.students.length === accepted_application.students.length || this.maxSlotSize >= this.nowAssignedSize - accepted_application.students.length + application.students.length) {
                             //found something to exchange. ask user if he wants to
                             if (overrideApplications || confirm("Do you want to override the application of " + accepted_application.students + "?")) {
-                                infoPopup("wait", "Waiting for server response")
-                                $(drag).draggable("option", "revert", false);
-
-                                $.ajax({
-                                    data: {
-                                        csrfmiddlewaretoken: "{{ csrf_token }}",
-                                        action: "removeAssignment",
-                                        applicationID: accepted_application.id,
-                                        slotID: accepted_application.slotID
-                                    },
-                                    method: "POST",
-                                    dataType: "json",
-                                    success: (data) => {
-                                        if (data['requestStatus']) {
-                                            $('#applications-' + this.topicID).append(accepted_application.div);
-                                            exchanged = true;
-                                            this.removeApplication(accepted_application);
-                                            //new assignment
-                                            $.ajax({
-                                                    data: {
-                                                        csrfmiddlewaretoken: "{{ csrf_token }}",
-                                                        action: "newAssignment",
-                                                        applicationID: application.id,
-                                                        slotID: this.id
-                                                    },
-                                                    method: "POST",
-                                                    dataType: "json",
-                                                    success: this.handleDropServerResponseNew(application)
-                                                }
-                                            );
-                                        } else {
-                                            revert = true;
-                                            infoPopup("bad", data['text'])
-                                        }
-                                    }
-                                });
+                                exchange = true;
+                                exchangeItem = accepted_application;
                             } else {
                                 infoPopup('bad', "This applications does not fit into this slot");
                                 revert = true;
@@ -610,93 +614,160 @@
                 if (revert)
                     return $(drag).draggable("option", "revert", true);
                 $(drag).draggable("option", "revert", false);
-                if (exchanged)
-                    return;
-
-
-                let oldSlotID = application.slotID;
-
-                // Do nothing if the slot is the same as the origin
-                if (oldSlotID === this.id)
-                    return;
-
-                // Do nothing if slot is locked
-                if (this.finalized !== 0) {
-                    infoPopup('bad', "This slot is locked, application can't be added")
-                    return;
-                }
-
                 infoPopup("wait", "Waiting for server response");
 
-                if (oldSlotID !== -1) {
+                if (override && !exchange) {
+                    requestRemoveOtherApp(application, (data) => {
+                        if (data['requestStatus']) {
+                            //remove from topic if shown
+                            removeFromShownTopics(application);
+                            //add the application to this slot
+                            requestAddAppThis(application);
+                        } else {
+                            infoPopup("bad", data["text"]);
+                            $(drag).draggable("option", "revert", true);
+                        }
+                    });
+                } else if (override && exchange) {
+                    requestRemoveOtherApp(application, (data) => {
+                        if (data['requestStatus']) {
+                            //remove app from topic if shown
+                            removeFromShownTopics(application);
+                            //remove app we want to exchange from this topic
+                            requestRemoveApp(exchangeItem, (data) => {
+                                if (data['requestStatus']) {
+                                    //remove app from this topic
+                                    slot.removeApplication(exchangeItem);
+                                    //add app to this topic
+                                    requestAddAppThis(application);
+                                } else {
+                                    infoPopup("bad", data["text"]);
+                                    $(drag).draggable("option", "revert", true);
+                                }
+                            });
+                        } else {
+                            infoPopup("bad", data["text"]);
+                            $(drag).draggable("option", "revert", true);
+                        }
+                    });
+                } else if (!override && exchange) {
+                    requestRemoveApp(exchangeItem, (data) => {
+                        if (data['requestStatus']) {
+                            //remove app from this topic
+                            slot.removeApplication(exchangeItem);
+                            //add app to this topic
+                            requestAddAppThis(application);
+                        } else {
+                            infoPopup("bad", data["text"]);
+                            $(drag).draggable("option", "revert", true);
+                        }
+                    });
+                } else if (application.slotID === this.id)
+                    return;
+                else if (application.slotID === -1) {
+                    requestAddAppThis(application);
+                } else {
+                    requestSwitchSlots(application)
+                }
+
+                //Helper functions
+
+                //Switches Slots in this topic
+                function requestSwitchSlots(application) {
                     //switch from slot to another
                     $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
                                 action: "changeAssignment",
                                 applicationID: application.id,
-                                oldSlotID: oldSlotID,
-                                newSlotID: this.id
+                                oldSlotID: application.slotID,
+                                newSlotID: slot.id
                             },
                             method: "POST",
                             dataType: "json",
-                            success: this.handelDropServerResponseChange(application)
-                        }
-                    );
-                } else {
-                    //new assignment
-                    $.ajax({
-                            data: {
-                                csrfmiddlewaretoken: "{{ csrf_token }}",
-                                action: "newAssignment",
-                                applicationID: application.id,
-                                slotID: this.id
-                            },
-                            method: "POST",
-                            dataType: "json",
-                            success: this.handleDropServerResponseNew(application)
+                            success: (data) => {
+                                const applicationAccepted = data["requestStatus"];
+                                const applicationAcceptedText = data["text"];
+
+                                if (applicationAccepted) {
+                                    slot.slotAppRel.slots.get(application.slotID).removeApplication(application);
+                                    slot.addApplication(application);
+                                    application.updateDiv();
+                                    infoPopup("good", applicationAcceptedText)
+                                } else
+                                    infoPopup("bad", applicationAcceptedText)
+                            }
                         }
                     );
                 }
-            }
 
-            /**
-             * The handler for a drop when the application was previously in another slot
-             * @param application The application
-             * @return {(function(*): void)|*} the ajax success handler
-             */
-            handelDropServerResponseChange(application) {
-                const slot = this
-                return function (data) {
-                    const applicationAccepted = data["requestStatus"];
-                    const applicationAcceptedText = data["text"];
+                //Removes an application from this slot
+                function requestRemoveApp(application, success) {
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "removeAssignment",
+                            applicationID: application.id,
+                            slotID: slot.id
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: success
+                    });
+                }
 
-                    if (applicationAccepted) {
-                        slot.slotAppRel.slots.get(application.slotID).removeApplication(application);
-                        slot.addApplication(application);
-                        application.updateDiv();
-                        infoPopup("good", applicationAcceptedText)
-                    } else
-                        infoPopup("bad", applicationAcceptedText)
-                };
-            }
+                //removes an application from its assignment
+                function requestRemoveOtherApp(application, success) {
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "removeOtherAssignment",
+                            applicationID: application.id,
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: success
+                    });
+                }
 
-            /**
-             * The handler for a drop when the application was previously not assigned
-             * @param application The application
-             * @return {(function(*): void)|*} the ajax success handler
-             */
-            handleDropServerResponseNew(application) {
-                const slot = this
-                return function (data) {
-                    const applicationAccepted = data["requestStatus"];
-                    const applicationAcceptedText = data["text"];
-                    if (applicationAccepted) {
-                        slot.addApplication(application);
-                        infoPopup("good", applicationAcceptedText);
-                    } else
-                        infoPopup("bad", applicationAcceptedText);
-                };
+                //adds a not assigned application to this slot
+                function requestAddAppThis(application) {
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "newAssignment",
+                            applicationID: application.id,
+                            slotID: slot.id
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: (data) => {
+                            const applicationAccepted = data["requestStatus"];
+                            const applicationAcceptedText = data["text"];
+                            if (applicationAccepted) {
+                                slot.addApplication(application);
+                                infoPopup("good", applicationAcceptedText);
+                            } else {
+                                $(drag).draggable("option", "revert", true);
+                                infoPopup("bad", applicationAcceptedText);
+                            }
+                        }
+                    });
+                }
+
+                //Removes from other slot if found
+                function removeFromShownTopics(application) {
+                    for (const slotAppRel of shownTopics.values()) {
+                        for (const _slot of slotAppRel.slots.values()) {
+                            if (_slot !== slot)
+                                for (const accepted_application of _slot.accepted_applications.values()) {
+                                    if (JSON.stringify(accepted_application.students) === JSON.stringify(application.students) && application.collectionID === accepted_application.collectionID) {
+                                        _slot.removeApplication(accepted_application);
+                                    }
+                                }
+                        }
+                    }
+                }
             }
 
             /**
@@ -733,6 +804,8 @@
                 application.collectionFullfilled = false;
                 updateApplicationsPossibleAssignments();
                 application.slotID = -1;
+                $('#applications-' + this.topicID).append(application.div);
+
                 this.updateDiv();
             }
 
@@ -781,17 +854,13 @@
 
                 handleLockButtonClickSlot(this, '#' + buttonID);
             }
-
-            remainingSpace() {
-                return this.maxSlotSize - this.nowAssignedSize;
-            }
         }
 
         /**
          * A class to represent one Application
          */
         class Application {
-            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, finalized, slotAppRel) {
+            constructor(applicationID, students, preference, possibleAssignments, collectionSize, slotID, collectionFullfilled, finalized, slotAppRel, collectionID) {
                 this.id = applicationID;
                 this.preference = preference;
                 this.possibleAssignments = possibleAssignments;
@@ -802,6 +871,7 @@
                 this.finalized = finalized;
                 this.slotAppRel = slotAppRel;
                 this.topicID = slotAppRel.topicID;
+                this.collectionID = collectionID;
                 this.div = $('<div id="application-' + applicationID + '" class="outer-item application"></div>');
                 this.updateDiv()
 
@@ -828,6 +898,9 @@
 
             }
 
+            /**
+             * Updates the div of this application
+             */
             updateDiv() {
                 $('#application-' + this.id + " .inner-item").detach();
                 let isFirstItem = true;
@@ -877,6 +950,9 @@
                 handleLockButtonClickApplication(this, '#' + buttonID)
             }
 
+            /**
+             * Updated the data of this application
+             */
             updatePossibleAssignment() {
                 $.ajax({
                     data: {
@@ -892,7 +968,6 @@
                         this.updateDiv();
                     }
                 })
-
             }
         }
 
@@ -1104,6 +1179,10 @@
             return true;
         }
 
+        /**
+         * Removes a topic from the view
+         * @param topicID
+         */
         function handleTopicRemove(topicID) {
             shownTopics.get(topicID).deleteSectionDiv();
             shownTopics.delete(topicID);
@@ -1114,6 +1193,10 @@
             updateURL(getLoadedTopicIDs(), null, null);
         }
 
+        /**
+         * returns all loaded topics
+         * @return {*[]} int array of loaded topics
+         */
         function getLoadedTopicIDs() {
             const loadedTopicIDs = [];
             for (let key of shownTopics.keys()) {
@@ -1145,10 +1228,22 @@
             userFeedback.replaceWith(userFeedbackClone)
         }
 
+        /**
+         * Handles click on override Slot Button
+         */
         function overrideControl() {
             const button = $('#overrideControl')
             button.toggleClass('selected')
             overrideApplications = !!button.hasClass('selected');
+        }
+
+        /**
+         * Handles click on override Assignment Button
+         */
+        function ignoreAssigned() {
+            const button = $('#ignoreAssigned');
+            button.toggleClass('selected');
+            overrideFulfilled = !!button.hasClass('selected');
         }
 
         // --- MAIN FUNCTION --- //
@@ -1538,7 +1633,5 @@
                 }
             });
     </script>
-
-
 
 {% endblock content %}

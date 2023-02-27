@@ -120,7 +120,7 @@ def handle_select_topic(request):
             'collectionFulfilled': filtered_for_assignment.exists(),
             'groupID': application.group.id,
             'collectionID': application.collection_number,
-            'assignedTopic': assigned_topic
+            'assignedTopic': assigned_topic,
         }
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():
@@ -212,6 +212,24 @@ def handle_remove_assignment(request):
     })
 
 
+def handle_remove_other_assignment(request):
+    _remove_assignment = ["bad", "application not found"]
+    _application = TopicSelection.objects.get(id=request.POST.get("applicationID"))
+    applications = TopicSelection.objects.filter(group=_application.group,
+                                                 collection_number=_application.collection_number)
+
+    query = Assignment.objects.get(accepted_applications__in=applications)
+    for accepted_application in query.accepted_applications.all():
+        if applications.contains(accepted_application):
+            _remove_assignment = remove_assignment(accepted_application.id, query.slot_id)
+            break
+
+    return JsonResponse({
+        'requestStatus': _remove_assignment[0],
+        'text': _remove_assignment[1]
+    })
+
+
 def handle_get_possible_assignments_for_topic(request):
     application = TopicSelection.objects.get(pk=request.POST.get("applicationID"))
     possible_assignments = possible_assignments_for_group(application.group.id, application.collection_number)
@@ -280,7 +298,6 @@ def get_group_data(group_id, collection_id):
     )
 
 
-# --- POST HANDLING HELPER --- #
 def handle_change_finalized_value_slot(request):
     """
     Handles a change of the finalized value of a slot.
@@ -396,6 +413,8 @@ def handle_post(request):
         return handle_new_assignment(request)
     if action == "removeAssignment":
         return handle_remove_assignment(request)
+    if action == "removeOtherAssignment":
+        return handle_remove_other_assignment(request)
     if action == "preselectFilters":
         return handle_preselected_filters(request)
     if action == "selectTopic":
