@@ -1439,7 +1439,6 @@
                 this.updateTopicList();
             }
 
-
             updateTopicList() {
                 let topics = $(".topic");
                 let courses = $(".topics_of_course.inner-list-item");
@@ -1452,16 +1451,25 @@
                             topic.show();
                         else if (topic.text().search(new RegExp(filterSettings.searchbar, "i")) !== -1)
                             topic.show()
-                        else
+                        else {
+                            if (topic.hasClass('selected')) {
+                                topic.click()
+                            }
                             topic.hide()
+                        }
+
 
                         //DONT TOUCH THE == WE WANT THIS
                         if ((filterSettings.selectedCPMin <= topic.data('cp') && filterSettings.selectedCPMax >= topic.data('cp') ||
                                 filterSettings.selectedCPMax == '-1') &&
                             filterSettings.selectedCourseTypes.some(item => item === topic.data('course_type')) &&
                             filterSettings.selectedFaculties.some(item => item === topic.data('faculty'))) {
-                        } else
-                            topic.hide();
+                        } else {
+                            if (topic.hasClass('selected')) {
+                                topic.click()
+                            }
+                            topic.hide()
+                        }
                     }
                 );
 
