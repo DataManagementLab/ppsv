@@ -660,10 +660,11 @@ p {
     gap: 3px;
 }
 
-.topBar .text-button .button {
-    height: 100%;
+.topBar .text-button button {
     border-radius: 3px;
+    height: 80%;
     font-size: 140%;
+    aspect-ratio: 1;
 }
 
 .topBar .text-button p {
@@ -673,6 +674,7 @@ p {
 
 #overrideControl .fa:before {
     content: "\f00d";
+    margin-left: -1px;
 }
 
 #overrideControl.selected .fa:before {
