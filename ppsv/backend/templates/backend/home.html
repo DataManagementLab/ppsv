@@ -251,6 +251,9 @@
             });
         }
 
+        /**
+         * Loads and displays the list of all slots with error and the list of all unassigned groups
+         */
         function loadProblemsListing() {
             const brokenSlots = $("#broken-slots");
             const unfulfilledCollections = $("#unfulfilled-collections")
@@ -341,6 +344,10 @@
 
     <!-- Script-block for managing filters -->
     <script>
+
+        /**
+         * A class for storing the current selected settings of the filter
+         */
         class FilterSettings {
             constructor() {
                 this.selectedCPMin = 0;
@@ -349,9 +356,17 @@
                 this.selectedFaculties = [];
             }
 
+            /**
+             * Creates the model for displaying and selecting the filter options
+             */
             createModalHandling() {
                 const filterSettings = this;
 
+                /**
+                 * Creates and sets the click handler of the given normal chip
+                 * @param chip the chip to set the click handler of
+                 * @param filterSettings the current filterSettings object
+                 */
                 function createSingleChipClickHandler(chip, filterSettings) {
                     chip.click(() => {
                         let filterType = chip.data('filter');
@@ -375,6 +390,12 @@
                     })
                 }
 
+                /**
+                 * Creates and sets the click handler of the given chip
+                 * The given chip will be a select all or unselect all chip
+                 * @param chip the chip to set the click handler of
+                 * @param filterSettings the current filterSettings object
+                 */
                 function createMultiChipClickHandler(chip, filterSettings) {
                     chip.click(() => {
                         let filterType = chip.data('filter');
@@ -454,14 +475,29 @@
                 $("#filter .single .chip ").each((index, chip) => createSingleChipClickHandler($(chip), filterSettings));
             }
 
+            /**
+             * A method to add a CourseType to the selected CourseTypes
+             *
+             * @param course: the course to add
+             */
             addCourseType(course) {
                 this.selectedCourseTypes.push(course);
             }
 
+            /**
+             * A method to add a faculty to the selected facultys
+             *
+             * @param faculty: the faculty to add
+             */
             addFaculty(faculty) {
                 this.selectedFaculties.push(faculty)
             }
 
+            /**
+             * A method to remove a CourseType from the selected CourseTypes
+             *
+             * @param course: the course to remove
+             */
             removeCourseType(course) {
                 const index = this.selectedCourseTypes.indexOf(course);
                 if (index > -1) {
@@ -469,6 +505,11 @@
                 }
             }
 
+            /**
+             * A method to remove a faculty from the selected facultys
+             *
+             * @param faculty: the faculty to remove
+             */
             removeFaculty(faculty) {
                 const index = this.selectedFaculties.indexOf(faculty);
                 if (index > -1) {
@@ -476,6 +517,9 @@
                 }
             }
 
+            /**
+             * loads all courses and faculties provided by the backend as arguments and stores them
+             */
             loadDefaultValues() {
                 this.selectedCPMin = 1;
                 this.selectedCPMax = -1;
@@ -487,12 +531,18 @@
                 });
             }
 
+            /**
+             * loads all courses provided by the backend as arguments and stores them
+             */
             loadAllCourses() {
                 {% for courseType in course_types %}
                     this.selectedCourseTypes.push({{ courseType.pk }})
                 {% endfor %}
             }
 
+            /**
+             * loads all faculties provided by the backend as arguments and stores them
+             */
             loadAllFaculties() {
                 {% for faculty in faculties %}
                     this.selectedFaculties.push("{{ faculty }}")
@@ -504,6 +554,9 @@
             selectedCourseTypesID = "selectedCourseTypes:";
             selectedFacultiesID = "selectedFaculties:";
 
+            /**
+             * reads the filter settings which are stored in the cookie
+             */
             readFromCookie() {
                 if (readCookie("filterSettings") != null) {
                     // CHECK IF COOKIE IS CORRECT
@@ -561,6 +614,9 @@
                 }
             }
 
+            /**
+             * Saves the filter settings to the cookie
+             */
             saveToCookie() {
                 let cookieValue = this.selectedCPMinID + this.selectedCPMin;
                 cookieValue += "&" + this.selectedCPMaxID + this.selectedCPMax;
@@ -582,6 +638,9 @@
 
             filterChangedQueue;
 
+            /**
+             * Handles the change of filters, even if multiple changes are mad
+             */
             filterChanged() {
                 function filterChangedHelper(filterSettings) {
                     return () => {

@@ -214,6 +214,13 @@ def handle_remove_assignment(request):
 
 
 def handle_get_possible_assignments_for_topic(request):
+    """
+    Handles the request for getting possible assignments of a topic.
+
+    :param request: the handled request
+    return: the possible assignments for a topic
+    :rtype: JsonResponse
+    """
     application = TopicSelection.objects.get(pk=request.POST.get("applicationID"))
     _possibleAssignments = possible_assignments_for_group(application.group.id, application.collection_number)
     return JsonResponse({
@@ -240,11 +247,21 @@ def handle_preselected_filters(request):
 
 
 def handle_load_group_data(request):
+    """
+
+    :param request: the handled request
+    :return: The group data of the group and collection specified by the request
+    :rtype: JsonResponse
+    """
     return get_group_data(request.POST.get("groupID"), request.POST.get("collectionID"))
 
 
 # --- POST HANDLING HELPER --- #
 def get_group_data(group_id, collection_id):
+    """
+    :return: all the group data connected to the given collection of the given group
+    :rtype: JsonResponse
+    """
     group = Group.objects.get(id=group_id)
 
     members = []

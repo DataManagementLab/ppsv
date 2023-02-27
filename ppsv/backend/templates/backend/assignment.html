@@ -214,6 +214,9 @@
     <!-- Script-block for managing filters and searchbar -->
     <script>
 
+        /**
+         * A class for storing the current selected settings of the filter
+         */
         class FilterSettings {
 
             constructor() {
@@ -225,9 +228,17 @@
                 this.lastChangeTime = 0;
             }
 
+            /**
+             * Creates the model for displaying and selecting the filter options
+             */
             createModalHandling() {
                 const filterSettings = this;
 
+                /**
+                 * Creates and sets the click handler of the given normal chip
+                 * @param chip the chip to set the click handler of
+                 * @param filterSettings the current filterSettings object
+                 */
                 function createSingleChipClickHandler(chip, filterSettings) {
                     chip.click(() => {
                         let filterType = chip.data('filter');
@@ -251,6 +262,12 @@
                     })
                 }
 
+                /**
+                 * Creates and sets the click handler of the given chip
+                 * The given chip will be a select all or unselect all chip
+                 * @param chip the chip to set the click handler of
+                 * @param filterSettings the current filterSettings object
+                 */
                 function createMultiChipClickHandler(chip, filterSettings) {
                     chip.click(() => {
                         let filterType = chip.data('filter');
@@ -330,14 +347,29 @@
                 $("#filter-modal .single .chip ").each((index, chip) => createSingleChipClickHandler($(chip), filterSettings));
             }
 
+            /**
+             * A method to add a CourseType to the selected CourseTypes
+             *
+             * @param course: the course to add
+             */
             addCourseType(course) {
                 this.selectedCourseTypes.push(course);
             }
 
+            /**
+             * A method to add a faculty to the selected facultys
+             *
+             * @param faculty: the faculty to add
+             */
             addFaculty(faculty) {
                 this.selectedFaculties.push(faculty)
             }
 
+            /**
+             * A method to remove a CourseType from the selected CourseTypes
+             *
+             * @param course: the course to remove
+             */
             removeCourseType(course) {
                 const index = this.selectedCourseTypes.indexOf(course);
                 if (index > -1) {
@@ -345,6 +377,11 @@
                 }
             }
 
+            /**
+             * A method to remove a faculty from the selected facultys
+             *
+             * @param faculty: the faculty to remove
+             */
             removeFaculty(faculty) {
                 const index = this.selectedFaculties.indexOf(faculty);
                 if (index > -1) {
@@ -352,6 +389,9 @@
                 }
             }
 
+            /**
+             * loads all courses and faculties provided by the backend as arguments and stores them
+             */
             loadDefaultValues() {
                 this.selectedCPMin = 1;
                 this.selectedCPMax = -1;
@@ -363,12 +403,18 @@
                 });
             }
 
+            /**
+             * loads all courses provided by the backend as arguments and stores them
+             */
             loadAllCourses() {
                 {% for courseType in course_types %}
                     this.selectedCourseTypes.push({{ courseType.pk }})
                 {% endfor %}
             }
 
+            /**
+             * loads all faculties provided by the backend as arguments and stores them
+             */
             loadAllFaculties() {
                 {% for faculty in faculties %}
                     this.selectedFaculties.push("{{ faculty }}")
@@ -380,6 +426,9 @@
             selectedCourseTypesID = "selectedCourseTypes:";
             selectedFacultiesID = "selectedFaculties:";
 
+            /**
+             * reads the filter settings which are stored in the cookie
+             */
             readFromCookie() {
                 if (readCookie("filterSettings") != null) {
                     // CHECK IF COOKIE IS CORRECT
@@ -437,6 +486,9 @@
                 }
             }
 
+            /**
+             * Saves the filter settings to the cookie
+             */
             saveToCookie() {
                 let cookieValue = this.selectedCPMinID + this.selectedCPMin;
                 cookieValue += "&" + this.selectedCPMaxID + this.selectedCPMax;
@@ -458,7 +510,15 @@
 
             filterChangedQueue;
 
+            /**
+             * Handles the change of filters, even if multiple changes are mad
+             */
             filterChanged() {
+                /**
+                 * Handles the change of filters
+                 * @param filterSettings the filter settings to change
+                 * @returns {(function(): void)|*}
+                 */
                 function filterChangedHelper(filterSettings) {
                     return () => {
                         filterSettings.saveToCookie();
@@ -474,6 +534,9 @@
                 this.filterChangedQueue = setTimeout(filterChangedHelper(this), 250);
             }
 
+            /**
+             * Updates the List of Topics based on the applied filters
+             */
             updateTopicList() {
                 let topics = $(".topic");
                 let courses = $(".topics_of_course.inner-list-item");
@@ -518,7 +581,7 @@
         }
 
         /**
-         * Handles closing of the modal
+         * Handles opening of the modal
          */
         function openFilterModal() {
             $('#filter-modal').slideDown(250);
@@ -533,6 +596,10 @@
             $('#assignment-content .section').removeClass('blur');
         }
 
+        /**
+         * Returns alle values selected by the filters
+         * @returns {*} A tuple containing (minCP, maxCP, courseTypes, faculties)
+         */
         function getFilterValues() {
             return (filterSettings.selectedCPMin, filterSettings.selectedCPMax, filterSettings.selectedCourseTypes, filterSettings.selectedFaculties);
         }
@@ -687,7 +754,9 @@
             });
         }
 
-
+        /**
+         * Loads the data for the score of the current assignment and amount of slots with errors
+         */
         function loadStats() {
             const score = $('#statistics-score');
             const brokenSlots = $('#statistics-broken_slots');
@@ -1307,6 +1376,12 @@
             }
         }
 
+        /**
+         * Updates the currently loaded URL to contain the selected topicID, groupID and CollectionID
+         * @param newTopicID the selected topicID
+         * @param newGroupID the selected groupID
+         * @param newCollectionID the selected collectionID
+         */
         function updateURL(newTopicID, newGroupID, newCollectionID) {
             let urlData = window.location.href.substring(window.location.href.lastIndexOf('/') + 2).split('&')
             if (urlData.length === 3) {
@@ -1613,6 +1688,9 @@
 
             }
 
+            /**
+             * Updates the visualisation of the Div showing the applications to correspond to the data in the database
+             */
             updateDiv() {
                 $('#application' + this.id + " .inner-item").detach();
                 let doInfoItem = true;
@@ -1634,7 +1712,7 @@
                         studItemString += ' id="' + buttonID + '"></button> '
                     }
                     /*
-                    * Begin of adding/creating a button to lock or unlock this assigned application.
+                    * End of adding/creating a button to lock or unlock this assigned application.
                     */
                     studItemString += student + '</a></div>'
 
@@ -1665,6 +1743,9 @@
                 handleButtonClickApplication(this, '#' + buttonID)
             }
 
+            /**
+             * Updates the list of possible assignments
+             */
             updatePossibleAssignment() {
                 $.ajax({
                     data: {
@@ -1773,6 +1854,12 @@
             }
         }
 
+        /**
+         * Updates the URL based on the Topic, Group and Collection displayed
+         * @param newTopicID the displayed Topic
+         * @param newGroupID the displayed Group
+         * @param newCollectionID the displayed Collection of the Group
+         */
         function updateURL(newTopicID, newGroupID, newCollectionID) {
             let urlData = window.location.href.substring(window.location.href.lastIndexOf('/') + 2).split('&')
             if (urlData.length === 3) {

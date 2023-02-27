@@ -89,6 +89,10 @@ def get_broken_slots():
 
 
 def get_max_score():
+    """
+    :return: Returns the highest possible score when considering the current applications
+    :rtype: int
+    """
     handled_applications = []
     score = 0
     for application in TopicSelection.objects.all():
@@ -99,10 +103,23 @@ def get_max_score():
 
 
 def get_score_for_assigned(priority):
+    """
+    Calculates the score if an application is assigned to a topic with the given priority
+
+    :param priority: the priority to calculate the score for
+    :return: the calculated score
+    :rtype: int
+    """
     return 21 - min(11, priority)
 
 
 def get_score_for_not_assigned():
+    """
+    Calculates the score if an application is not assigned to any topic
+
+    :return: the calculated score
+    :rtype: int
+        """
     return -30
 
 

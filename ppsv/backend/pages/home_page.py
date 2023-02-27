@@ -11,6 +11,12 @@ from course.models import Course, CourseType
 
 
 def handle_do_automatic_assignments():
+    """
+    Executes the automatic assignment
+
+    :return: If the automatic assignment finished successful, returns a JSONResponse containing "status": "done"
+    :rtype: JsonResponse
+    """
     main.main(True)
     return JsonResponse(
         {
@@ -19,6 +25,12 @@ def handle_do_automatic_assignments():
 
 
 def handle_get_problems_listing():
+    """
+    Creates a list of all slots with errors and an additional list on for all collections that are not fulfilled
+
+    :return: a JsonResponse containing both lists
+    :rtype: JsonResponse
+    """
     unfulfilled_collections = []
     all_applications_in_assignments = get_all_applications_in_assignments()
     for collection in get_all_applications_by_collection():
