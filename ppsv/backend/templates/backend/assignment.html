@@ -1437,8 +1437,8 @@
             filterChanged() {
                 this.saveToCookie()
                 this.updateTopicList();
-                // TODO: implement handling for statistic
             }
+
 
             updateTopicList() {
                 let topics = $(".topic");
@@ -1525,7 +1525,7 @@
                     searchbar.val('');
                     searchbar.keyup(() => {
                         filterSettings.searchbar = searchbar.val().toLowerCase();
-                        filterSettings.filterChanged();
+                        filterSettings.updateTopicList();
                     });
                 }
             });
