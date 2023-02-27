@@ -722,8 +722,6 @@
             $('#assignment-modal').hide();
             $('#assignment-content .section').removeClass('blur');
             let currentTopic = $('#assignment-content #topics .topic.selected').first().data('topicid');
-            if (currentTopic != null)
-                handleTopicChange(currentTopic);
             let groupDetailDiv = $('#assignment-content #groupdetails')
             let appID = groupDetailDiv.attr('data-applicationid');
             let groupID = groupDetailDiv.attr('data-groupid');
@@ -744,7 +742,6 @@
             if (event.target === this || event.target === $('#assignment-modal .title i.fa')[0]) closeApplicationModal();
         })
     </script>
-
 
     <!-- Script block for group details -->
     <script>
@@ -900,20 +897,9 @@
                 let slotAppRel = this
                 // make application div droppable
                 $('#applications-' + this.topicID).droppable({
-                    accept: function (dropElem) {
-                        let application = slotAppRel.applications.get(parseInt(dropElem.attr('id').substring(12)));
-                        if (application == null) {
-                            infoPopup("info", "Can only change items in the same Topic");
-                            return false;
-                        }
-                        if (application.slotID === -1) {
-                            infoPopup("info", "This application is already not assigned");
-                            return false;
-                        }
-                        return true;
-                    },
+                    accept: ".application",
                     hoverClass: "drop-hover",
-                    drop: this.handleDropOnApplicationDiv()
+                    drop: (event, ui) => this.handleDropOnApplicationDiv(event, ui)
                 })
                 //handle close click on x
                 $('#' + closeID).on('click', function () {
@@ -929,36 +915,48 @@
              * Handles a drop on applications.
              * @return {(function(*, *): void)|*} the jquery drop handler
              */
-            handleDropOnApplicationDiv() {
-                let slotAppRel = this
-                return function (e, ui) {
-                    const application = slotAppRel.applications.get(parseInt(ui.draggable.attr("id").substring(12)));
-                    infoPopup("wait", "Waiting for server response")
-                    $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeAssignment",
-                            applicationID: application.id,
-                            slotID: application.slotID
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: (data) => {
-                            if (data['requestStatus']) {
-                                $('#applications-' + slotAppRel.topicID).append(ui.draggable);
-                                slotAppRel.slots.get(application.slotID).removeApplication(application);
+            handleDropOnApplicationDiv(event, ui) {
+                const drag = ui.draggable;
+                const application = this.applications.get(parseInt(ui.draggable.attr("id").substring(12)));
 
-                                // Update group details
-                                let selectedAppID = $('.application.selected').attr('id').replace('application-', '');
-                                updateApplicationGroupDetails(selectedAppID);
-
-                                infoPopup("good", data['text'])
-                            } else {
-                                infoPopup("bad", data['text'])
-                            }
-                        }
-                    });
+                let revert = false;
+                if (application == null) {
+                    infoPopup("info", "Can only change items in the same Topic");
+                    revert = true;
+                } else if (application.slotID === -1) {
+                    infoPopup("info", "This application is already not assigned");
+                    revert = true;
                 }
+
+                if (revert)
+                    return $(drag).draggable("option", "revert", true);
+                $(drag).draggable("option", "revert", false);
+
+                infoPopup("wait", "Waiting for server response")
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "removeAssignment",
+                        applicationID: application.id,
+                        slotID: application.slotID
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: (data) => {
+                        if (data['requestStatus']) {
+                            $('#applications-' + this.topicID).append(ui.draggable);
+                            this.slots.get(application.slotID).removeApplication(application);
+
+                            // Update group details
+                            let selectedAppID = $('.application.selected').attr('id').replace('application-', '');
+                            updateApplicationGroupDetails(selectedAppID);
+
+                            infoPopup("good", data['text'])
+                        } else {
+                            infoPopup("bad", data['text'])
+                        }
+                    }
+                });
             }
 
             deleteSectionDiv() {
@@ -1011,25 +1009,8 @@
                 this.nowAssignedSize = 0;
                 this.accepted_applications = new Map();
                 this.div = $('<div id="slot-' + this.topicID + "-" + this.id + '" class="inner-list-item droppable"></div>');
-                let slot = this
                 this.div.droppable({
-                    accept: function (dropElem) {
-                        let application = slot.slotAppRel.applications.get(parseInt(dropElem.attr('id').substring(12)));
-
-                        if (application == null) {
-                            infoPopup("info", "Can only change items in the same Topic");
-                            return false;
-                        }
-                        if (application.oldSlotID === slotID) {
-                            infoPopup("info", "This application is already in this slot");
-                            return false;
-                        }
-                        if (slot.finalized !== 0) {
-                            infoPopup('bad', "This slot is locked, application can't be added")
-                            return false;
-                        }
-                        return true;
-                    },
+                    accept: ".application",
                     hoverClass: "drop-hover",
                     drop: (event, ui) => this.handleDrop(event, ui)
                 })
@@ -1044,8 +1025,29 @@
              */
             handleDrop(event, ui) {
                 const drag = ui.draggable;
+                const application = this.slotAppRel.applications.get(parseInt(drag.attr('id').substring(12)));
+                let revert = false;
 
-                let application = this.slotAppRel.applications.get(parseInt(drag.attr('id').substring(12)));
+                if (application == null) {
+                    infoPopup("info", "Can only change items in the same Topic");
+                    revert = true;
+                } else if (application.oldSlotID === this.id) {
+                    infoPopup("info", "This application is already in this slot");
+                    revert = true;
+                } else if (application.collectionFullfilled) {
+                    infoPopup("info", "The collection of this application is already satisfied");
+                    revert = true;
+                } else if (this.finalized !== 0) {
+                    infoPopup('bad', "This slot is locked, application can't be added");
+                    revert = true;
+                } else if (this.nowAssignedSize + application.students.length > this.maxSlotSize) {
+                    infoPopup('bad', "This applications does not fit into this slot");
+                    revert = true;
+                }
+
+                if (revert)
+                    return $(drag).draggable("option", "revert", true);
+                $(drag).draggable("option", "revert", false);
 
 
                 let oldSlotID = application.slotID;
@@ -1253,6 +1255,7 @@
                         $('.application.selected').removeClass('selected');
                         $(this).addClass('selected');
                         ui.helper.addClass('selected');
+                        infoPopup(null, null);
                         updateApplicationGroupDetails(applicationID);
                     }
                 })
@@ -1549,7 +1552,13 @@
             const userFeedback = $('#user-feedback');
             let userFeedbackClone = userFeedback.clone()
             userFeedbackClone.removeClass("good bad info wait")
-            userFeedbackClone.addClass(type)
+            if (type == null || msg == null) {
+                userFeedbackClone.html("");
+                userFeedback.replaceWith(userFeedbackClone)
+                return;
+            }
+
+            userFeedbackClone.addClass(type);
             userFeedbackClone.html(msg);
             if (type === "wait") {
                 userFeedbackClone.append('<i class="fa fa-circle-o-notch fa-spin" style="margin-left: 3px"></i>');
