@@ -269,42 +269,51 @@ p {
 }
 
 #user-feedback {
-    align-self: flex-end;
-    width: fit-content;
-    text-align: end;
-    font-size: 1rem;
-    color: var(--blue);
+    position: absolute;
+    margin: 0 auto;
+    right: 50%;
+    left: 50%;
+    max-width: 430px;
+    width: 100%;
+    transform: translate(-50%, 0);
+    background: #fff;
+    border: 1px solid black;
     border-radius: 3px;
-    padding-right: 3px;
-    padding-left: 3px;
+    font-size: 20px;
+    text-align: center;
+    padding: 9px 3px;
+    opacity: 0;
+    z-index: 10;
+    animation-timing-function: linear;
 }
-
-#user-feedback.bad {
-    background-color: var(--lightcoral);
-    animation-name: user-feedback-fade-out;
-    animation-delay: 5s;
-    animation-duration: 1s;
-    animation-fill-mode: forwards
-}
-
 #user-feedback.good {
     background-color: var(--lightgreen);
-    animation-name: user-feedback-fade-out;
-    animation-delay: 5s;
-    animation-duration: 1s;
-    animation-fill-mode: forwards
+    animation-name: user-feedback-fade-in;
+    animation-duration: 2s;
 }
-
+#user-feedback.bad {
+    background-color: var(--red);
+    animation-name: user-feedback-fade-in;
+    animation-duration: 4s;
+    color: #fff;
+}
+#user-feedback.info {
+    opacity: 1;
+    animation: none;
+}
 #user-feedback.wait {
-    background-color: white;
+    opacity: 1;
+    animation: none;
 }
 
-@keyframes user-feedback-fade-out {
-    from {
+@keyframes user-feedback-fade-in {
+    0%, 100% {
         opacity: 1;
+        transform: translate(-50%, -150%);
     }
-    to {
-        opacity: 0;
+    10%, 50%, 90% {
+        opacity: 1;
+        transform: translate(-50%, 0%);
     }
 }
 
