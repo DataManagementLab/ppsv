@@ -542,6 +542,7 @@
                 const drag = ui.draggable;
                 const application = this.slotAppRel.applications.get(parseInt(drag.attr('id').substring(12)));
                 let revert = false;
+                let exchanged = false;
 
                 // Test if we can drop. if not we revert for nice user feedback
                 if (application == null) {
@@ -563,6 +564,8 @@
                             //found something to exchange. ask user if he wants to
                             if (overrideApplications || confirm("Do you want to override the application of " + accepted_application.students + "?")) {
                                 infoPopup("wait", "Waiting for server response")
+                                $(drag).draggable("option", "revert", false);
+
                                 $.ajax({
                                     data: {
                                         csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -575,6 +578,7 @@
                                     success: (data) => {
                                         if (data['requestStatus']) {
                                             $('#applications-' + this.topicID).append(accepted_application.div);
+                                            exchanged = true;
                                             this.removeApplication(accepted_application);
                                             //new assignment
                                             $.ajax({
@@ -589,14 +593,12 @@
                                                     success: this.handleDropServerResponseNew(application)
                                                 }
                                             );
-
                                         } else {
-                                            $(drag).draggable("option", "revert", true);
+                                            revert = true;
                                             infoPopup("bad", data['text'])
                                         }
                                     }
                                 });
-
                             } else {
                                 infoPopup('bad', "This applications does not fit into this slot");
                                 revert = true;
@@ -608,6 +610,8 @@
                 if (revert)
                     return $(drag).draggable("option", "revert", true);
                 $(drag).draggable("option", "revert", false);
+                if (exchanged)
+                    return;
 
 
                 let oldSlotID = application.slotID;
