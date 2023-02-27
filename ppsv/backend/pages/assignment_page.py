@@ -454,11 +454,11 @@ def render_site(request, args=None):
     group_id = False
     collection_id = False
     if request.method == "GET":
-        if "topic" in request.GET:
+        if "topic" in request.GET and request.GET["topic"].split(" ")[0] != '-1':
             topic_ids = request.GET["topic"].split(" ")
-        if "group" in request.GET:
+        if "group" in request.GET and request.GET["group"] != '-1':
             group_id = request.GET["group"]
-        if "collection" in request.GET:
+        if "collection" in request.GET and request.GET["collection"] != '-1':
             collection_id = request.GET["collection"]
 
     args["topics_of_courses"] = topics_of_courses
