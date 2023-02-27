@@ -21,6 +21,8 @@
 {% endblock %}
 
 {% block content %}
+    <div id="user-feedback"></div>
+
     <div id="assignment-topBar">
         <div id="searchAndFilterDiv">
             <div id="searchbarDiv">
@@ -34,7 +36,6 @@
                 </button>
             </div>
         </div>
-        <div id="user-feedback"></div>
     </div>
 
     <div id="assignment-content">
@@ -1900,13 +1901,13 @@
         function infoPopup(type, msg) {
             const userFeedback = $('#user-feedback');
             let userFeedbackClone = userFeedback.clone()
-            userFeedbackClone.removeClass("good bad info wait")
-            userFeedbackClone.addClass(type)
+            userFeedbackClone.removeClass("good bad info wait");
+            userFeedbackClone.addClass(type);
             userFeedbackClone.html(msg);
             if (type === "wait") {
                 userFeedbackClone.append('<i class="fa fa-circle-o-notch fa-spin" style="margin-left: 3px"></i>');
             }
-            userFeedback.replaceWith(userFeedbackClone)
+            userFeedback.replaceWith(userFeedbackClone);
         }
 
         /**
