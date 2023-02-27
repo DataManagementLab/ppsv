@@ -1426,7 +1426,7 @@
             }
 
             loadDefaultValues() {
-                this.selectedCPMin = 1;
+                this.selectedCPMin = 0;
                 this.selectedCPMax = -1;
                 this.loadAllCourses();
                 this.loadAllFaculties();
@@ -1434,6 +1434,8 @@
                     let chip = $(chip1);
                     chip.addClass('selected');
                 });
+                this.saveToCookie();
+                this.readFromCookie();
             }
 
             loadAllCourses() {
