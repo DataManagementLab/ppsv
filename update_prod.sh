@@ -7,11 +7,14 @@ set -ex
 
 # activate virtualenv if necessary
 if [ -z ${VIRTUAL_ENV+x} ]; then
-  source virtualenv/bin/activate
+  source venv/bin/activate
 fi
 
+git pull
 pip install --upgrade setuptools pip wheel
 pip install --upgrade -r requirements.txt
+
+export DJANGO_SETTINGS_MODULE=ppsv.settings_production
 
 ./ppsv/manage.py migrate
 ./ppsv/manage.py collectstatic --noinput

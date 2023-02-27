@@ -38,9 +38,13 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
     <h3 style="font-weight: 500;font-family-sans-serif: 'Roboto'"> {% translate "Internship & Seminar Allocation" %} </h3>
     <div style="position:absolute;right:50px;top:37px;display: flex; flex-direction: row;">
         {% if user.is_authenticated %}
+            {% if user.is_staff %}
+                <a href="{% url 'backend:home_page' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px;margin-right:5px">
+                Assignment Home Page</a>
+            {% endif %}
             {% if user.is_superuser %}
             <a href="{% url 'admin:index' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px">
-                Admin Page
+                Django Admin
             </a>
             {% endif %}
         {% endif %}
