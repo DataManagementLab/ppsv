@@ -604,35 +604,35 @@ p {
     color: black;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice {
+#assignment-content #groupdetails .choice {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice .name .fa {
+#assignment-content #groupdetails .choice .name .fa {
     margin: 0 3px;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice .details small {
+#assignment-content #groupdetails .choice .details small {
     margin: 0 3px;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice .details .info-button {
+#assignment-content #groupdetails .choice .details .info-button {
     margin-left: 6px;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice:hover {
+#assignment-content #groupdetails .choice:hover {
     background-color: var(--lightblue);
     text-decoration: underline;
     cursor: pointer;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice.assigned {
+#assignment-content #groupdetails .choice.assigned {
     background-color: var(--green) !important;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice.full {
+#assignment-content #groupdetails .choice.full {
     background-color: var(--red);
 }
 

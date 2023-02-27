@@ -254,8 +254,7 @@ def get_group_data(group_id, collection_id):
     members = []
     group_name = ""
     for member in group.members:
-        members.append(member.tucan_id + ": " + member.firstname + ' ' + member.lastname)
-        group_name += str(member) + ' '
+        members.append(member.tucan_id)
 
     assignment_query = Assignment.objects.filter(accepted_applications__group__in=[group],
                                                  accepted_applications__collection_number=collection_id)
@@ -275,7 +274,6 @@ def get_group_data(group_id, collection_id):
         {
             'selectedGroup': group_id,
             'selectedCollection': collection_id,
-            'group_name': group_name,
             'members': members,
             'assigned': assigned,
             'collection': application_in_collection
@@ -283,6 +281,7 @@ def get_group_data(group_id, collection_id):
     )
 
 
+# --- POST HANDLING HELPER --- #
 def handle_change_finalized_value_slot(request):
     """
     Handles a change of the finalized value of a slot.
