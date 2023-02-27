@@ -655,6 +655,8 @@
                     updateApplicationsPossibleAssignments();
                 }
                 application.slotID = this.id;
+                application.div.draggable("option", "revert", true);
+
                 this.updateDiv();
 
                 // Update group details
