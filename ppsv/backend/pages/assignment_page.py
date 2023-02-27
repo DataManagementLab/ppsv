@@ -136,7 +136,6 @@ def handle_select_topic(request):
     return JsonResponse(
         {
             'topicName': topic.title,
-            'topicID': topic.id,
             'topicMinSlotSize': topic.min_slot_size,
             'topicMaxSlotSize': topic.max_slot_size,
             'topicSlotsFinalized': slots_finalized,
