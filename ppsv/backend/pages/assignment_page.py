@@ -120,7 +120,7 @@ def handle_select_topic(request):
             'collectionFulfilled': filtered_for_assignment.exists(),
             'groupID': application.group.id,
             'collectionID': application.collection_number,
-            'assignedTopic': assigned_topic
+            'assignedTopic': assigned_topic,
         }
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():
@@ -136,7 +136,6 @@ def handle_select_topic(request):
     return JsonResponse(
         {
             'topicName': topic.title,
-            'topicID': topic.id,
             'topicMinSlotSize': topic.min_slot_size,
             'topicMaxSlotSize': topic.max_slot_size,
             'topicSlotsFinalized': slots_finalized,
@@ -213,6 +212,24 @@ def handle_remove_assignment(request):
     })
 
 
+def handle_remove_other_assignment(request):
+    _remove_assignment = ["bad", "application not found"]
+    _application = TopicSelection.objects.get(id=request.POST.get("applicationID"))
+    applications = TopicSelection.objects.filter(group=_application.group,
+                                                 collection_number=_application.collection_number)
+
+    query = Assignment.objects.get(accepted_applications__in=applications)
+    for accepted_application in query.accepted_applications.all():
+        if applications.contains(accepted_application):
+            _remove_assignment = remove_assignment(accepted_application.id, query.slot_id)
+            break
+
+    return JsonResponse({
+        'requestStatus': _remove_assignment[0],
+        'text': _remove_assignment[1]
+    })
+
+
 def handle_get_possible_assignments_for_topic(request):
     """
     Handles the request for getting possible assignments of a topic.
@@ -222,9 +239,13 @@ def handle_get_possible_assignments_for_topic(request):
     :rtype: JsonResponse
     """
     application = TopicSelection.objects.get(pk=request.POST.get("applicationID"))
-    _possibleAssignments = possible_assignments_for_group(application.group.id, application.collection_number)
+    possible_assignments = possible_assignments_for_group(application.group.id, application.collection_number)
+    collection_fulfilled = Assignment.objects.filter(accepted_applications__group=application.group,
+                                                     accepted_applications__collection_number=application.collection_number).exists()
+
     return JsonResponse({
-        "possibleAssignments": _possibleAssignments,
+        "possibleAssignments": possible_assignments,
+        "collectionFulfilled": collection_fulfilled
     })
 
 
@@ -267,8 +288,7 @@ def get_group_data(group_id, collection_id):
     members = []
     group_name = ""
     for member in group.members:
-        members.append(member.tucan_id + ": " + member.firstname + ' ' + member.lastname)
-        group_name += str(member) + ' '
+        members.append(member.tucan_id)
 
     assignment_query = Assignment.objects.filter(accepted_applications__group__in=[group],
                                                  accepted_applications__collection_number=collection_id)
@@ -288,7 +308,6 @@ def get_group_data(group_id, collection_id):
         {
             'selectedGroup': group_id,
             'selectedCollection': collection_id,
-            'group_name': group_name,
             'members': members,
             'assigned': assigned,
             'collection': application_in_collection
@@ -324,7 +343,7 @@ def handle_change_finalized_value_slot(request):
         finalization_changed = False
         finalization_value = old_finalized_value
         finalization_changed_status = "bad"
-        finalization_changed_text = "Slot can't be locked"
+        finalization_changed_text = "Only slots with the minimum amount of needed applications can be locked"
     else:
         assignment.finalized_slot = request.POST.get("newFinalized")
         assignment.save()
@@ -411,6 +430,8 @@ def handle_post(request):
         return handle_new_assignment(request)
     if action == "removeAssignment":
         return handle_remove_assignment(request)
+    if action == "removeOtherAssignment":
+        return handle_remove_other_assignment(request)
     if action == "getChartData":
         return handle_get_chart_data(request)
     if action == "getScoreData":
@@ -466,14 +487,25 @@ def render_site(request, args=None):
             faculties.append(course.faculty)
     faculties.sort()
 
+    # load information from url
+    topic_ids = False
+    group_id = False
+    collection_id = False
+    if request.method == "GET":
+        if "topic" in request.GET and request.GET["topic"].split(" ")[0] != '-1':
+            topic_ids = request.GET["topic"].split(" ")
+        if "group" in request.GET and request.GET["group"] != '-1':
+            group_id = request.GET["group"]
+        if "collection" in request.GET and request.GET["collection"] != '-1':
+            collection_id = request.GET["collection"]
+
     args["topics_of_courses"] = topics_of_courses
     args["course_types"] = course_types
     args["faculties"] = faculties
     args["range"] = range(1, 11)
-    args["topicid"] = request.GET["topic"] if (request.method == "GET") and ("topic" in request.GET) else False
-    args["groupid"] = request.GET["group"] if (request.method == "GET") and ("group" in request.GET) else False
-    args["collectionid"] = request.GET["collection"] if (request.method == "GET") and (
-            "collection" in request.GET) else False
+    args["topicids"] = topic_ids
+    args["groupid"] = group_id
+    args["collectionid"] = collection_id
 
     return render(request, template_name, args)
 

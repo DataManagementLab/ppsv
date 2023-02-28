@@ -424,6 +424,17 @@ p {
     border-bottom: 1px solid black;
 }
 
+#assignment-content .title {
+    display: flex;
+    justify-content: space-between;
+}
+
+#assignment-content .title i{
+    color: var(--lightcoral);
+    cursor: pointer;
+    font-size: 26px;
+}
+
 #assignment-content .field {
     padding: 3px;
     width: 100%;
@@ -529,6 +540,24 @@ p {
     user-select: none;
 }
 
+/* Multi Assignments */
+
+.section.multi {
+    flex-direction: column;
+    height: 100%;
+    border: 0;
+    gap: 3px;
+    overflow-y: scroll;
+}
+
+.section.single {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    border: solid black 1px;
+}
+
+
 #assignments .ui-draggable-dragging {
     padding-left: 3px;
     padding-right: 3px;
@@ -582,41 +611,74 @@ p {
     color: black;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice {
+#assignment-content #groupdetails .choice {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice .name .fa {
+#assignment-content #groupdetails .choice .name .fa {
     margin: 0 3px;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice .details small {
+#assignment-content #groupdetails .choice .details small {
     margin: 0 3px;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice .details .info-button {
+#assignment-content #groupdetails .choice .details .info-button {
     margin-left: 6px;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice:hover {
+#assignment-content #groupdetails .choice:hover {
     background-color: var(--lightblue);
     text-decoration: underline;
     cursor: pointer;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice.assigned {
+#assignment-content #groupdetails .choice.assigned {
     background-color: var(--green) !important;
 }
 
-#assignment-content #groupdetails .section-inner .inner-list .choice.full {
+#assignment-content #groupdetails .choice.full {
     background-color: var(--red);
+}
+
+#assignment-content .placeholder {
+    background: var(--lightblue);
+}
+
+#assignment-content .placeholder.optional {
+    color: white;
+    font-style: italic;
+    background: var(--purple)
 }
 
 #searchAndFilterDiv {
     display: flex;
     gap: 3px;
+}
+
+.topBar .group {
+    display: flex;
+    gap: 12px;
+}
+
+.topBar .text-button {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.topBar .text-button button {
+    border-radius: 3px;
+    height: 80%;
+    font-size: 140%;
+    aspect-ratio: 1;
+}
+
+.topBar .text-button p {
+    font-size: 1.5em;
+    margin: 0;
 }
 
 #filterDiv {
@@ -636,6 +698,23 @@ p {
     margin: 0;
 }
 
+#overrideControl .fa:before {
+    content: "\f00d";
+    margin-left: -1px;
+}
+
+#overrideControl.selected .fa:before {
+    content: "\f00c";
+}
+
+#ignoreAssigned .fa:before {
+    content: "\f00d";
+    margin-left: -1px;
+}
+
+#ignoreAssigned.selected .fa:before {
+    content: "\f00c";
+}
 
 /* --- Modal ----*/
 /* - Class for blurring background - */

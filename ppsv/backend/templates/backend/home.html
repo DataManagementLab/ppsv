@@ -279,6 +279,7 @@
         }
 
         $(document).ready(function () {
+            loadChart();
             loadProblemsListing();
         });
     </script>
@@ -354,6 +355,7 @@
                 this.selectedCPMax = 0;
                 this.selectedCourseTypes = [];
                 this.selectedFaculties = [];
+                this.searchbar = "";
             }
 
             /**
@@ -521,7 +523,7 @@
              * loads all courses and faculties provided by the backend as arguments and stores them
              */
             loadDefaultValues() {
-                this.selectedCPMin = 1;
+                this.selectedCPMin = 0;
                 this.selectedCPMax = -1;
                 this.loadAllCourses();
                 this.loadAllFaculties();
@@ -529,6 +531,8 @@
                     let chip = $(chip1);
                     chip.addClass('selected');
                 });
+                this.saveToCookie();
+                this.readFromCookie();
             }
 
             /**
@@ -635,7 +639,6 @@
                 createCookie("filterSettings", cookieValue, 5);
             }
 
-
             filterChangedQueue;
 
             /**
@@ -645,9 +648,7 @@
                 function filterChangedHelper(filterSettings) {
                     return () => {
                         filterSettings.saveToCookie()
-                        // TODO: implement handling for errors
                         loadChart();
-
                     }
                 }
 
@@ -656,7 +657,6 @@
                 }
                 this.filterChangedQueue = setTimeout(filterChangedHelper(this), 250);
             }
-
         }
 
         // --- INIT FILTER  --- //

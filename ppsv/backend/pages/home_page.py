@@ -1,11 +1,11 @@
-from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.automatic_assignment import main
-from backend.models import Assignment, get_all_applications_by_collection, get_all_applications_in_assignments, \
-    get_broken_slots
+from backend.models import get_all_applications_by_collection, get_all_applications_in_assignments
+from backend.models import get_broken_slots
 from backend.pages.functions import handle_get_chart_data
 from course.models import Course, CourseType
 

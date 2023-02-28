@@ -345,7 +345,6 @@ class AssignmentViewTests(TestCase):
             str(response.content, encoding='utf8'),
             {
                 "topicName": "topic1A",
-                "topicID": 1,
                 "topicMinSlotSize": 3,
                 "topicMaxSlotSize": 5,
                 "topicSlotsFinalized": [0, 0, 0],

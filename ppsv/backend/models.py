@@ -62,7 +62,6 @@ def get_all_applications_by_collection():
         application_for_group[(application.group, application.collection_number)].append(application)
     return application_for_group
 
-
 def get_all_applications_in_assignments():
     """returns a list of (group,collection_number) pairs, containing all accepted applications"""
     all_accepted_applications = []
@@ -70,7 +69,6 @@ def get_all_applications_in_assignments():
         for accepted_application in assignment.accepted_applications.all():
             all_accepted_applications.append((accepted_application.group, accepted_application.collection_number))
     return all_accepted_applications
-
 
 def get_broken_slots():
     """returns a list of all broken slots with (topicID, String of the Slot, Error Message) Tuples"""
@@ -101,6 +99,13 @@ def get_max_score():
             score += get_score_for_assigned(1)
     return score
 
+def possible_assignments(group_id, collection_number):
+    """open applications in collection
+    :return: the number of open applications of this group for the given collection
+    :rtype: int
+    """
+    all_applications = TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number)
+    all_assignments = Assignment.objects.filter(accepted_applications__in=all_applications)
 
 def get_score_for_assigned(priority):
     """
