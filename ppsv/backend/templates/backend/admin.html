@@ -82,7 +82,6 @@
                         action: "startAutomaticAssignment",
                     },
                     method: "POST",
-                    dataType: "json",
                 });
             }
         }
@@ -163,7 +162,6 @@
                     newTerm: $('#selectTermSelect').val(),
                 },
                 method: "POST",
-                dataType: "json",
                 success: () => {
                     alert("Term changed!");
                     location.reload();
@@ -182,13 +180,21 @@
                         action: "removeBrokenSlots",
                     },
                     method: "POST",
-                    dataType: "json",
                     success: () => {
                         alert("Broken Slots cleared");
                     }
                 });
             }
         }
+    </script>
+
+    <!-- initialize default error message for post request -->
+    <script>
+        $.ajaxSetup({
+            error: function (error) {
+                alert("Server error on request!\n Check for critical broken slots or contact an administrator! (╯°□°)╯︵ ┻━┻ Oh wait you are the administrator. Well good luck fixing the problem and sorry for the inconvenience \n" + error.statusText + "\n " + error.responseText);
+            }
+        })
     </script>
 {% endblock %}
 

@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
@@ -57,8 +57,7 @@ def handle_finalize(request):
 def handle_start_automatic_assignment():
     if not automatic_assigment.running:
         automatic_assigment.main(True)
-        return JsonResponse({"success": True})
-    return JsonResponse({"success": False})
+    return HttpResponse(status=205)
 
 
 def handle_change_term(request):
@@ -69,7 +68,7 @@ def handle_change_term(request):
     new_active_term = Term.objects.get(name=request.POST.get("newTerm"))
     new_active_term.active_term = True
     new_active_term.save()
-    return JsonResponse({"success": True})
+    return HttpResponse(status=205)
 
 
 def handle_remove_broken_slots():
@@ -77,14 +76,13 @@ def handle_remove_broken_slots():
         try:
             slot.clean()
         except ValidationError:
-            slot.accepted_applications.clear()
-            slot.save()
+            slot.remove()
         else:
             if not slot.assigned_student_to_slot_count == 0 and \
                     slot.assigned_student_to_slot_count < slot.topic.min_slot_size:
                 slot.accepted_applications.clear()
                 slot.save()
-    return JsonResponse({"success": True})
+    return HttpResponse(status=205)
 
 
 def handle_post(request):
@@ -95,23 +93,28 @@ def handle_post(request):
     :param request: the handled request
 
     """
+    try:
+        if "action" not in request.POST:
+            return HttpResponse(status=501,
+                                content="POST request didn't specify an action. Please report this and the actions you took to get this message to the administrator!")
 
-    if "action" not in request.POST:
-        raise ValueError("POST request didn't specify an action")
+        action = request.POST.get("action")
 
-    action = request.POST.get("action")
-    if action == "getAssignmentProgress":
-        return handle_get_assignment_progress()
-    if action == "finalize":
-        return handle_finalize(request)
-    if action == "startAutomaticAssignment":
-        return handle_start_automatic_assignment()
-    if action == "changeTerm":
-        return handle_change_term(request)
-    if action == "removeBrokenSlots":
-        return handle_remove_broken_slots()
+        if action == "getAssignmentProgress":
+            return handle_get_assignment_progress()
+        if action == "finalize":
+            return handle_finalize(request)
+        if action == "startAutomaticAssignment":
+            return handle_start_automatic_assignment()
+        if action == "changeTerm":
+            return handle_change_term(request)
+        if action == "removeBrokenSlots":
+            return handle_remove_broken_slots()
 
-    raise ValueError(f"invalid request action: {action}")
+        return HttpResponse(status=501,
+                            content=f"invalid request action: {action}. Please report this and the actions you took to get this message to an administrator!")
+    except Exception as e:
+        return HttpResponse(status=500, content=f"request caused an exception: \n {e}")
 
 
 def render_site(request):

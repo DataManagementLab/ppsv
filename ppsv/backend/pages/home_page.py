@@ -1,12 +1,13 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.automatic_assignment import main
-from backend.models import get_all_applications_by_collection, get_all_applications_in_assignments
-from backend.models import get_broken_slots
-from backend.pages.functions import handle_get_chart_data
+from backend.models import Assignment
+from backend.pages.functions import get_all_applications_by_collection, \
+    get_all_applications_in_assignments, get_broken_slots, get_or_error
+from backend.pages.multiple_page_post import handle_get_chart_data
 from course.models import Course, CourseType, Term
 
 
@@ -45,6 +46,16 @@ def handle_get_problems_listing():
     )
 
 
+def clear_slot(request):
+    """Clears the given slot"""
+    slot = get_or_error(Assignment,
+                        id=request.POST.get("assignmentID"),
+                        topic__course__term=Term.get_active_term())
+    slot.accepted_applications.clear()
+    slot.delete()
+    return HttpResponse(status=200)
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -53,21 +64,29 @@ def handle_post(request):
     :param request: the handled request
     """
 
-    if "action" not in request.POST:
-        raise ValueError("POST request didn't specify an action")
+    try:
+        if "action" not in request.POST:
+            return HttpResponse(status=501,
+                                content="POST request didn't specify an action. Please report this and the actions "
+                                        "you took to get this message to the administrator!")
 
-    action = request.POST.get("action")
+        action = request.POST.get("action")
 
-    if action == "getChartData":
-        return handle_get_chart_data(request)
+        if action == "getChartData":
+            return handle_get_chart_data(request)
+        if action == "getProblemsListing":
+            return handle_get_problems_listing()
+        if action == "doAutomaticAssignments":
+            return handle_do_automatic_assignments()
+        if action == "clearSlot":
+            return clear_slot(request)
 
-    if action == "getProblemsListing":
-        return handle_get_problems_listing()
+        return HttpResponse(status=501,
+                            content=f"invalid request action: {action}. Please report this and the actions you took "
+                                    f"to get this message to an administrator!")
 
-    if action == "doAutomaticAssignments":
-        return handle_do_automatic_assignments()
-
-    raise ValueError(f"invalid request action: {action}")
+    except Exception as e:
+        return HttpResponse(status=500, content=f"request caused an exception: \n {e}")
 
 
 def home_page(request):

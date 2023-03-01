@@ -393,7 +393,6 @@ class AssignmentViewTests(TestCase):
                         "slotID": 2,
                         "groupID": 1,
                         "collectionID": 1,
-                        "assignedTopic": 1,
                         "finalizedAssignment": False,
                     },
                     {
@@ -408,7 +407,6 @@ class AssignmentViewTests(TestCase):
                         "slotID": 2,
                         "groupID": 2,
                         "collectionID": 1,
-                        "assignedTopic": 1,
                         "finalizedAssignment": False,
                     },
                     {
@@ -423,8 +421,7 @@ class AssignmentViewTests(TestCase):
                         "slotID": -1,
                         "groupID": 3,
                         "collectionID": 1,
-                        "assignedTopic": None,
-                        "finalizedAssignment": None,
+                        "finalizedAssignment": False,
                     }
                 ]
             }
@@ -460,7 +457,7 @@ class AssignmentViewTests(TestCase):
 
     def test_new_Assignment_does_not_exists(self):
         """
-        Tests if the response of a new assignment action is correct when the new Assignment already exists
+        Tests if the response of a new assignment that does not exist in the database
         """
 
         data = {'action': 'newAssignment',
@@ -470,15 +467,8 @@ class AssignmentViewTests(TestCase):
                 }
         self.client.force_login(self.superUser1)
         response = self.client.post(reverse('backend:assignment_page'), data=data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 500)
 
-        self.assertJSONEqual(
-            str(response.content, encoding='utf8'),
-            {
-                'requestStatus': False,
-                'text': "This assignment exists already"
-            }
-        )
 
     def test_new_Assignment_not_enough_space_in_slot(self):
         """
@@ -498,7 +488,7 @@ class AssignmentViewTests(TestCase):
             str(response.content, encoding='utf8'),
             {
                 'requestStatus': False,
-                'text': "No Space in Slot"
+                'text': "This is an illegal application for this slot: it does not fit into it!"
             }
         )
 

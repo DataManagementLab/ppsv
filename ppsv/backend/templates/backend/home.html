@@ -151,7 +151,7 @@
         </div>
     </div>
 
-    <!-- Script-block for loading the statistics chart -->
+    <!-- Script-block for loading the statistics chart and problems -->
     <script>
         /**
          * Loads the data of the assignment chart and displays it.
@@ -245,8 +245,6 @@
                             responsive: true,
                         }
                     });
-                    if (barHidden) canvasElement.hide();
-
                 }
             });
         }
@@ -266,9 +264,20 @@
                 method: "POST",
                 dataType: "json",
                 success: function (data) {
-                    for (let brokenSlot of data["brokenSlots"]) {
-                        let item = $('<a href="/assignment/?topic=' + brokenSlot[0] + '"><div class="inner-list-item broken-slot"><div class="slot-str">' + brokenSlot[1] + '</div><div class="cause"> Caused by: ' + brokenSlot[2] + '</div></div></a>')
-                        brokenSlots.append(item)
+                    const errors = data['brokenSlots'];
+                    for (let i = 0; i < errors.length; i++) {
+                        for (const error of errors[i]) {
+                            let item = $(
+                                '<div class="inner-list-item broken-slot ' + (i === 1 ? "critical" : "") + '">' +
+                                '   <a href="/assignment/?topic=' + error[0] + '">' +
+                                '       <div class="slot-str">' + error[2] + '</div>' +
+                                '       <div class="cause"> Caused by: ' + error[3] + '</div>' +
+                                '   </a>' +
+                                '   <button onclick="removeBrokenSlot(' + error[1] + ')"> <i class="fa fa-trash"></i> Clear Slot </button>' +
+                                ' </div>'
+                            );
+                            brokenSlots.append(item)
+                        }
                     }
                     for (let unfulfilledCollection of data["unfulfilledCollections"]) {
                         let item = $('<a href="/assignment/?group=' + unfulfilledCollection[2] + '&collection=' + unfulfilledCollection[1] + '"><div class="inner-list-item unfulfilled-collection"> <div class="group">' + unfulfilledCollection[0] + '</div><div class="collection-id"> Collection ' + unfulfilledCollection[1] + '</div></div></a>')
@@ -276,6 +285,22 @@
                     }
                 }
             });
+        }
+
+        function removeBrokenSlot(assignmentID) {
+            if (confirm("This well remove all saved applications from this slot.\n This is not reversible\n Do you want to continue?")) {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: 'clearSlot',
+                        assignmentID: assignmentID
+                    },
+                    method: "POST",
+                    success: () => {
+                        location.reload();
+                    }
+                });
+            }
         }
 
         $(document).ready(function () {
@@ -675,5 +700,14 @@
                     filterSettings.saveToCookie();
                 }
             });
+    </script>
+
+        <!-- initialize default error message for post request -->
+    <script>
+        $.ajaxSetup({
+            error: function (error) {
+                alert("Server error on request!\n Check for critical broken slots or contact an administrator!\n" + error.statusText + "\n " + error.responseText);
+            }
+        })
     </script>
 {% endblock content %}

@@ -2,7 +2,8 @@ import copy
 import time
 from dataclasses import dataclass
 
-from backend.models import Assignment, get_score_for_assigned, get_score_for_not_assigned
+from backend.models import Assignment
+from backend.pages.functions import get_score_for_assigned, get_score_for_not_assigned
 from course.models import Topic
 
 

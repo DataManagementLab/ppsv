@@ -636,6 +636,7 @@
                 let exchange = false;
                 let exchangeItem = null;
                 let override = false;
+                let waitForDialog = false;
 
                 // Test if we can drop. if not we revert for nice user feedback
                 if (application == null) {
@@ -661,177 +662,240 @@
 
                 if (!revert && this.nowAssignedSize + application.students.length > this.maxSlotSize) {
                     //Test if we can exchange.
+                    const exchangeItems = new Map()
                     for (const accepted_application of this.accepted_applications.values()) {
                         if (!accepted_application.finalized && application.students.length === accepted_application.students.length || this.maxSlotSize >= this.nowAssignedSize - accepted_application.students.length + application.students.length) {
-                            //found something to exchange. ask user if he wants to
-                            if (overrideApplications || confirm("Do you want to override the application of " + accepted_application.students + "?")) {
-                                exchange = true;
-                                exchangeItem = accepted_application;
-                            } else {
-                                infoPopup('bad', "This applications does not fit into this slot");
-                                revert = true;
-                            }
+                            exchangeItems.set(accepted_application.id, accepted_application);
                         }
+                    }
+
+                    if (exchangeItems.size === 0) {
+                        revert = true;
+                    } else {
+                        let dialog = $('<div id="dialog-assignment-exchange"></div>');
+                        let first = true;
+                        for (const application of exchangeItems.values()) {
+                            const choice = $('<div class="item" data-assignment="' + application.id + '">' + application.students + '</div>');
+                            if (first) {
+                                choice.addClass('selected');
+                                first = false;
+                            }
+                            choice.click((event) => {
+                                $('#dialog-assignment-exchange .item.selected').removeClass('selected')
+                                $(event.currentTarget).addClass('selected');
+                            });
+                            dialog.append(choice);
+                        }
+                        if (overrideApplications) {
+                            exchange = true;
+                            exchangeItem = exchangeItems.values().next().value;
+                        } else if (exchangeItems.size > 1) {
+                            dialog.attr('title', 'Choose Assignment to exchange');
+                            waitForDialog = true;
+                        } else if (exchangeItems.length === 1) {
+                            dialog.attr('title', 'Exchange with this assignment?');
+                            waitForDialog = true;
+                        }
+
+                        if (waitForDialog)
+                            dialog.dialog({
+                                resizable: false,
+                                height: "auto",
+                                width: 400,
+                                modal: true,
+                                buttons: {
+                                    "Exchange": function () {
+                                        exchange = true;
+                                        exchangeItem = exchangeItems.get($('#dialog-assignment-exchange .selected').data('assignment'));
+                                        console.log(exchangeItem)
+                                        $(this).dialog("close");
+                                        handleDropHelper()
+                                    },
+                                    Cancel: function () {
+                                        $(this).dialog("close");
+                                        revert = true
+                                        handleDropHelper()
+                                    }
+                                }
+                            });
                     }
                 }
 
-                if (revert)
-                    return $(drag).draggable("option", "revert", true);
-                $(drag).draggable("option", "revert", false);
-                infoPopup("wait", "Waiting for server response");
+                if (!waitForDialog)
+                    return handleDropHelper.call(this);
 
-                if (override && !exchange) {
-                    requestRemoveOtherApp(application, (data) => {
-                        if (data['requestStatus']) {
-                            //remove from topic if shown
-                            removeFromShownTopics(application);
-                            //add the application to this slot
-                            requestAddAppThis(application);
-                        } else {
-                            infoPopup("bad", data["text"]);
-                            $(drag).draggable("option", "revert", true);
-                        }
-                    });
-                } else if (override && exchange) {
-                    requestRemoveOtherApp(application, (data) => {
-                        if (data['requestStatus']) {
-                            //remove app from topic if shown
-                            removeFromShownTopics(application);
-                            //remove app we want to exchange from this topic
-                            requestRemoveApp(exchangeItem, (data) => {
-                                if (data['requestStatus']) {
-                                    //remove app from this topic
-                                    slot.removeApplication(exchangeItem);
-                                    //add app to this topic
-                                    requestAddAppThis(application);
-                                } else {
-                                    infoPopup("bad", data["text"]);
-                                    $(drag).draggable("option", "revert", true);
+                function handleDropHelper() {
+                    if (revert)
+                        return $(drag).draggable("option", "revert", true);
+                    $(drag).draggable("option", "revert", false);
+                    infoPopup("wait", "Waiting for server response");
+
+                    if (override && !exchange) {
+                        requestRemoveOtherApp(application, (data) => {
+                            if (data['requestStatus']) {
+                                //remove from topic if shown
+                                removeFromShownTopics(application);
+                                //add the application to this slot
+                                requestAddAppThis(application);
+                            } else {
+                                infoPopup("bad", data["text"]);
+                                $(drag).draggable("option", "revert", true);
+                            }
+                        });
+                    } else if (override && exchange) {
+                        requestRemoveOtherApp(application, (data) => {
+                            if (data['requestStatus']) {
+                                //remove app from topic if shown
+                                removeFromShownTopics(application);
+                                //remove app we want to exchange from this topic
+                                requestRemoveApp(exchangeItem, (data) => {
+                                    if (data['requestStatus']) {
+                                        //remove app from this topic
+                                        slot.removeApplication(exchangeItem);
+                                        //add app to this topic
+                                        requestAddAppThis(application);
+                                    } else {
+                                        infoPopup("bad", data["text"]);
+                                        $(drag).draggable("option", "revert", true);
+                                    }
+                                });
+                            } else {
+                                infoPopup("bad", data["text"]);
+                                $(drag).draggable("option", "revert", true);
+                            }
+                        });
+                    } else if (!override && exchange) {
+                        requestRemoveApp(exchangeItem, (data) => {
+                            if (data['requestStatus']) {
+                                //remove app from this topic
+                                slot.removeApplication(exchangeItem);
+                                //add app to this topic
+                                requestAddAppThis(application);
+                            } else {
+                                infoPopup("bad", data["text"]);
+                                $(drag).draggable("option", "revert", true);
+                            }
+                        });
+                    } else if (application.slotID === this.id)
+                        return;
+                    else if (application.slotID === -1) {
+                        requestAddAppThis(application);
+                    } else {
+                        requestSwitchSlots(application)
+                    }
+
+                    //Helper functions
+
+                    //Switches Slots in this topic
+                    function requestSwitchSlots(application) {
+                        //switch from slot to another
+                        $.ajax({
+                                data: {
+                                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                                    action: "changeAssignment",
+                                    applicationID: application.id,
+                                    oldSlotID: application.slotID,
+                                    newSlotID: slot.id
+                                },
+                                method: "POST",
+                                dataType: "json",
+                                fail: () => {
+                                    infoPopup("bad", "Internal Server Error.");
+                                },
+                                success: (data) => {
+                                    const applicationAccepted = data["requestStatus"];
+                                    const applicationAcceptedText = data["text"];
+
+                                    if (applicationAccepted) {
+                                        slot.slotAppRel.slots.get(application.slotID).removeApplication(application);
+                                        slot.addApplication(application);
+                                        application.updateDiv();
+                                        infoPopup("good", applicationAcceptedText)
+                                    } else
+                                        infoPopup("bad", applicationAcceptedText)
                                 }
-                            });
-                        } else {
-                            infoPopup("bad", data["text"]);
-                            $(drag).draggable("option", "revert", true);
-                        }
-                    });
-                } else if (!override && exchange) {
-                    requestRemoveApp(exchangeItem, (data) => {
-                        if (data['requestStatus']) {
-                            //remove app from this topic
-                            slot.removeApplication(exchangeItem);
-                            //add app to this topic
-                            requestAddAppThis(application);
-                        } else {
-                            infoPopup("bad", data["text"]);
-                            $(drag).draggable("option", "revert", true);
-                        }
-                    });
-                } else if (application.slotID === this.id)
-                    return;
-                else if (application.slotID === -1) {
-                    requestAddAppThis(application);
-                } else {
-                    requestSwitchSlots(application)
-                }
+                            }
+                        );
+                    }
 
-                //Helper functions
-
-                //Switches Slots in this topic
-                function requestSwitchSlots(application) {
-                    //switch from slot to another
-                    $.ajax({
+                    //Removes an application from this slot
+                    function requestRemoveApp(application, success) {
+                        $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
-                                action: "changeAssignment",
+                                action: "removeAssignment",
                                 applicationID: application.id,
-                                oldSlotID: application.slotID,
-                                newSlotID: slot.id
+                                slotID: slot.id
                             },
                             method: "POST",
                             dataType: "json",
+                            fail: () => {
+                                infoPopup("bad", "Internal Server Error.");
+                            },
+                            success: success
+                        });
+                    }
+
+                    //removes an application from its assignment
+                    function requestRemoveOtherApp(application, success) {
+                        $.ajax({
+                            data: {
+                                csrfmiddlewaretoken: "{{ csrf_token }}",
+                                action: "removeOtherAssignment",
+                                applicationID: application.id,
+                            },
+                            method: "POST",
+                            dataType: "json",
+                            fail: () => {
+                                infoPopup("bad", "Internal Server Error.");
+                            },
+                            success: success
+                        });
+                    }
+
+                    //adds a not assigned application to this slot
+                    function requestAddAppThis(application) {
+                        $.ajax({
+                            data: {
+                                csrfmiddlewaretoken: "{{ csrf_token }}",
+                                action: "newAssignment",
+                                applicationID: application.id,
+                                slotID: slot.id
+                            },
+                            method: "POST",
+                            dataType: "json",
+                            fail: function () {
+                                infoPopup("bad", "Internal Server Error.");
+                            },
                             success: (data) => {
                                 const applicationAccepted = data["requestStatus"];
                                 const applicationAcceptedText = data["text"];
-
                                 if (applicationAccepted) {
-                                    slot.slotAppRel.slots.get(application.slotID).removeApplication(application);
                                     slot.addApplication(application);
-                                    application.updateDiv();
-                                    infoPopup("good", applicationAcceptedText)
-                                } else
-                                    infoPopup("bad", applicationAcceptedText)
-                            }
-                        }
-                    );
-                }
-
-                //Removes an application from this slot
-                function requestRemoveApp(application, success) {
-                    $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeAssignment",
-                            applicationID: application.id,
-                            slotID: slot.id
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: success
-                    });
-                }
-
-                //removes an application from its assignment
-                function requestRemoveOtherApp(application, success) {
-                    $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "removeOtherAssignment",
-                            applicationID: application.id,
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: success
-                    });
-                }
-
-                //adds a not assigned application to this slot
-                function requestAddAppThis(application) {
-                    $.ajax({
-                        data: {
-                            csrfmiddlewaretoken: "{{ csrf_token }}",
-                            action: "newAssignment",
-                            applicationID: application.id,
-                            slotID: slot.id
-                        },
-                        method: "POST",
-                        dataType: "json",
-                        success: (data) => {
-                            const applicationAccepted = data["requestStatus"];
-                            const applicationAcceptedText = data["text"];
-                            if (applicationAccepted) {
-                                slot.addApplication(application);
-                                infoPopup("good", applicationAcceptedText);
-                            } else {
-                                $(drag).draggable("option", "revert", true);
-                                infoPopup("bad", applicationAcceptedText);
-                            }
-                        }
-                    });
-                }
-
-                //Removes from other slot if found
-                function removeFromShownTopics(application) {
-                    for (const slotAppRel of shownTopics.values()) {
-                        for (const _slot of slotAppRel.slots.values()) {
-                            if (_slot !== slot)
-                                for (const accepted_application of _slot.accepted_applications.values()) {
-                                    if (JSON.stringify(accepted_application.students) === JSON.stringify(application.students) && application.collectionID === accepted_application.collectionID) {
-                                        _slot.removeApplication(accepted_application);
-                                    }
+                                    infoPopup("good", applicationAcceptedText);
+                                } else {
+                                    $(drag).draggable("option", "revert", true);
+                                    infoPopup("bad", applicationAcceptedText);
                                 }
+                            }
+                        });
+                    }
+
+                    //Removes from other slot if found
+                    function removeFromShownTopics(application) {
+                        for (const slotAppRel of shownTopics.values()) {
+                            for (const _slot of slotAppRel.slots.values()) {
+                                if (_slot !== slot)
+                                    for (const accepted_application of _slot.accepted_applications.values()) {
+                                        if (JSON.stringify(accepted_application.students) === JSON.stringify(application.students) && application.collectionID === accepted_application.collectionID) {
+                                            _slot.removeApplication(accepted_application);
+                                        }
+                                    }
+                            }
                         }
                     }
                 }
+
             }
 
             /**
@@ -1287,7 +1351,7 @@
             }
 
             userFeedbackClone.addClass(type);
-            userFeedbackClone.html(msg);
+            userFeedbackClone.text(msg);
             if (type === "wait") {
                 userFeedbackClone.append('<i class="fa fa-circle-o-notch fa-spin" style="margin-left: 3px"></i>');
             }
@@ -1772,4 +1836,12 @@
             });
     </script>
 
+    <!-- initialize default error message for post request -->
+    <script>
+        $.ajaxSetup({
+            error: function (error) {
+                infoPopup("bad", error.statusText + " (╯°□°)╯︵ ┻━┻\n " + error.responseText);
+            }
+        })
+    </script>
 {% endblock content %}
