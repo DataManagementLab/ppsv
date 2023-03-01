@@ -3,9 +3,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.models import Assignment, possible_assignments_for_group, all_applications_from_group, \
-    possible_assignments_of_group_to_topic, AcceptedApplications
+    possible_assignments_of_group_to_topic, AcceptedApplications, TermFinalization
 from backend.pages.functions import handle_get_chart_data, handle_get_score_data
-from course.models import TopicSelection, Topic, CourseType, Course, Group
+from course.models import TopicSelection, Topic, CourseType, Course, Group, Term
 
 
 # ----------Database Interactions---------- #
@@ -96,13 +96,13 @@ def handle_select_topic(request):
     """
 
     topic = Topic.objects.get(id=int(request.POST.get("topicID")))
+    term_finalized = int(TermFinalization.is_finalized(Term.get_active_term()))
+
     applications = []
-    slots_finalized = []
 
-    for i in range(0, topic.max_slots):
-        slots_finalized.append(0)
+    slots_finalized = [term_finalized for _ in range(topic.max_slots)]
 
-    for application in TopicSelection.objects.filter(topic=topic):
+    for application in TopicSelection.objects.filter(topic=topic, topic__course__term=Term.get_active_term()):
         assigned_topic = None
         filtered_for_assignment = Assignment.objects.filter(accepted_applications__group_id__in=[application.group],
                                                             accepted_applications__collection_number=application.collection_number)
@@ -125,7 +125,7 @@ def handle_select_topic(request):
         assignment = Assignment.objects.filter(accepted_applications=application)
         if assignment.exists():
             data['slotID'] = assignment.get().slot_id
-            slots_finalized[assignment.get().slot_id - 1] = assignment.get().finalized_slot
+            slots_finalized[assignment.get().slot_id - 1] = assignment.get().finalized_slot or term_finalized
             data['finalizedAssignment'] = AcceptedApplications.objects.get(topic_selection=application.id,
                                                                            assignment_id=assignment.get().id).finalized_assignment
         else:
@@ -317,7 +317,7 @@ def get_group_data(group_id, collection_id):
 
 def handle_change_finalized_value_slot(request):
     """
-    Handles a change of the finalized value of a slot.
+    Handles a change of the finalized value of a slot. If the term is finalized this will always return the admin locked status
 
     :param request: the handled request
     :return: If the finalized_slot value was changed successfully, the new finalized_slot value, a status and text
@@ -327,7 +327,10 @@ def handle_change_finalized_value_slot(request):
 
     assignment = Assignment.objects.get_or_create(slot_id=request.POST.get("slotID"),
                                                   topic_id=request.POST.get("slotTopicID"))[0]
-    old_finalized_value = assignment.__getattribute__("finalized_slot")
+    if TermFinalization.is_finalized(Term.get_active_term()):
+        assignment.finalized_slot = 2
+
+    old_finalized_value = assignment.finalized_slot
 
     finalization_changed = None
     finalization_value = None
@@ -469,7 +472,7 @@ def render_site(request, args=None):
     topics = []
     last_course = ""
     if Topic.objects.exists():
-        for topic in Topic.objects.filter(max_slots__gt=0):
+        for topic in Topic.objects.filter(max_slots__gt=0, course__term=Term.get_active_term()):
             if last_course != topic.course.title:
                 last_course = topic.course.title
                 topics = []

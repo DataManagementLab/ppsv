@@ -4,6 +4,9 @@ from django.db import models
 from course.models import Group
 from course.models import Topic
 from course.models import TopicSelection
+from course.models import TopicSelection, Term
+from course.models import Topic
+from course.models import Group
 
 
 def possible_assignments_for_group(group_id, collection_number):
@@ -15,7 +18,7 @@ def possible_assignments_for_group(group_id, collection_number):
     all_applications = all_applications_from_group(group_id, collection_number)
     possible_assignments_for_group = 0
     for application in all_applications:
-        query_assignments_for_topic = Assignment.objects.filter(topic=application.topic)
+        query_assignments_for_topic = Assignment.objects.filter(topic=application.topic,topic__course__term=Term.get_active_term())
         if query_assignments_for_topic.count() < application.topic.max_slots:
             possible_assignments_for_group += 1
             continue
@@ -33,7 +36,7 @@ def possible_assignments_of_group_to_topic(topic, group):
     :param group: the group to search the possible assignments for
     """
     open_assignment_count = topic.max_slots
-    for assignment in Assignment.objects.filter(topic=topic):
+    for assignment in Assignment.objects.filter(topic=topic,topic__course__term=Term.get_active_term()):
         if assignment.open_places_in_slot_count < group.size:
             open_assignment_count -= 1
     return open_assignment_count
@@ -46,7 +49,7 @@ def all_applications_from_group(group_id, collection_number):
     :param collection_number: the number of the collection to return the applications of
     :return: a list containing all applications in the given collection of the given group sorted by their priority
     """
-    return list(TopicSelection.objects.filter(group_id=group_id).filter(collection_number=collection_number).order_by(
+    return list(TopicSelection.objects.filter(group_id=group_id,topic__course__term=Term.get_active_term()).filter(collection_number=collection_number).order_by(
         'priority'))
 
 
@@ -56,7 +59,7 @@ def get_all_applications_by_collection():
     """
 
     application_for_group = {}
-    for application in TopicSelection.objects.all():
+    for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term()):
         if (application.group, application.collection_number) not in application_for_group:
             application_for_group[(application.group, application.collection_number)] = []
         application_for_group[(application.group, application.collection_number)].append(application)
@@ -65,7 +68,7 @@ def get_all_applications_by_collection():
 def get_all_applications_in_assignments():
     """returns a list of (group,collection_number) pairs, containing all accepted applications"""
     all_accepted_applications = []
-    for assignment in Assignment.objects.all():
+    for assignment in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
         for accepted_application in assignment.accepted_applications.all():
             all_accepted_applications.append((accepted_application.group, accepted_application.collection_number))
     return all_accepted_applications
@@ -248,3 +251,17 @@ class AcceptedApplications(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     topic_selection = models.ForeignKey(TopicSelection, on_delete=models.CASCADE)
     finalized_assignment = models.BooleanField(default=False)
+
+
+class TermFinalization(models.Model):
+    """ Saves if a term is finalized or not"""
+    term = models.ForeignKey(Term, on_delete=models.CASCADE)
+    finalized = models.BooleanField(default=False)
+
+    @staticmethod
+    def is_finalized(term):
+        query = TermFinalization.objects.filter(term=term)
+        if not query.exists():
+            return False
+        return query.get().finalized
+

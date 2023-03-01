@@ -1,8 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 
-from backend.models import Assignment, get_score_for_assigned, get_score_for_not_assigned
-from course.models import TopicSelection
+from backend.models import Assignment
+from backend.models import get_score_for_assigned, get_score_for_not_assigned
+from course.models import TopicSelection, Term
 
 
 def handle_get_chart_data(request):
@@ -118,15 +119,19 @@ def get_filtered_query_from_request(request):
     if max_cp == -1:
         assignment_query = Assignment.objects.filter(topic__course__cp__gte=min_cp,
                                                      topic__course__type__in=course_types,
-                                                     topic__course__faculty__in=faculties)
+                                                     topic__course__faculty__in=faculties,
+                                                     topic__course__term=Term.get_active_term())
         application_query = TopicSelection.objects.filter(topic__course__cp__gte=min_cp,
                                                           topic__course__type__in=course_types,
-                                                          topic__course__faculty__in=faculties)
+                                                          topic__course__faculty__in=faculties,
+                                                          topic__course__term=Term.get_active_term())
     else:
         assignment_query = Assignment.objects.filter(topic__course__cp__range=(min_cp, max_cp),
                                                      topic__course__type__in=course_types,
-                                                     topic__course__faculty__in=faculties)
+                                                     topic__course__faculty__in=faculties,
+                                                     topic__course__term=Term.get_active_term())
         application_query = TopicSelection.objects.filter(topic__course__cp__range=(min_cp, max_cp),
                                                           topic__course__type__in=course_types,
-                                                          topic__course__faculty__in=faculties)
+                                                          topic__course__faculty__in=faculties,
+                                                          topic__course__term=Term.get_active_term())
     return application_query, assignment_query

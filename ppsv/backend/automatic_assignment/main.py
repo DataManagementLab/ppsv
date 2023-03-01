@@ -1,3 +1,4 @@
+import math
 import time
 
 from course.models import Topic
@@ -5,13 +6,19 @@ from .applications import Applications, init_applications
 from .assignments import Assignments, init_assignments
 from .strategy import Strategy
 
-iterations = 10
+iterations = 100
+running = False
+progress = 0
+eta = ""
 
 
 def main(override_assignments):
-    """the main algorithm for automatically assigning. If override_assignments is True all non-locked assignments could be
-    overwritten by the algorithm. The higher iterations the better the result"""
+    """the main algorithm for automatically assigning. If override_assignments is True all non-locked assignments could
+    be overwritten by the algorithm. The higher iterations the better the result"""
     print("Starting automatic assignments!")
+    global running, progress, eta
+    progress = 0
+    running = True
 
     # --- init --- #
     strategy = Strategy()
@@ -41,7 +48,7 @@ def main(override_assignments):
         applications = Applications()
         topics = strategy.get_topics(topics)
         time1 = time.time()
-        print("Initializing iteration took " + str(round(time1-time0,2)) + "s.")
+        print("Initializing iteration took " + str(round(time1 - time0, 2)) + "s.")
         for topic in topics:
             biggest_open_slot = assignments.biggest_open_slot(topic)
             possible_applications = []
@@ -74,11 +81,14 @@ def main(override_assignments):
             time_track = (time_track + (time3 - time0)) / 2
         else:
             time_track = time3 - time0
+
+        eta = "ETA remaining: " + str(round(time_track * (iterations - iteration), 2)) + " seconds"
         print("Iteration " + str(iteration) + "/" + str(iterations) + " done in " + str(
-            round(time3 - time0, 2)) + "s with score: " + str(new_assignments_score) + ". ETA remaining: " + str(
-            round(time_track * (iterations - iteration), 2)) + " seconds")
+            round(time3 - time0, 2)) + "s with score: " + str(new_assignments_score) + ". " + eta)
+
+        progress = math.floor(iteration / iterations * 100)
 
     print("Finished! Saving best score " + str(best_assignments_score) + " to database")
     best_assignments.save_to_database()
     print("Saved!")
-    print("Starting automatic assignments!")
+    running = False

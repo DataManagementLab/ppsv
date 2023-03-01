@@ -7,7 +7,7 @@ from backend.automatic_assignment import main
 from backend.models import get_all_applications_by_collection, get_all_applications_in_assignments
 from backend.models import get_broken_slots
 from backend.pages.functions import handle_get_chart_data
-from course.models import Course, CourseType
+from course.models import Course, CourseType, Term
 
 
 def handle_do_automatic_assignments():

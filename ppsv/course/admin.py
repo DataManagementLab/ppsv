@@ -1,17 +1,39 @@
 from django.contrib import admin
-from django.utils.translation import gettext_lazy as _
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.urls import path
 from import_export.admin import ImportExportMixin
 
-from .models import Course
-from .models import Topic
-from .models import Student
-from .models import Group
-from .models import TopicSelection
-from .models import TextSaves
+from .models import Course, Term
 from .models import CourseType
-
+from .models import Group
+from .models import Student
+from .models import TextSaves
+from .models import Topic
+from .models import TopicSelection
 
 admin.site.register(CourseType)
+
+
+@admin.register(Term)
+class TermAdmin(admin.ModelAdmin):
+    list_display = ['name', 'active_term', 'registration_start', 'registration_deadline']
+    list_display_links = ['name']
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('get-term/<int:pk>/', self.get_term, name='get_term'),
+        ]
+        return my_urls + urls
+
+    def get_term(self, request, pk):
+        term = get_object_or_404(Term, pk=pk)
+        data = {
+            'reg_start': str(term.registration_start),
+            'reg_end': str(term.registration_deadline),
+        }
+        return JsonResponse(data)
 
 
 class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
@@ -29,19 +51,38 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
     :type CourseAdmin.search_fields: list[str]
     """
     fieldsets = [
-        (None, {'fields': ['title', 'type']}),
-        ('Date Information', {'fields': ['registration_start', 'registration_deadline']}),
-        ('Course Information', {'fields': ['description', 'motivation_text', 'cp', 'faculty', 'organizer']}),
+        (None,
+         {'fields': ['title', 'type']}),
+        ('Course Information', {
+            'fields': ['description', 'motivation_text', 'cp', 'faculty', ]
+        }),
+        ('Date Information (Updates with Term)', {
+            'fields': ['term', 'registration_start', 'registration_deadline', ],
+        }),
     ]
-    list_display = ('title', 'type', 'registration_deadline', 'cp')
-    list_filter = ['registration_deadline']
+    list_display = ('title', 'type', 'cp', 'faculty', 'term',)
+    list_filter = ['term', 'faculty', ]
     search_fields = ['title', 'type__type']
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.prefetch_related('term')
+
+    def term__reg_start(self, obj):
+        return obj.term.registration_start
+
+    def term__reg_end(self, obj):
+        return obj.term.registration_deadline
+
+    term__reg_start.short_description = 'Term registration start'
+    term__reg_end.short_description = 'Term registration end'
 
     class Media:
         """Media
         references the path for scripts
         """
-        js = ('/static/admin/js/hide_attribute.js',)
+        js = ('https://code.jquery.com/jquery-3.6.0.min.js',
+              '/static/admin/js/update_reg_on_term.js')
 
 
 admin.site.register(Course, CourseAdmin)
@@ -61,23 +102,7 @@ class TopicAdmin(ImportExportMixin, admin.ModelAdmin):
     """
     list_display = ('title', 'course', 'max_slots')
     search_fields = ['title', 'course__title']
-    autocomplete_fields = ('course', )
-
-    def get_form(self, request, obj=None, **kwargs):
-        """
-        Returns a ModelForm class for use in the admin add and change views.
-        :return: ModelForm for adding and changing
-        :rtype: ModelForm
-        """
-        form = super().get_form(request, obj, **kwargs)
-        # disable course creation during topic creation and editing
-        form.base_fields['course'].widget.can_add_related = False
-        return form
-
-    class Media:
-        js = (
-            "/static/admin/js/TopicAdmin.js",
-        )
+    autocomplete_fields = ('course',)
 
 
 admin.site.register(Topic, TopicAdmin)
@@ -119,7 +144,7 @@ class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
     fieldsets = [
         (None, {'fields': ['students', 'size', 'collection_count']}),
     ]
-    filter_horizontal = ('students', )
+    filter_horizontal = ('students',)
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -149,9 +174,9 @@ class TopicSelectionAdmin(ImportExportMixin, admin.ModelAdmin):
     :type TopicSelectionAdmin.list_filter: list[str]
     """
     list_display = ('__str__', 'get_display', 'topic', 'collection_number')
-    readonly_fields = ('get_display', )
+    readonly_fields = ('get_display',)
     search_fields = ('group__id', 'topic__title', 'collection_number')
-    list_filter = ('topic', )
+    list_filter = ('topic',)
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -168,6 +193,5 @@ class TopicSelectionAdmin(ImportExportMixin, admin.ModelAdmin):
 
 admin.site.register(TopicSelection, TopicSelectionAdmin)
 admin.site.register(TextSaves)
-
 
 admin.site.site_header = 'PPSV-Administration'

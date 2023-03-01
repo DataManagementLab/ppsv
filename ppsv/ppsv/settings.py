@@ -95,7 +95,7 @@ WSGI_APPLICATION = 'ppsv.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'dbUserStudy.sqlite3',
+        'NAME': BASE_DIR / 'dbBroken.sqlite3',
     }
 }
 
@@ -123,6 +123,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = 'en'
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, "ppsv/locale"),
+    os.path.join(BASE_DIR, "frontend/locale"),
+    os.path.join(BASE_DIR, "course/locale"),
+    os.path.join(BASE_DIR, "backend/locale")
+]
 
 LANGUAGES = [
     ('de', _('German')),

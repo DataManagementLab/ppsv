@@ -3,8 +3,9 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from datetime import timedelta
 
-from course.models import Topic, Group, CourseType, Course, Student, TopicSelection
+from course.models import Topic, Group, CourseType, Course, Student, TopicSelection, Term
 from .models import Assignment
 
 
@@ -40,8 +41,14 @@ class TestAssignmentModel(TestCase):
 
         cls.course_type = CourseType.objects.create(type='Testart')
         deadline = timezone.now()
-        cls.course1 = Course.objects.create(registration_deadline=deadline, cp=5, type=cls.course_type,
-                                            created_by=cls.superuser)
+
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.course1 = Course.objects.create(registration_start=deadline,
+                                            registration_deadline=deadline,
+                                            cp=5,
+                                            type=cls.course_type,
+                                            created_by=cls.superuser,
+                                            term=cls.term)
         cls.c1_topic1 = Topic.objects.create(title="t1", max_slots=3, min_slot_size=3, max_slot_size=5,
                                              course=cls.course1)
         cls.c1_topic2 = Topic.objects.create(title="t2", max_slots=3, min_slot_size=5, max_slot_size=5,
@@ -49,8 +56,12 @@ class TestAssignmentModel(TestCase):
         cls.c1_topic3 = Topic.objects.create(title="t3", max_slots=3, min_slot_size=5, max_slot_size=5,
                                              course=cls.course1)
 
-        cls.course2 = Course.objects.create(registration_deadline=deadline, cp=5, type=cls.course_type,
-                                            created_by=cls.superuser)
+        cls.course2 = Course.objects.create(registration_start=deadline,
+                                            registration_deadline=deadline,
+                                            cp=5,
+                                            type=cls.course_type,
+                                            created_by=cls.superuser,
+                                            term=cls.term)
         cls.c2_topic1 = Topic.objects.create(title="t1", max_slots=2, min_slot_size=1, max_slot_size=1,
                                              course=cls.course2)
         cls.c2_topic2 = Topic.objects.create(title="t2", max_slots=2, min_slot_size=1, max_slot_size=1,
@@ -223,10 +234,29 @@ class AssignmentViewTests(TestCase):
 
         cls.seminar_type = CourseType.objects.create(type='Seminar')
 
-        cls.course1 = Course.objects.create(registration_deadline=timezone.now(), cp=5, motivation_text=True,
-                                            type=cls.seminar_type, title="course1", created_by=cls.superUser1)
-        cls.course2 = Course.objects.create(registration_deadline=timezone.now(), cp=5, motivation_text=True,
-                                            type=cls.seminar_type, title="course2", created_by=cls.superUser1)
+        deadline = timezone.now()
+        deadline += timedelta(days=1)
+        start = timezone.now()
+        start -= timedelta(days=1)
+
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+
+        cls.course1 = Course.objects.create(registration_start=start,
+                                            registration_deadline=deadline,
+                                            cp=5,
+                                            motivation_text=True,
+                                            type=cls.seminar_type,
+                                            title="course1",
+                                            created_by=cls.superUser1,
+                                            term=cls.term)
+        cls.course2 = Course.objects.create(registration_start=start,
+                                            registration_deadline=deadline,
+                                            cp=5,
+                                            motivation_text=True,
+                                            type=cls.seminar_type,
+                                            title="course2",
+                                            created_by=cls.superUser1,
+                                            term=cls.term)
         cls.topic1A = Topic.objects.create(course=cls.course1, title='topic1A', max_slots=3, min_slot_size=3,
                                            max_slot_size=5)
         cls.topic1B = Topic.objects.create(course=cls.course1, title='topic1B', max_slots=3, min_slot_size=3,
@@ -357,7 +387,7 @@ class AssignmentViewTests(TestCase):
                             "bc22eeee"],
                         "applicationID": 1,
                         "possibleAssignmentsForCollection": 3,
-                        "collectionCount":3,
+                        "collectionCount": 3,
                         "preference": 1,
                         "collectionFulfilled": True,
                         "slotID": 2,
@@ -372,9 +402,9 @@ class AssignmentViewTests(TestCase):
                         ],
                         "applicationID": 3,
                         "possibleAssignmentsForCollection": 1,
-                        "collectionCount":1,
+                        "collectionCount": 1,
                         "preference": 2,
-                        "collectionFulfilled":True,
+                        "collectionFulfilled": True,
                         "slotID": 2,
                         "groupID": 2,
                         "collectionID": 1,
@@ -387,9 +417,9 @@ class AssignmentViewTests(TestCase):
                         ],
                         "applicationID": 4,
                         "possibleAssignmentsForCollection": 1,
-                        "collectionCount":1,
+                        "collectionCount": 1,
                         "preference": 3,
-                        "collectionFulfilled":False,
+                        "collectionFulfilled": False,
                         "slotID": -1,
                         "groupID": 3,
                         "collectionID": 1,
@@ -589,4 +619,3 @@ class AssignmentViewTests(TestCase):
 
         self.assertContains(response, 'Faculty:')
         self.assertContains(response, 'Choose Faculty')
-

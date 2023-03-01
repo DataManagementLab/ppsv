@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
 import datetime
-from course.models import Course, Student, Group, Topic, TopicSelection, CourseType
+from course.models import Course, Student, Group, Topic, TopicSelection, CourseType, Term
 from .forms.forms import NewStudentForm, NewUserForm, UserLoginForm
 from django.utils.safestring import mark_safe
 from django.utils.functional import lazy
@@ -86,13 +86,14 @@ class HomepageViewTests(TestCase):
         cls.group1.students.add(cls.student1)
         cls.seminar_type = CourseType.objects.create(type='Seminar')
         cls.internship_type = CourseType.objects.create(type='Internship')
-        cls.course = Course.objects.create(registration_deadline=timezone.now(), cp=5, motivation_text=True,
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.course = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, motivation_text=True,
                                            type=cls.seminar_type, created_by=cls.superuser)
         cls.topic = Topic.objects.create(course=cls.course, title='Title')
         cls.topic_selection = TopicSelection.objects.create(group=cls.group1, topic=cls.topic, collection_number=0)
-        cls.course_mix1 = Course.objects.create(registration_deadline=timezone.now(), cp=5, type=cls.seminar_type,
+        cls.course_mix1 = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, type=cls.seminar_type,
                                                 created_by=cls.superuser)
-        cls.course_mix2 = Course.objects.create(registration_deadline=timezone.now(), cp=5, type=cls.internship_type,
+        cls.course_mix2 = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, type=cls.internship_type,
                                                 created_by=cls.superuser)
         cls.topic_mix1 = Topic.objects.create(course=cls.course_mix1, title='Mix1')
         cls.topic_mix2 = Topic.objects.create(course=cls.course_mix2, title='Mix2')
@@ -169,8 +170,9 @@ class OverviewViewTests(TestCase):
 
         cls.date_future = timezone.now() + datetime.timedelta(days=30)
         cls.course_type = CourseType.objects.create(type='Testtype')
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
 
-        cls.course_unselected = Course.objects.create(registration_deadline=cls.date_future, motivation_text=True,
+        cls.course_unselected = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, motivation_text=True,
                                                       registration_start=timezone.now(), cp=5, faculty='FB01',
                                                       title='Test Course unselected', type=cls.course_type,
                                                       description='Test course description unselected',
@@ -184,7 +186,7 @@ class OverviewViewTests(TestCase):
                                                         description='Test topic description max part group',
                                                         max_slots=2)
 
-        cls.course_selected = Course.objects.create(registration_deadline=cls.date_future, cp=5, motivation_text=True,
+        cls.course_selected = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, cp=5, motivation_text=True,
                                                     registration_start=timezone.now(), type=cls.course_type,
                                                     faculty='FB03', title='Test Course selected',
                                                     description='Test course description selected',
@@ -198,7 +200,7 @@ class OverviewViewTests(TestCase):
 
         cls.date_near_future = timezone.now() + datetime.timedelta(days=2)
         cls.course_type_sorting = CourseType.objects.create(type='Sorting')
-        cls.course_sorting = Course.objects.create(registration_deadline=cls.date_future, motivation_text=True,
+        cls.course_sorting = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, motivation_text=True,
                                                    registration_start=cls.date_near_future, cp=10, faculty='FB01',
                                                    title='Sorting', type=cls.course_type_sorting,
                                                    description='Test course description sorting',
@@ -511,16 +513,17 @@ class YourSelectionViewTests(TestCase):
 
         cls.date_future = timezone.now() + datetime.timedelta(days=30)
         cls.course_type = CourseType.objects.create(type='Testtype')
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
 
-        cls.course = Course.objects.create(registration_deadline=cls.date_future, registration_start=timezone.now(),
+        cls.course = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, registration_start=timezone.now(),
                                            cp=5, motivation_text=True, faculty='FB01', title='TestCourse',
                                            type=cls.course_type, description='Test description',
                                            created_by=cls.superuser)
-        cls.course1 = Course.objects.create(registration_deadline=cls.date_future, registration_start=timezone.now(),
+        cls.course1 = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, registration_start=timezone.now(),
                                             cp=5, motivation_text=True, faculty='FB01', title='TestCourse1',
                                             type=cls.course_type, description='Test description 1',
                                             created_by=cls.superuser)
-        cls.course_exclusive = Course.objects.create(registration_deadline=cls.date_future,
+        cls.course_exclusive = Course.objects.create(term=cls.term,registration_deadline=cls.date_future,
                                                      registration_start=timezone.now(), cp=6, motivation_text=True,
                                                      faculty='FB02', title='TestCourse exklusiv', type=cls.course_type,
                                                      description='Test description exklusiv', created_by=cls.superuser) # TODO was wurde hier mit collection_exclusive getestet?

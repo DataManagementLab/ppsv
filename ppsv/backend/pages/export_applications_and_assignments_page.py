@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 from backend.models import Assignment, AcceptedApplications
-from course.models import Topic, TopicSelection
+from course.models import Topic, TopicSelection, Term
 
 
 def write_row_assignment_helper(topic, slot_id, assignment_writer):
@@ -25,9 +25,11 @@ def write_row_assignment_helper(topic, slot_id, assignment_writer):
     min_size = topic.min_slot_size
     max_size = topic.max_slot_size
 
-    if Assignment.objects.all().filter(topic__id=topic.id, slot_id=slot_id).exists():
+    if Assignment.objects.all().filter(topic__id=topic.id, slot_id=slot_id,
+                                       topic__course__term=Term.get_active_term()).exists():
         for assigned_applications in Assignment.objects.all().filter(topic__id=topic.id,
-                                                                     slot_id=slot_id).get().accepted_applications.all():
+                                                                     slot_id=slot_id,
+                                                                     topic__course__term=Term.get_active_term()).get().accepted_applications.all():
             if not AcceptedApplications.objects.get(topic_selection=assigned_applications,
                                                     assignment=Assignment.objects.get(topic=topic.id,
                                                                                       slot_id=slot_id)).finalized_assignment:
@@ -53,7 +55,8 @@ def write_row_application_helper(application, application_writer):
     """
     not_add_application = False
     applications_in_collection = TopicSelection.objects.all().filter(group=application.group.id,
-                                                                     collection_number=application.collection_number)
+                                                                     collection_number=application.collection_number,
+                                                                     topic__course__term=Term.get_active_term())
 
     if AcceptedApplications.objects.filter(topic_selection__in=applications_in_collection).all().exists():
         accepted_application = AcceptedApplications.objects.get(topic_selection__in=applications_in_collection)
@@ -114,12 +117,14 @@ def export_applications_and_assignments_page(request):
     assignment_writer = csv.writer(assignments_response)
     assignment_writer.writerow(['TopicID', 'SlotID', 'Slot size', 'assignees'])
 
-    for topic in Topic.objects.all():
+    for topic in Topic.objects.filter(course__term=Term.get_active_term()):
         if 'all' == faculty or topic.course.faculty == faculty:
             for slot_id in range(1, topic.max_slots + 1):
-                assignment_exists = Assignment.objects.filter(topic=topic.id, slot_id=slot_id).exists()
+                assignment_exists = Assignment.objects.filter(topic=topic.id, slot_id=slot_id,
+                                                              topic__course__term=Term.get_active_term()).exists()
                 if not assignment_exists or (assignment_exists and not Assignment.objects.get(topic=topic.id,
-                                                                                              slot_id=slot_id).finalized_slot):
+                                                                                              slot_id=slot_id,
+                                                                                              topic__course__term=Term.get_active_term()).finalized_slot):
                     write_row_assignment_helper(topic, slot_id, assignment_writer)
 
     assignments_response['Content-Disposition'] = 'attachment; filename=export_assignments_file'

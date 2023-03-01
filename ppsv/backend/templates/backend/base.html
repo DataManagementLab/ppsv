@@ -58,6 +58,7 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
                     {% if user.is_superuser %}
                         <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">Django
                             Admin</a>
+                        <a href="{% url 'backend:admin_page' %}" class="adminbtn btn btn-danger navbar-inline-list">Admin Controls</a>
                     {% endif %}
                 {% endif %}
                 <div class="login-box">
