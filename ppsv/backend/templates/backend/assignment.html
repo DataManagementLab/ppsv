@@ -197,6 +197,21 @@
             });
         });
 
+        let statisticQueue = null;
+
+        /**
+         * Handles an update of Statistic and Stats
+         */
+        function updateStatistic() {
+            if (statisticQueue != null) {
+                clearTimeout(statisticQueue);
+            }
+            statisticQueue = setTimeout(() => {
+                loadChart();
+                loadStats();
+            }, 250);
+        }
+
         /**
          * Loads the data of the assignment chart and displays it.
          */
@@ -542,6 +557,8 @@
                             updateApplicationGroupDetails(selectedAppID);
 
                             infoPopup("good", data['text'])
+
+                            updateStatistic()
                         } else {
                             $(drag).draggable("option", "revert", true);
                             infoPopup("bad", data['text'])
@@ -741,6 +758,7 @@
                                 infoPopup("bad", data["text"]);
                                 $(drag).draggable("option", "revert", true);
                             }
+                            updateStatistic()
                         });
                     } else if (override && exchange) {
                         requestRemoveOtherApp(application, (data) => {
@@ -758,6 +776,7 @@
                                         infoPopup("bad", data["text"]);
                                         $(drag).draggable("option", "revert", true);
                                     }
+                                    updateStatistic()
                                 });
                             } else {
                                 infoPopup("bad", data["text"]);
@@ -771,6 +790,8 @@
                                 slot.removeApplication(exchangeItem);
                                 //add app to this topic
                                 requestAddAppThis(application);
+                                //Update stats
+                                updateStatistic()
                             } else {
                                 infoPopup("bad", data["text"]);
                                 $(drag).draggable("option", "revert", true);
@@ -811,6 +832,8 @@
                                         slot.addApplication(application);
                                         application.updateDiv();
                                         infoPopup("good", applicationAcceptedText)
+                                        //Update stats
+                                        updateStatistic()
                                     } else
                                         infoPopup("bad", applicationAcceptedText)
                                 }
@@ -873,6 +896,7 @@
                                 if (applicationAccepted) {
                                     slot.addApplication(application);
                                     infoPopup("good", applicationAcceptedText);
+                                    updateStatistic()
                                 } else {
                                     $(drag).draggable("option", "revert", true);
                                     infoPopup("bad", applicationAcceptedText);
@@ -1714,8 +1738,7 @@
                     return () => {
                         filterSettings.saveToCookie();
                         filterSettings.updateTopicList();
-                        loadChart();
-                        loadStats();
+                        updateStatistic()
                     }
                 }
 
