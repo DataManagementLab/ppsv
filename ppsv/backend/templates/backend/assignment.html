@@ -188,7 +188,6 @@
         </div>
     </div>
 
-
     <!-- Script block for statistics window -->
     <script>
         $(document).ready(function () {
@@ -1166,7 +1165,9 @@
                     url += selectedTopics[i] + "+";
                 }
                 url.substring(0, url.length - 1);
-            } else if (parseInt(urlData[0]) !== -1 && selectedTopics != null && selectedTopics.length !== 0) {
+            } else if (selectedTopics != null && selectedTopics.length == 0) {
+                url += -1
+            } else if (parseInt(urlData[0]) !== -1) {
                 url += urlData[0];
             } else {
                 url += -1

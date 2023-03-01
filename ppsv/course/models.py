@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from datetime import datetime, time
 
 
 class CourseType(models.Model):
@@ -43,6 +44,67 @@ class CourseType(models.Model):
         :rtype: str
         """
         return self.type
+
+
+class Term(models.Model):
+    """A Term
+    only on can be active"""
+    name = models.CharField(max_length=200, verbose_name=_("title"))
+    active_term = models.BooleanField(default=False, verbose_name=_("active term"))
+    registration_start = models.DateTimeField(default=datetime.combine(datetime.today(), time(23, 59, 59)),
+                                              verbose_name=_("registration Start"))
+    registration_deadline = models.DateTimeField(default=datetime.combine(datetime.today(), time(23, 59, 59)),
+                                                 verbose_name=_("registration Deadline"))
+
+    class Meta:
+        """Meta options
+
+        This class handles all possible meta options that you can give to this model.
+
+        :attr Meta.verbose_name: A human-readable name for the object in singular
+        :type Meta.verbose_name: __proxy__
+        :attr Meta.verbose_name_plural: A human-readable name for the object in plural
+        :type Meta.verbose_name_plural: __proxy__
+        """
+        verbose_name = _("term")
+        verbose_name_plural = _("terms")
+
+    def __str__(self):
+        """String representation
+        Returns the string representation of this object.
+        :return: the string representation of this object
+        :rtype: str
+        """
+        return self.name
+
+    def clean(self):
+        query = Term.objects.filter(active_term=True).exclude(pk=self.pk)
+        if query.count() == 1 and self.active_term:
+            raise ValidationError("There can be only one active Term")
+        if self.registration_start >= self.registration_deadline:
+            raise ValidationError(_("The registration deadline cannot be before the registration start."))
+
+    @staticmethod
+    def has_active_term():
+        return Term.objects.filter(active_term=True).exists()
+
+    @staticmethod
+    def get_active_term():
+        if not Term.has_active_term():
+            return None
+        return Term.objects.get(active_term=True)
+
+    @staticmethod
+    def get_active_term_registration_start():
+        if not Term.has_active_term():
+            return None
+        return Term.get_active_term().registration_start
+
+    @staticmethod
+    def get_active_term_registration_deadline():
+        if not Term.has_active_term():
+            return None
+        return Term.get_active_term().registration_deadline
 
 
 class Course(models.Model):
@@ -80,8 +142,11 @@ class Course(models.Model):
     """
     title = models.CharField(max_length=200, verbose_name=_("title"))
     type = models.ForeignKey(CourseType, on_delete=models.CASCADE, verbose_name=_("type"))
-    registration_start = models.DateTimeField(default=timezone.now, verbose_name=_("registration Start"))
-    registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
+    term = models.ForeignKey(Term, on_delete=models.CASCADE, default=Term.get_active_term)
+    registration_start = models.DateTimeField(default=Term.get_active_term_registration_start,
+                                              verbose_name=_("registration Start"))
+    registration_deadline = models.DateTimeField(default=Term.get_active_term_registration_deadline,
+                                                 verbose_name=_("registration Deadline"))
     description = models.TextField(verbose_name=_("description"))
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
@@ -209,9 +274,7 @@ class Topic(models.Model):
         :return: true, if this topic has at least one application
         :rtype: bool
         """
-        return TopicSelection.objects.filter(topic=self).count() > 0
-
-
+        return TopicSelection.objects.filter(topic=self, topic__course__term=Term.get_active_term()).count() > 0
 
     def clean(self):
         if self.min_slot_size > self.max_slot_size:
@@ -302,7 +365,6 @@ class Group(models.Model):
 
     """
     students = models.ManyToManyField(Student, verbose_name=_("students"))
-    # applications = models.ManyToManyField(Topic, verbose_name=_("topics"), blank=True)
     collection_count = models.IntegerField(verbose_name=_("number of collections"), default=1)
 
     @property
@@ -331,7 +393,7 @@ class Group(models.Model):
         """collections of this group as dictionary order by top to low priority
         """
         collections = {}
-        for application in TopicSelection.objects.filter(group=self).order_by("collection_number", "priority"):
+        for application in TopicSelection.objects.filter(group=self, topic__course__term=Term.get_active_term()).order_by("collection_number", "priority"):
             if application.collection_number in collections:
                 collections[application.collection_number].append(application)
             else:
@@ -417,7 +479,7 @@ class TopicSelection(models.Model):
         :return: all applications of the group of this application that are in the same collection
         :rtype: QuerySet
         """
-        return TopicSelection.objects.filter(group=self.group, collection_number=self.collection_number)
+        return TopicSelection.objects.filter(group=self.group, collection_number=self.collection_number, topic__course__term=Term.get_active_term())
 
     get_display.fget.short_description = _("group")
 

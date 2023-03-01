@@ -1,0 +1,194 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block tab_name %}
+    Admin Control
+{% endblock tab_name %}
+
+{% block title %}
+    Admin Control
+{% endblock title %}
+
+{% block content %}
+    <h1>Custom Admin Actions</h1>
+    <div id="admin-actions">
+        <div class="section">
+            <span>Finalisation Actions</span>
+            <div id="automaticAssignmentDiv" class="text-button">
+                <button id="automaticAssignment" class="{% if running %} running {% endif %}"
+                        onclick="automaticAssignment()"><i
+                        class="fa fa-check" aria-hidden="true"></i>
+                </button>
+                <p>Start an automatic Assignment</p>
+                <div id="automaticAssignmentProgress">
+                    <div class="text"></div>
+                </div>
+            </div>
+            <div id="finalizeAllAssignmentsDiv" class="text-button">
+                <button id="finalizeAllAssignments" onclick="finalizeAllAssignments(true)"><i
+                        class="fa fa-check" aria-hidden="true"></i>
+                </button>
+                <p>Lock and Finalize all Assignments. Only possible if all Slots are filled correctly</p>
+            </div>
+            <div id="unfinalizeAllAssignmentsDiv" class="text-button">
+                <button id="unfinalizeAllAssignments" onclick="finalizeAllAssignments(false)"><i
+                        class="fa fa-check" aria-hidden="true"></i>
+                </button>
+                <p>Unlock all Assignments</p>
+            </div>
+        </div>
+        <div class="section">
+            <span>Change active/shown Term</span>
+            <div id="selectTermDiv" class="text-button">
+                <button id="selectTerm"
+                        onclick="changeActiveTerm()"><i
+                        class="fa fa-save" aria-hidden="true"></i>
+                </button>
+                <p>Change the active/shown Term for Students and Administrator</p>
+                <select id="selectTermSelect" name="term">
+                    {% for term in terms %}
+                        <option value="{{ term }}" {% if term == activeTerm %} selected
+                                style="background: var(--green)" {% endif %} >{{ term }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="section">
+            <span>Removals</span>
+            <div id="removeBrokenSlotsDiv" class="text-button">
+                <button id="removeBrokenSlots" onclick="removeBrokenSlots()"><i
+                        class="fa fa-trash" aria-hidden="true"></i>
+                </button>
+                <p>Remove all applications from all broken slots</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- script block for finalisation actions -->
+    <script>
+        let assignmentRunning = {% if running %} true {% else %} false {% endif %}
+
+        function automaticAssignment() {
+            if (assignmentRunning) {
+                window.alert("This process is already running");
+            } else {
+                startAutoUpdate();
+                $('#automaticAssignmentProgress').show();
+                $('#filterButton').addClass('running');
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "startAutomaticAssignment",
+                    },
+                    method: "POST",
+                    dataType: "json",
+                });
+            }
+        }
+
+        let autoQuery
+
+        function startAutoUpdate() {
+            autoQuery = setInterval(function () {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "getAssignmentProgress",
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: (data) => {
+                        $("#automaticAssignmentProgress").progressbar("value", data['progress']);
+                        $("#automaticAssignmentProgress .text").text(data['progress'] + "%     " + data['eta']);
+                        if (!data['running']) {
+                            clearInterval(autoQuery);
+                            $('#filterButton').removeClass('running');
+                            $('#automaticAssignmentProgress').hide();
+                        }
+                    }
+                });
+            }, 500)
+        }
+
+        /**
+         *
+         * @param finalize if true lock if false unlock
+         */
+        function finalizeAllAssignments(finalize) {
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: "finalize",
+                    finalize: finalize,
+                },
+                method: "POST",
+                dataType: "json",
+                success: (data) => {
+                    if (finalize) {
+                        if (data["success"])
+                            alert("Finalized");
+                        else
+                            alert("Could not finalize. There are broken slots");
+                    } else {
+                        alert("Finalization deleted");
+                    }
+                }
+            });
+        }
+
+        $(document).ready(
+            function () {
+                $('#automaticAssignmentProgress').progressbar({
+                    value: 0
+                });
+                if (assignmentRunning) {
+                    $('#automaticAssignmentProgress').show();
+                    $('#filterButton').addClass('running');
+                    startAutoUpdate();
+                } else {
+                    $('#automaticAssignmentProgress').hide();
+                }
+            }
+        );
+    </script>
+
+    <!-- script block for change term -->
+    <script>
+        function changeActiveTerm() {
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: "changeTerm",
+                    newTerm: $('#selectTermSelect').val(),
+                },
+                method: "POST",
+                dataType: "json",
+                success: () => {
+                    alert("Term changed!");
+                    location.reload();
+                }
+            });
+        }
+    </script>
+
+    <!-- script block for removals -->
+    <script>
+        function removeBrokenSlots() {
+            if (confirm("Delete all assignments from all broken slots? \nIgnores finalized status \nASSIGNMENTS ARE NOT RECOVERABLE!")) {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "removeBrokenSlots",
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: () => {
+                        alert("Broken Slots cleared");
+                    }
+                });
+            }
+        }
+    </script>
+{% endblock %}
+

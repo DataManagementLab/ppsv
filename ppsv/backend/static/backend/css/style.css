@@ -234,10 +234,6 @@ p {
     margin-left: auto;
 }
 
-.problems-listing {
-    display: flex;
-}
-
 #unfulfilled-collections-div {
     max-width: 300px;
 }
@@ -344,6 +340,9 @@ p {
     border: solid black 1px;
     border-radius: 3px;
     display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0 3px 3px 3px;
     width: 100%;
     transition: filter .25s linear;
 }
@@ -351,13 +350,11 @@ p {
 /* Inhalte einer Section */
 
 .section-inner {
-    padding: 6px;
     height: 100%;
     overflow: hidden;
     display: flex;
     flex-flow: column;
     width: 100%;
-
 }
 
 /* Eine scrollable Liste. Nur diese sollte einen Overflow haben */
@@ -429,7 +426,7 @@ p {
     justify-content: space-between;
 }
 
-#assignment-content .title i{
+#assignment-content .title i {
     color: var(--lightcoral);
     cursor: pointer;
     font-size: 26px;
@@ -444,6 +441,10 @@ p {
     width: 50%;
     height: 100%;
     min-width: 300px;
+}
+
+#problems-listing {
+    flex-direction: row;
 }
 
 /* Lock/Unlock Symbols*/
@@ -546,14 +547,13 @@ p {
     flex-direction: column;
     height: 100%;
     border: 0;
-    gap: 3px;
     overflow-y: scroll;
 }
 
 .section.single {
-    display: flex;
     width: 100%;
     height: 100%;
+    flex-direction: row;
     border: solid black 1px;
 }
 
@@ -569,12 +569,6 @@ p {
     width: fit-content;
 }
 
-#assignment-content #groupdetails {
-    padding: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
 
 #assignment-content #groupdetails .section-inner {
     border-radius: 3px;
@@ -663,20 +657,24 @@ p {
     gap: 12px;
 }
 
-.topBar .text-button {
+.text-button {
     display: flex;
     align-items: center;
     gap: 3px;
 }
 
-.topBar .text-button button {
+.text-button button {
     border-radius: 3px;
     height: 80%;
     font-size: 140%;
     aspect-ratio: 1;
 }
 
-.topBar .text-button p {
+.text-button button:hover {
+    background-color: var(--aliceblue);
+}
+
+.text-button p {
     font-size: 1.5em;
     margin: 0;
 }
@@ -986,3 +984,38 @@ p {
 
 
 /* End Filter Styling styling */
+
+/* ADMIN PAGE */
+#automaticAssignmentProgress {
+    width: 300px;
+}
+
+#admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+}
+
+#admin-actions span {
+    border-bottom: 1px solid black;
+    font-size: 20px;
+}
+
+
+#admin-actions .text-button button {
+    font-size: 80%;
+}
+
+#admin-actions .text-button .fa {
+    font-size: 180%;
+}
+
+#admin-actions .text-button select {
+    margin-left: 20px;
+    font-size: 120%;
+}
+
+#automaticAssignmentProgress {
+    margin-left: 20px;
+}

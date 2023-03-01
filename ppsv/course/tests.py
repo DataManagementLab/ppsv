@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
-from .models import Course, Student, Group, TopicSelection, Topic, CourseType
+from .models import Course, Student, Group, TopicSelection, Topic, CourseType, Term
 
 
 class test_ModelTests(TestCase):
@@ -27,7 +27,9 @@ class test_ModelTests(TestCase):
         cls.group2 = Group.objects.create()
         cls.group2.students.add(cls.student1)
         cls.course_type = CourseType.objects.create(type='Testart')
-        cls.course = Course.objects.create(registration_deadline=timezone.now(), cp=5, type=cls.course_type,
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+
+        cls.course = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, type=cls.course_type,
                                            created_by=cls.superuser)
         cls.topic = Topic.objects.create(course=cls.course, title='Title')
         cls.selection = TopicSelection.objects.create(group=cls.group2, topic=cls.topic)
@@ -54,11 +56,11 @@ class test_ModelTests(TestCase):
         date_near_future = timezone.now() + datetime.timedelta(days=13)
         course_open = Course(registration_deadline=date_future, registration_start=date_past)
         self.assertEqual(course_open.get_status, 'Open')
-        course_closed = Course(registration_deadline=date_past)
+        course_closed = Course(registration_deadline=date_past, registration_start=date_past)
         self.assertEqual(course_closed.get_status, 'Closed')
-        course_upcoming = Course(registration_start=date_future)
+        course_upcoming = Course(registration_start=date_future,registration_deadline=date_future)
         self.assertEqual(course_upcoming.get_status, 'Upcoming')
-        course_imminent = Course(registration_start=date_near_future)
+        course_imminent = Course(registration_start=date_near_future,registration_deadline=date_future)
         self.assertEqual(course_imminent.get_status, 'Imminent')
 
     def test_get_display(self):
