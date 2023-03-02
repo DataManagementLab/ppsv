@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -6,8 +6,7 @@ from django.urls import reverse
 from backend.automatic_assignment import main
 from backend.models import Assignment
 from backend.pages.functions import get_all_applications_by_collection, \
-    get_all_applications_in_assignments, get_broken_slots, get_or_error
-from backend.pages.multiple_page_post import handle_get_chart_data
+    get_all_applications_in_assignments, get_broken_slots, get_or_error, get_score_and_chart_data
 from course.models import Course, CourseType, Term
 
 
@@ -46,7 +45,20 @@ def handle_get_problems_listing():
     )
 
 
-def clear_slot(request):
+def handle_get_chart_data(request):
+    """Creates the data for the assignment chart.
+
+    :return: The data for the assignment chart.
+    :rtype: JsonResponse
+    """
+    data = get_score_and_chart_data(request)
+    return JsonResponse(data={
+        'groups': data[0],
+        'students': data[1]
+    })
+
+
+def handle_clear_slot(request):
     """Clears the given slot"""
     slot = get_or_error(Assignment,
                         id=request.POST.get("assignmentID"),
@@ -64,6 +76,8 @@ def handle_post(request):
     :param request: the handled request
     """
 
+    action = ""
+
     try:
         if "action" not in request.POST:
             return HttpResponse(status=501,
@@ -79,14 +93,14 @@ def handle_post(request):
         if action == "doAutomaticAssignments":
             return handle_do_automatic_assignments()
         if action == "clearSlot":
-            return clear_slot(request)
+            return handle_clear_slot(request)
 
         return HttpResponse(status=501,
                             content=f"invalid request action: {action}. Please report this and the actions you took "
                                     f"to get this message to an administrator!")
 
     except Exception as e:
-        return HttpResponse(status=500, content=f"request caused an exception: \n {e}")
+        return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 
 def home_page(request):

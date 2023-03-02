@@ -83,7 +83,7 @@ html, body {
     margin-bottom: 20px;
 }
 
-a.default_look   {
+a.default_look {
     color: white;
 }
 
@@ -315,7 +315,7 @@ p {
     background-color: var(--red);
 }
 
-.broken-slot a{
+.broken-slot a {
     color: white;
 }
 
@@ -354,21 +354,25 @@ p {
     z-index: 10;
     animation-timing-function: linear;
 }
+
 #user-feedback.good {
     background-color: var(--lightgreen);
     animation-name: user-feedback-fade-in;
     animation-duration: 2s;
 }
+
 #user-feedback.bad {
     background-color: var(--red);
     animation-name: user-feedback-fade-in;
     animation-duration: 4s;
     color: #fff;
 }
+
 #user-feedback.info {
     opacity: 1;
     animation: none;
 }
+
 #user-feedback.wait {
     opacity: 1;
     animation: none;
@@ -653,6 +657,9 @@ p {
 
 #assignment-content .placeholder {
     background: var(--lightblue);
+    padding-top: 0;
+    padding-bottom: 0;
+
 }
 
 #assignment-content .placeholder.optional {
@@ -790,11 +797,11 @@ p {
 #statistics-window {
     position: fixed;
     bottom: 0;
-    right: 6px;
+    right: 50px;
     background-color: #fff;
     border: 1px solid black;
     border-radius: 3px;
-    width: 30%;
+    width: 700px;
 }
 
 #statistics-div {
@@ -810,6 +817,7 @@ p {
     padding-right: 3px;
     padding-left: 3px;
     padding-top: 30px;
+    width: 200px;
 }
 
 #statistics-numbers p {
@@ -818,7 +826,7 @@ p {
 }
 
 #statistics-chart {
-    min-width: 600px;
+    width: 500px;
 }
 
 #statistics-window span {

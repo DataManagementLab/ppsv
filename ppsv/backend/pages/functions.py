@@ -40,74 +40,6 @@ def create_json_response(success, msg):
     })
 
 
-def handle_get_score_data(request):
-    """Creates the data for the score and broken slots.
-
-        :return: The data for the score and broken slots.
-        :rtype: JsonResponse
-        """
-    application_query, assignment_query = get_filtered_query_from_request(request)
-
-    # score
-    score = 0
-    accepted_applications = []
-    for assignment in assignment_query.all():
-        for accepted_application in assignment.accepted_applications.all():
-            score += get_score_for_assigned(accepted_application.priority)
-            accepted_applications.append((accepted_application.group, accepted_application.collection_number))
-
-    for application in application_query.all():
-        if (application.group, application.collection_number) not in accepted_applications:
-            score += get_score_for_not_assigned()
-
-    # max score
-    max_score = 0
-    handled_applications = []
-    for application in application_query.all():
-        if (application.group, application.collection_number) not in handled_applications:
-            handled_applications.append((application.group, application.collection_number))
-            max_score += get_score_for_assigned(1)
-
-    # broken slots
-    broken_slots = get_broken_slots()
-
-    return JsonResponse({
-        "score": score,
-        "maxScore": max_score,
-        "brokenSlots": len(broken_slots[0]) + (len(broken_slots[1])),
-    })
-
-
-def get_filtered_query_from_request(request):
-    """
-    Filters the DB for the given request and returns to queries, one for applications and one for assignments
-    """
-    min_cp = int(request.POST.get('minCP'))
-    max_cp = int(request.POST.get('maxCP'))
-    course_types = request.POST.getlist('courseTypes[]')
-    faculties = request.POST.getlist('faculties[]')
-
-    if max_cp == -1:
-        assignment_query = Assignment.objects.filter(topic__course__cp__gte=min_cp,
-                                                     topic__course__type__in=course_types,
-                                                     topic__course__faculty__in=faculties,
-                                                     topic__course__term=Term.get_active_term())
-        application_query = TopicSelection.objects.filter(topic__course__cp__gte=min_cp,
-                                                          topic__course__type__in=course_types,
-                                                          topic__course__faculty__in=faculties,
-                                                          topic__course__term=Term.get_active_term())
-    else:
-        assignment_query = Assignment.objects.filter(topic__course__cp__range=(min_cp, max_cp),
-                                                     topic__course__type__in=course_types,
-                                                     topic__course__faculty__in=faculties,
-                                                     topic__course__term=Term.get_active_term())
-        application_query = TopicSelection.objects.filter(topic__course__cp__range=(min_cp, max_cp),
-                                                          topic__course__type__in=course_types,
-                                                          topic__course__faculty__in=faculties,
-                                                          topic__course__term=Term.get_active_term())
-    return application_query, assignment_query
-
-
 def possible_assignments_for_group(group_id, collection_number):
     """possible applications in collection
     :return: the number of possible applications of this group for the given collection
@@ -274,3 +206,83 @@ def get_group_data(group_id, collection_id):
             'collection': application_in_collection
         }
     )
+
+
+def get_score_and_chart_data(request):
+    min_cp = int(request.POST.get('minCP'))
+    max_cp = int(request.POST.get('maxCP'))
+    course_types = request.POST.getlist('courseTypes[]')
+    faculties = request.POST.getlist('faculties[]')
+
+    if max_cp == -1:
+        assignment_query = Assignment.objects.filter(topic__course__cp__gte=min_cp,
+                                                     topic__course__type__in=course_types,
+                                                     topic__course__faculty__in=faculties,
+                                                     topic__course__term=Term.get_active_term())
+        application_query = TopicSelection.objects.filter(topic__course__cp__gte=min_cp,
+                                                          topic__course__type__in=course_types,
+                                                          topic__course__faculty__in=faculties,
+                                                          topic__course__term=Term.get_active_term())
+    else:
+        assignment_query = Assignment.objects.filter(topic__course__cp__range=(min_cp, max_cp),
+                                                     topic__course__type__in=course_types,
+                                                     topic__course__faculty__in=faculties,
+                                                     topic__course__term=Term.get_active_term())
+        application_query = TopicSelection.objects.filter(topic__course__cp__range=(min_cp, max_cp),
+                                                          topic__course__type__in=course_types,
+                                                          topic__course__faculty__in=faculties,
+                                                          topic__course__term=Term.get_active_term())
+
+    data_statistic = {
+        'groups': {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            -1: 0
+        },
+        'students': {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            -1: 0
+        }
+    }
+    data_score = 0
+    data_max_score = 0
+    data_not_assigned = 0
+
+    for assignment in assignment_query:
+        for application in assignment.accepted_applications.all():
+            if application.priority > 5:
+                data_statistic['groups'][6] += 1
+                data_statistic['students'][6] += application.group.size
+            else:
+                data_statistic['groups'][application.priority] += 1
+                data_statistic['students'][application.priority] += application.group.size
+            data_score += get_score_for_assigned(application.priority)
+
+    all_assignments = []
+    for assignment in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
+        for application in assignment.accepted_applications.all():
+            all_assignments.append((application.group, application.collection_number))
+
+    for application in application_query:
+        data_max_score += get_score_for_assigned(1)
+        if not check_collection_satisfied(application):
+            data_statistic['groups'][-1] += 1
+            data_statistic['students'][-1] += application.group.size
+            data_score += get_score_for_not_assigned()
+            data_not_assigned += 1
+
+    return (
+        [i for i in data_statistic['groups'].values()],
+        [i for i in data_statistic['students'].values()],
+        data_score,
+        data_max_score,
+        data_not_assigned)

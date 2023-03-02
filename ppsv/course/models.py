@@ -12,6 +12,8 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from datetime import datetime, time
+from django.utils.timezone import make_aware
+
 
 
 class CourseType(models.Model):
@@ -51,9 +53,9 @@ class Term(models.Model):
     only on can be active"""
     name = models.CharField(max_length=200, verbose_name=_("title"))
     active_term = models.BooleanField(default=False, verbose_name=_("active term"))
-    registration_start = models.DateTimeField(default=datetime.combine(datetime.today(), time(23, 59, 59)),
+    registration_start = models.DateTimeField(default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
                                               verbose_name=_("registration Start"))
-    registration_deadline = models.DateTimeField(default=datetime.combine(datetime.today(), time(23, 59, 59)),
+    registration_deadline = models.DateTimeField(default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
                                                  verbose_name=_("registration Deadline"))
 
     class Meta:

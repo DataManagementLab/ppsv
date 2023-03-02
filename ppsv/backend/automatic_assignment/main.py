@@ -6,7 +6,7 @@ from .applications import Applications, init_applications
 from .assignments import Assignments, init_assignments
 from .strategy import Strategy
 
-iterations = 100
+iterations = 10
 running = False
 progress = 0
 eta = ""
