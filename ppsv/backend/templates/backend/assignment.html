@@ -38,11 +38,11 @@
                 </button>
             </div>
             <div id="overrideControlDiv" class="text-button">
-                <p>Always Override Slot:</p>
+                <p>Override Slot:</p>
                 <button id="overrideControl" onclick="overrideControl()"><i class="fa fa-times"></i></button>
             </div>
             <div id="ignoreAssigned" class="text-button">
-                <p>Always Override Application:</p>
+                <p>Override Application:</p>
                 <button id="ignoreAssigned" onclick="ignoreAssigned()"><i class="fa fa-times"></i></button>
             </div>
         </div>
@@ -162,24 +162,20 @@
     </div>
 
     <div id="statistics-window">
-        <span title="influenced by current active filters">Statistics<i class="icon fa fa-chevron-up"></i></span>
+        <span title="influenced by current active filters">Statistics<i class="icon fa fa-chevron-up rotation"></i></span>
         <div id="statistics-div">
             <div id="statistics-numbers">
                 <div>
-                    <p>
-                        Score:
-                    </p>
-                    <p id="statistics-score">
-                        {{ score }}/{{ maxscore }}
-                    </p>
+                    <p> Score: </p>
+                    <p id="statistics-score"></p>
                 </div>
                 <div>
-                    <p>
-                        Fehlerhafte Slots:
-                    </p>
-                    <p id="statistics-broken_slots">
-                        {{ broken_slots }}
-                    </p>
+                    <p> Broken Slots: </p>
+                    <p id="statistics-broken_slots"></p>
+                </div>
+                <div>
+                    <p> Open Applications (Groups): </p>
+                    <p id="statistics-not_assigned_groups"></p>
                 </div>
             </div>
             <div id="statistics-chart">
@@ -191,149 +187,133 @@
     <!-- Script block for statistics window -->
     <script>
         $(document).ready(function () {
+            const div = $('#statistics-div')
+            div.slideToggle(0)
             $('#statistics-window span').click(function () {
-                $('#statistics-div').slideToggle();
+                div.slideToggle();
                 $('#statistics-window span .icon').toggleClass('rotation');
+                updateStatistic();
             });
         });
 
         let statisticQueue = null;
 
         /**
-         * Handles an update of Statistic and Stats
+         * Schedules an update of Statistic and Stats
          */
         function updateStatistic() {
             if (statisticQueue != null) {
                 clearTimeout(statisticQueue);
             }
             statisticQueue = setTimeout(() => {
-                loadChart();
-                loadStats();
+                if ($('#statistics-div').attr('style') !== 'display: none;') {
+                    const statisticsChartDiv = $("#statistics-chart");
+                    const score = $('#statistics-score');
+                    const brokenSlots = $('#statistics-broken_slots');
+                    const notAssignedGroups = $('#statistics-not_assigned_groups');
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: 'getStatisticData',
+                            minCP: filterSettings.selectedCPMin,
+                            maxCP: filterSettings.selectedCPMax,
+                            courseTypes: filterSettings.selectedCourseTypes,
+                            faculties: filterSettings.selectedFaculties
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            function updateChart() {
+                                statisticsChartDiv.find('#bar-chart').remove();
+                                statisticsChartDiv.find('.chartjs-size-monitor').remove();
+                                let canvasElement = $('<canvas id="bar-chart"></canvas>');
+                                canvasElement.appendTo(statisticsChartDiv);
+
+                                const ctx = canvasElement[0].getContext("2d");
+
+                                const color1 = "#519BB2"
+                                const color2 = "#3F8098"
+                                const color3 = "#36738C"
+                                const color4 = "#2D657F"
+                                const color5 = "#245772"
+                                const color6 = "#20506C"
+                                const color7 = "#1B4965"
+
+                                const color1_1 = "#51cdb2";
+                                const color1_2 = "#47bea4";
+                                const color1_3 = "#3fb298";
+                                const color1_4 = "#35a28a";
+                                const color1_5 = "#2d967e";
+                                const color1_6 = "#248972";
+                                const color1_7 = "#1b7b65";
+
+                                const black = "#000000";
+
+                                new Chart(ctx, {
+                                    type: 'bar',
+                                    data: {
+                                        labels: ["1. Choice", "2. Choice", "3. Choice", "4. Choice", "5. Choice", "> 5. Choice", "No Assignment"],
+                                        datasets: [
+                                            {
+                                                label: 'Assigned Groups',
+                                                data: data.groups,
+                                                backgroundColor: [
+                                                    color1,
+                                                    color2,
+                                                    color3,
+                                                    color4,
+                                                    color5,
+                                                    color6,
+                                                    color7
+                                                ],
+                                                borderColor: [
+                                                    black,
+                                                    black,
+                                                    black,
+                                                    black,
+                                                    black,
+                                                    black,
+                                                    black
+                                                ],
+                                                borderWidth: [1, 1, 1, 1, 1, 1, 1]
+                                            },
+                                            {
+                                                label: 'Assigned Students',
+                                                data: data.students,
+                                                backgroundColor: [
+                                                    color1_1,
+                                                    color1_2,
+                                                    color1_3,
+                                                    color1_4,
+                                                    color1_5,
+                                                    color1_6,
+                                                    color1_7
+                                                ],
+                                                borderColor: black,
+                                                borderWidth: 1
+                                            }
+                                        ]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                    }
+                                });
+                            }
+
+                            function updateNumbers() {
+                                score.text(data["score"] + "/" + data["maxScore"]);
+                                brokenSlots.text(data["brokenSlots"]);
+                                notAssignedGroups.text(data["notAssignedGroups"])
+                            }
+
+                            updateNumbers();
+                            updateChart();
+                        }
+                    });
+                }
             }, 250);
         }
 
-        /**
-         * Loads the data of the assignment chart and displays it.
-         */
-        function loadChart() {
-            const statisticsChartDiv = $("#statistics-chart");
-
-            $.ajax({
-                data: {
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                    action: 'getChartData',
-                    minCP: filterSettings.selectedCPMin,
-                    maxCP: filterSettings.selectedCPMax,
-                    courseTypes: filterSettings.selectedCourseTypes,
-                    faculties: filterSettings.selectedFaculties
-                },
-                method: "POST",
-                dataType: "json",
-                success: function (data) {
-                    let barHidden = statisticsChartDiv.find('#bar-chart').is(':hidden');
-                    statisticsChartDiv.find('#bar-chart').remove();
-                    statisticsChartDiv.find('.chartjs-size-monitor').remove();
-                    let canvasElement = $('<canvas id="bar-chart"></canvas>');
-                    canvasElement.appendTo(statisticsChartDiv);
-
-                    const ctx = canvasElement[0].getContext("2d");
-
-                    const color1 = "#519BB2"
-                    const color2 = "#3F8098"
-                    const color3 = "#36738C"
-                    const color4 = "#2D657F"
-                    const color5 = "#245772"
-                    const color6 = "#20506C"
-                    const color7 = "#1B4965"
-
-                    const color1_1 = "#51cdb2";
-                    const color1_2 = "#47bea4";
-                    const color1_3 = "#3fb298";
-                    const color1_4 = "#35a28a";
-                    const color1_5 = "#2d967e";
-                    const color1_6 = "#248972";
-                    const color1_7 = "#1b7b65";
-
-                    const black = "#000000";
-
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ["1. Choice", "2. Choice", "3. Choice", "4. Choice", "5. Choice", "> 5. Choice", "No Assignment"],
-                            datasets: [
-                                {
-                                    label: 'Assigned Groups',
-                                    data: data.groups,
-                                    backgroundColor: [
-                                        color1,
-                                        color2,
-                                        color3,
-                                        color4,
-                                        color5,
-                                        color6,
-                                        color7
-                                    ],
-                                    borderColor: [
-                                        black,
-                                        black,
-                                        black,
-                                        black,
-                                        black,
-                                        black,
-                                        black
-                                    ],
-                                    borderWidth: [1, 1, 1, 1, 1, 1, 1]
-                                },
-                                {
-                                    label: 'Assigned Students',
-                                    data: data.students,
-                                    backgroundColor: [
-                                        color1_1,
-                                        color1_2,
-                                        color1_3,
-                                        color1_4,
-                                        color1_5,
-                                        color1_6,
-                                        color1_7
-                                    ],
-                                    borderColor: black,
-                                    borderWidth: 1
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                        }
-                    });
-                    if (barHidden) canvasElement.hide();
-
-                }
-            });
-        }
-
-        /**
-         * Loads the data for the score of the current assignment and amount of slots with errors
-         */
-        function loadStats() {
-            const score = $('#statistics-score');
-            const brokenSlots = $('#statistics-broken_slots');
-            $.ajax({
-                data: {
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                    action: 'getScoreData',
-                    minCP: filterSettings.selectedCPMin,
-                    maxCP: filterSettings.selectedCPMax,
-                    courseTypes: filterSettings.selectedCourseTypes,
-                    faculties: filterSettings.selectedFaculties
-                },
-                method: "POST",
-                dataType: "json",
-                success: function (data) {
-                    score.text(data["score"] + "/" + data["maxScore"]);
-                    brokenSlots.text(data["brokenSlots"]);
-                }
-            });
-        }
     </script>
 
     <!-- Script block for group details -->
@@ -688,6 +668,7 @@
 
                     if (exchangeItems.size === 0) {
                         revert = true;
+                        infoPopup("bad", "Can only exchange with groups that are the same size or larger");
                     } else {
                         let dialog = $('<div id="dialog-assignment-exchange"></div>');
                         let first = true;

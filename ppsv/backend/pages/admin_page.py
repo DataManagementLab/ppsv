@@ -76,7 +76,7 @@ def handle_remove_broken_slots():
         try:
             slot.clean()
         except ValidationError:
-            slot.remove()
+            slot.delete()
         else:
             if not slot.assigned_student_to_slot_count == 0 and \
                     slot.assigned_student_to_slot_count < slot.topic.min_slot_size:

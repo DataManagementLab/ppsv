@@ -4,10 +4,10 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.models import Assignment, AcceptedApplications, TermFinalization
-from backend.pages.functions import handle_get_score_data, possible_assignments_for_group, \
+from backend.pages.functions import possible_assignments_for_group, \
     get_or_none, \
-    check_collection_satisfied, create_json_response, get_or_error, get_group_data
-from backend.pages.multiple_page_post import handle_get_chart_data
+    check_collection_satisfied, create_json_response, get_or_error, get_group_data, get_broken_slots, \
+    get_score_and_chart_data
 from course.models import TopicSelection, Topic, CourseType, Course, Term
 
 
@@ -362,6 +362,20 @@ def handle_change_finalized_value_application(request):
 
 # -------MAIN POST Handling---------- #
 
+def handle_get_statistic_data(request):
+    data = get_score_and_chart_data(request)
+    broken_slots = get_broken_slots()
+
+    return JsonResponse({
+        'groups': data[0],
+        'students': data[1],
+        "score": data[2],
+        "maxScore": data[3],
+        "brokenSlots": len(broken_slots[0]) + (len(broken_slots[1])),
+        "notAssignedGroups": data[4]
+    })
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -370,6 +384,7 @@ def handle_post(request):
     :param request: the handled request
 
     """
+    action = ""
     try:
         if "action" not in request.POST:
             return HttpResponse(status=501,
@@ -390,10 +405,8 @@ def handle_post(request):
             return handle_remove_assignment(request)
         if action == "removeOtherAssignment":
             return handle_remove_other_assignment(request)
-        if action == "getChartData":
-            return handle_get_chart_data(request)
-        if action == "getScoreData":
-            return handle_get_score_data(request)
+        if action == "getStatisticData":
+            return handle_get_statistic_data(request)
         if action == "selectTopic":
             return handle_select_topic(request)
         if action == "loadGroupData":
@@ -408,7 +421,7 @@ def handle_post(request):
                                     f"to get this message to an administrator!")
 
     except Exception as e:
-        return HttpResponse(status=500, content=f"request caused an exception: \n {e}")
+        return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 
 # ----------Site rendering--------- #

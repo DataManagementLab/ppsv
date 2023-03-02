@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+
 from datetime import timedelta
 
 from course.models import Topic, Group, CourseType, Course, Student, TopicSelection, Term
