@@ -173,7 +173,7 @@ def run():
     # --- TERM WISE22/23 --- #
 
     wise22_term_registration_start = make_aware(datetime(2022, 11, 1, 0, 0, 0))
-    wise22_term_registration_deadline = make_aware(datetime(2022, 11, 31, 23, 59, 59))
+    wise22_term_registration_deadline = make_aware(datetime(2022, 11, 30, 23, 59, 59))
     print("Creating Term WiSe22")
     wise22 = Term.objects.create(name="WiSe22",
                                  registration_start=wise22_term_registration_start,
