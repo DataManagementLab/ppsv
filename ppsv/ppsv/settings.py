@@ -18,16 +18,15 @@ from django.contrib.messages import constants as messages
 
 # tags for different types of messages
 MESSAGE_TAGS = {
-        messages.DEBUG: 'alert-secondary',
-        messages.INFO: 'alert-info',
-        messages.SUCCESS: 'alert-success',
-        messages.WARNING: 'alert-warning',
-        messages.ERROR: 'alert-danger',
- }
+    messages.DEBUG: 'alert-secondary',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -39,7 +38,6 @@ SECRET_KEY = 'django-insecure-+9vh(4idq8mj%c%qn(9toot-x2(4_n$64z#l=v59e0!h4q!aaj
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 #    'frontend.apps.FrontendConfig',
@@ -89,7 +87,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ppsv.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -99,7 +96,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'dbBroken.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -118,7 +114,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -170,4 +165,3 @@ LOGIN_URL = '/login'
 # Redirect URLs after logging in or out
 LOGIN_REDIRECT_URL = ''
 LOGOUT_REDIRECT_URL = "frontend:homepage"
-

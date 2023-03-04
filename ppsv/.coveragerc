@@ -1,0 +1,15 @@
+[report]
+show_missing = true
+omit =
+    */migrations/*
+    */__init__.py
+    */admin.py
+    */apps.py
+    */automatic_assignment/*
+    */tests.py
+    ppsv/*
+    manage.py
+    */course/*
+    */frontend/*
+    */views.py
+    */urls.py
