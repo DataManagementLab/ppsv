@@ -27,7 +27,8 @@ custom-tests:
     - python3 manage.py check
     - python3 manage.py makemigrations
     - python3 manage.py migrate
-    - python3 manage.py test --parallel 2 -v 3
+    - coverage run --source='.' manage.py test
+    - coverage report
 
 deploy-prod:
   stage: deploy

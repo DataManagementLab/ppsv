@@ -6,3 +6,4 @@ media/
 /ppsv/dbTestData.sqlite3
 /venv/
 /static/
+.coverage
