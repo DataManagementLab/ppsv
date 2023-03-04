@@ -189,7 +189,6 @@ def get_group_data(group_id, collection_id):
             'members': members,
             'assigned': assignment.topic.id if assignment is not None else None,
             'collection': application_in_collection,
-            'groupID': group.pk
         }
     )
 

@@ -396,8 +396,8 @@ class Group(models.Model):
         """
         collections = {}
         for application in TopicSelection.objects.filter(group=self,
-                                                         topic__course__term=Term.get_active_term()).order_by(
-            "collection_number", "priority"):
+                                                         topic__course__term=Term.get_active_term()) \
+                .order_by("collection_number", "priority"):
             if application.collection_number in collections:
                 collections[application.collection_number].append(application)
             else:

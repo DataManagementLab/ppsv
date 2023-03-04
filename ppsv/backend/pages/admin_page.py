@@ -11,6 +11,7 @@ from ..models import Assignment, TermFinalization
 
 
 def handle_get_assignment_progress():
+    """returns the status of the automatic assignment"""
     return JsonResponse({
         "running": automatic_assigment.running,
         "progress": automatic_assigment.progress,
@@ -19,6 +20,8 @@ def handle_get_assignment_progress():
 
 
 def handle_finalize(request):
+    """locks all slot, if possible (no errors in any slot)
+    """
     if request.POST.get("finalize") == 'true':
         for slot in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
             try:
@@ -57,6 +60,7 @@ def handle_finalize(request):
 
 
 def handle_start_automatic_assignment(request):
+    """starts an automatic assignment if it is not running"""
     override = request.POST.get('override') == 'true'
     if not automatic_assigment.running:
         automatic_assigment.start_algo(override)
@@ -64,6 +68,7 @@ def handle_start_automatic_assignment(request):
 
 
 def handle_change_term(request):
+    """changes the active term"""
     old_active_term = Term.get_active_term()
     if old_active_term != None:
         old_active_term.active_term = False
@@ -75,6 +80,7 @@ def handle_change_term(request):
 
 
 def handle_remove_broken_slots():
+    """removes all broken slots from the database"""
     for slot in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
         try:
             slot.clean()
@@ -94,12 +100,12 @@ def handle_post(request):
     raises a ValueError if the action wasn't specified correctly.
 
     :param request: the handled request
-
     """
     try:
         if "action" not in request.POST:
             return HttpResponse(status=501,
-                                content="POST request didn't specify an action. Please report this and the actions you took to get this message to the administrator!")
+                                content="POST request didn't specify an action. Please report this and the actions you"
+                                        " took to get this message to the administrator!")
 
         action = request.POST.get("action")
 
@@ -115,7 +121,8 @@ def handle_post(request):
             return handle_remove_broken_slots()
 
         return HttpResponse(status=501,
-                            content=f"invalid request action: {action}. Please report this and the actions you took to get this message to an administrator!")
+                            content=f"invalid request action: {action}. Please report this and the actions you took to "
+                                    f"get this message to an administrator!")
     except Exception as e:
         print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request caused an exception: \n {e}")

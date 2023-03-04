@@ -23,6 +23,10 @@
 {% endblock %}
 
 {% block content %}
+    <style>
+
+    </style>
+
     <div id="user-feedback"></div>
 
     <div id="assignment-topBar" class="topBar">
@@ -32,10 +36,12 @@
                     <input id="searchbar" type="text" placeholder="{% translate "Search course/topic" %}">
                 </label>
             </div>
-            <div id="filterDiv" class="text-button">
-                <p>Filter: </p>
+            <div id="filterDiv" class="button-text">
                 <button id="filterButton" onclick="openFilterModal()"><i class="fa fa-filter" aria-hidden="true"></i>
+                    Filter
+
                 </button>
+
             </div>
             <div id="overrideControlDiv" class="text-button">
                 <p>Override Slot:</p>
@@ -44,6 +50,10 @@
             <div id="ignoreAssigned" class="text-button">
                 <p>Override Application:</p>
                 <button id="ignoreAssigned" onclick="ignoreAssigned()"><i class="fa fa-times"></i></button>
+            </div>
+            <div id="openFirstAppGroup" class="text-button">
+                <p>Open first open Application of group:</p>
+                <button id="openFirstAppGroup" onclick="openFirstAppGroup()"><i class="fa fa-times"></i></button>
             </div>
         </div>
     </div>
@@ -187,10 +197,41 @@
 
     </div>
 
-    <div id="statistics-window">
-        <span title="influenced by current active filters">Statistics<i
-                class="icon fa fa-chevron-up rotation"></i></span>
-        <div id="statistics-div">
+    <div id="group-by-prio" class="bottom-tab">
+        <span title="not influenced by current active filters">
+            Groups by currently assigned priority
+            <i class="icon fa fa-chevron-up rotation"></i>
+        </span>
+        <div class="tabs-div bottom-tab-content">
+            <div class="tabs-sel">
+                <button class="tablinks active" onclick="openTab(event,0)">0</button>
+                <button class="tablinks" onclick="openTab(event,1)">1</button>
+                <button class="tablinks" onclick="openTab(event,2)">2</button>
+                <button class="tablinks" onclick="openTab(event,3)">3</button>
+                <button class="tablinks" onclick="openTab(event,4)">4</button>
+                <button class="tablinks" onclick="openTab(event,5)">5</button>
+                <button class="tablinks" onclick="openTab(event,6)">>5</button>
+            </div>
+            <div class="tabs-tabs">
+                {% for key, value in group_by_prio.items %}
+                    <div class="tab inner-list" id="group-by-prio-{{ key }}">
+                        {% for group_id, collection_number in value %}
+                            <div class="inner-list-item"
+                                 onclick="getGroupDetails({{ group_id }},{{ collection_number }})">
+                                Group {{ group_id }} Collection {{ collection_number }} </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div id="statistics-window" class="bottom-tab">
+        <span title="influenced by current active filters">
+            Statistics
+            <i class="icon fa fa-chevron-up rotation"></i>
+        </span>
+        <div id="statistics-div" class="bottom-tab-content">
             <div id="statistics-numbers">
                 <div>
                     <p> Score: </p>
@@ -342,8 +383,44 @@
         }
     </script>
 
+    <!-- Script block for Groups by Priority -->
+    <script>
+        $(document).ready(function () {
+            const div = $('#group-by-prio .bottom-tab-content')
+            div.slideToggle(0)
+            $('#group-by-prio span').click(function () {
+                div.slideToggle();
+                $('#group-by-prio span .icon').toggleClass('rotation');
+                updateStatistic();
+            });
+            $('#group-by-prio-0').show()
+        })
+
+        function openTab(event, index) {
+            $('.tab').each((index, element) => {
+                $(element).hide();
+            });
+
+            $('.tablinks').each((index, element) => {
+                $(element).removeClass('active');
+            });
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            $('#group-by-prio-' + index).show();
+            $(event.currentTarget).addClass('active');
+        }
+    </script>
+
     <!-- Script block for group details -->
     <script>
+        let openFirstAppOfGroup = false;
+
+        function openFirstAppGroup() {
+            const button = $('#openFirstAppGroup');
+            button.toggleClass('selected');
+            openFirstAppOfGroup = !!button.hasClass('selected');
+        }
+
         $(document).ready(function () {
             $('#assignment-content #groupdetails .section-inner p').on('click', function () {
                 let innerlist = $(this).siblings('.inner-list').first();
@@ -418,17 +495,18 @@
                     },
                     method: "POST",
                     dataType: "json",
-                    success: handleGroupDetailServerResponse()
+                    success: handleGroupDetailServerResponse(groupID, collectionID)
                 }
             );
         }
 
         /**
          * Function for handling the server response of group details
+         * Opens first free topic if option is selected
          */
-        function handleGroupDetailServerResponse() {
+        function handleGroupDetailServerResponse(groupID, collectionID) {
             return function (data) {
-                $('#groupdetails span').text('Group Details: Group' + data['groupID'])
+                $('#groupdetails span').text('Group Details: Group ' + groupID + " Collection " + collectionID)
                 let groupList = $('#groupdetails .members .inner-list');
                 groupList.html('');
                 data['members'].forEach(function (member) {
@@ -437,6 +515,7 @@
                 });
                 let choiceList = $('#groupdetails .choices .inner-list');
                 choiceList.html('');
+                let opened = !openFirstAppOfGroup
                 data['collection'].forEach(function (choice) {
                     let classes = '';
                     if (choice['freeSlots'] < 1)
@@ -464,6 +543,10 @@
                         div.addClass('highlight');
                     });
                     choiceList.append(html);
+                    if (!opened && choice['freeSlots']) {
+                        opened = true;
+                        handleTopicAdd(choice['id']);
+                    }
                 })
                 updateURL(null, data['selectedGroup'], data['selectedCollection'])
             }
@@ -1332,6 +1415,9 @@
          * @return true when the topic was added, otherwise false
          */
         function handleTopicAdd(topicID) {
+            if (shownTopics.has(topicID)) {
+                return;
+            }
 
             if (shownTopics.size >= 20) {
                 infoPopup("info", "A maximum of 20 Topics can be displayed at once.\n Please note that topics with a large number of applications could lead to slow behaviour");
@@ -1984,4 +2070,6 @@
             timeout: 10000
         })
     </script>
+
+
 {% endblock content %}

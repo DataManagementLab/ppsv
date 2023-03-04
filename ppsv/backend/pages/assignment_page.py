@@ -1,4 +1,3 @@
-import copy
 import time
 import traceback
 
@@ -368,8 +367,6 @@ def handle_change_finalized_value_application(request):
     })
 
 
-# -------MAIN POST Handling---------- #
-
 def handle_get_statistic_data(request):
     data = get_score_and_chart_data(request)
     broken_slots = get_broken_slots()
@@ -384,6 +381,7 @@ def handle_get_statistic_data(request):
 
 
 def handle_get_topics_filtered(request):
+    """returns a list of topicIDs of the applied filter"""
     min_cp = int(request.POST.get('minCP'))
     max_cp = int(request.POST.get('maxCP'))
     course_types = request.POST.getlist('courseTypes[]')
@@ -424,6 +422,7 @@ def handle_get_topics_filtered(request):
 
 
 def handle_get_bulk_applications_update(request):
+    """returns the status for all applications of the request"""
     app_ids = request.POST.getlist('applicationIDs[]')
     app_data = {}
     for app in TopicSelection.objects.filter(pk__in=app_ids):
@@ -463,7 +462,6 @@ def handle_post(request):
             return handle_remove_assignment(request)
         if action == "removeOtherAssignment":
             return handle_remove_other_assignment(request)
-
         if action == "getStatisticData":
             return handle_get_statistic_data(request)
         if action == "selectTopic":
@@ -487,7 +485,7 @@ def handle_post(request):
 
 
 # ----------Site rendering--------- #
-def render_site(request, args=None):
+def render_site(request):
     """
     handles the rendering of the assignment page.
     parses additional information in the address and handles it accordingly
@@ -498,20 +496,18 @@ def render_site(request, args=None):
     :return: The rendered site
     :rtype: render() object
     """
-    if args is None:
-        args = {}
+    args = {}
     template_name = 'backend/assignment.html'
     topics_of_courses = []
     topics = []
     last_course = ""
-    if Topic.objects.exists():
-        for topic in Topic.objects.filter(max_slots__gt=0, course__term=Term.get_active_term()):
-            if last_course != topic.course.title:
-                last_course = topic.course.title
-                topics = []
-                topics_of_course = {"course": topic.course, "topics": topics}
-                topics_of_courses.append(topics_of_course)
-            topics.append(topic)
+    for topic in Topic.objects.filter(max_slots__gt=0, course__term=Term.get_active_term()):
+        if last_course != topic.course.title:
+            last_course = topic.course.title
+            topics = []
+            topics_of_course = {"course": topic.course, "topics": topics}
+            topics_of_courses.append(topics_of_course)
+        topics.append(topic)
 
     course_types = []
     for course_type in CourseType.objects.all():
@@ -522,6 +518,17 @@ def render_site(request, args=None):
         if course.faculty not in faculties:
             faculties.append(course.faculty)
     faculties.sort()
+
+    group_by_prio = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+    accepted_application_dict = AcceptedApplications.get_collection_dict()
+    for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term()):
+        if application.dict_key in accepted_application_dict:
+            if application.priority > 5:
+                group_by_prio[6].append((application.group.id, application.collection_number))
+            else:
+                group_by_prio[application.priority].append((application.group.id, application.collection_number))
+        else:
+            group_by_prio[0].append((application.group.id, application.collection_number))
 
     # load information from url
     topic_ids = False
@@ -542,6 +549,7 @@ def render_site(request, args=None):
     args["topicids"] = topic_ids
     args["groupid"] = group_id
     args["collectionid"] = collection_id
+    args["group_by_prio"] = group_by_prio
 
     return render(request, template_name, args)
 

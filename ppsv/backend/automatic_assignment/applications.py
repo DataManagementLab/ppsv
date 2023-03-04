@@ -1,7 +1,7 @@
 import copy
 
 from backend.automatic_assignment.my_dict_list import MyDictList
-from backend.models import Assignment, AcceptedApplications
+from backend.models import AcceptedApplications
 from course.models import TopicSelection, Topic, Term
 
 init_applications_for_topic = MyDictList()
