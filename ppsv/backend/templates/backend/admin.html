@@ -10,6 +10,19 @@
     Admin Control
 {% endblock title %}
 
+{% block additional_buttons %}
+    {% if user.is_authenticated %}
+        {% if user.is_staff %}
+            <a href="{% url 'backend:home_page' %}"
+               class="adminbtn btn btn-danger navbar-inline-list">
+                Home Page </a>
+            <a href="{% url 'backend:assignment_page' %}"
+               class="adminbtn btn btn-danger navbar-inline-list">
+                Assignment Page </a>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
 {% block content %}
     <h1>Custom Admin Actions</h1>
     <div id="admin-actions">
@@ -17,13 +30,20 @@
             <span>Finalisation Actions</span>
             <div id="automaticAssignmentDiv" class="text-button">
                 <button id="automaticAssignment" class="{% if running %} running {% endif %}"
-                        onclick="automaticAssignment()"><i
+                        onclick="automaticAssignment(true)"><i
                         class="fa fa-check" aria-hidden="true"></i>
                 </button>
-                <p>Start an automatic Assignment</p>
+                <p>Start an automatic Assignment with Override</p>
                 <div id="automaticAssignmentProgress">
                     <div class="text"></div>
                 </div>
+            </div>
+            <div id="automaticAssignmentNoOverrideDiv" class="text-button">
+                <button id="automaticAssignmentNoOverride" class="{% if running %} running {% endif %}"
+                        onclick="automaticAssignment(false)"><i
+                        class="fa fa-check" aria-hidden="true"></i>
+                </button>
+                <p>Start an automatic Assignment without Override</p>
             </div>
             <div id="finalizeAllAssignmentsDiv" class="text-button">
                 <button id="finalizeAllAssignments" onclick="finalizeAllAssignments(true)"><i
@@ -69,26 +89,42 @@
     <script>
         let assignmentRunning = {% if running %} true {% else %} false {% endif %}
 
-        function automaticAssignment() {
+        function automaticAssignment(override) {
             if (assignmentRunning) {
                 window.alert("This process is already running");
-            } else {
-                startAutoUpdate();
-                $('#automaticAssignmentProgress').show();
-                $('#filterButton').addClass('running');
-                $.ajax({
-                    data: {
-                        csrfmiddlewaretoken: "{{ csrf_token }}",
-                        action: "startAutomaticAssignment",
-                    },
-                    method: "POST",
-                });
+                return;
             }
+            if (override) {
+                if (!confirm("This will override all non locked slots and applications if it finds a better result!\nDo you want to continue?")) {
+                    return
+                }
+            }
+            startAutoUpdate();
+
+            assignmentRunning = true;
+            $('#automaticAssignmentProgress').show();
+            $('#automaticAssignment').addClass('running');
+            $('#automaticAssignment i').addClass('fa-spin');
+            $('#automaticAssignmentNoOverride').addClass('running');
+            $('#automaticAssignmentNoOverride i').addClass('fa-spin');
+
+
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: "startAutomaticAssignment",
+                    override: override
+                },
+                method: "POST",
+            });
         }
+
 
         let autoQuery
 
         function startAutoUpdate() {
+            if (autoQuery != null)
+                return
             autoQuery = setInterval(function () {
                 $.ajax({
                     data: {
@@ -98,12 +134,20 @@
                     method: "POST",
                     dataType: "json",
                     success: (data) => {
+
                         $("#automaticAssignmentProgress").progressbar("value", data['progress']);
                         $("#automaticAssignmentProgress .text").text(data['progress'] + "%     " + data['eta']);
                         if (!data['running']) {
-                            clearInterval(autoQuery);
-                            $('#filterButton').removeClass('running');
+                            $('#automaticAssignment').removeClass('running');
+                            $('#automaticAssignment i').removeClass('fa-spin');
+                            $('#automaticAssignmentNoOverride').removeClass('running');
+                            $('#automaticAssignmentNoOverride i').removeClass('fa-spin');
+
                             $('#automaticAssignmentProgress').hide();
+                            assignmentRunning = false
+
+                            clearInterval(autoQuery);
+                            autoQuery = null;
                         }
                     }
                 });
@@ -143,7 +187,10 @@
                 });
                 if (assignmentRunning) {
                     $('#automaticAssignmentProgress').show();
-                    $('#filterButton').addClass('running');
+                    $('#automaticAssignment').addClass('running');
+                    $('#automaticAssignment i').addClass('fa-spin');
+                    $('#automaticAssignmentNoOverride').addClass('running');
+                    $('#automaticAssignmentNoOverride i').addClass('fa-spin');
                     startAutoUpdate();
                 } else {
                     $('#automaticAssignmentProgress').hide();

@@ -15,7 +15,6 @@ from datetime import datetime, time
 from django.utils.timezone import make_aware
 
 
-
 class CourseType(models.Model):
     """CourseType
 
@@ -55,8 +54,9 @@ class Term(models.Model):
     active_term = models.BooleanField(default=False, verbose_name=_("active term"))
     registration_start = models.DateTimeField(default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
                                               verbose_name=_("registration Start"))
-    registration_deadline = models.DateTimeField(default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
-                                                 verbose_name=_("registration Deadline"))
+    registration_deadline = models.DateTimeField(
+        default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
+        verbose_name=_("registration Deadline"))
 
     class Meta:
         """Meta options
@@ -395,7 +395,9 @@ class Group(models.Model):
         """collections of this group as dictionary order by top to low priority
         """
         collections = {}
-        for application in TopicSelection.objects.filter(group=self, topic__course__term=Term.get_active_term()).order_by("collection_number", "priority"):
+        for application in TopicSelection.objects.filter(group=self,
+                                                         topic__course__term=Term.get_active_term()).order_by(
+            "collection_number", "priority"):
             if application.collection_number in collections:
                 collections[application.collection_number].append(application)
             else:
@@ -464,6 +466,10 @@ class TopicSelection(models.Model):
     collection_number = models.IntegerField(verbose_name=_("collection number"), default=1)
 
     @property
+    def dict_key(self):
+        return self.group, self.collection_number
+
+    @property
     def get_display(self):
         """String representation
         Returns all members of the group.
@@ -481,7 +487,22 @@ class TopicSelection(models.Model):
         :return: all applications of the group of this application that are in the same collection
         :rtype: QuerySet
         """
-        return TopicSelection.objects.filter(group=self.group, collection_number=self.collection_number, topic__course__term=Term.get_active_term())
+        return TopicSelection.objects.filter(group=self.group, collection_number=self.collection_number,
+                                             topic__course__term=Term.get_active_term())
+
+    @classmethod
+    def get_collection_dict(cls):
+        """
+        :return: a dict with keys (group, collection_number) and values "list of all applications
+        :rtype: QuerySet
+         """
+        collection_dict = {}
+        for group in Group.objects.all():
+            for application in cls.objects.filter(group=group, topic__course__term=Term.get_active_term()):
+                if (group, application.collection_number) not in collection_dict:
+                    collection_dict[(group, application.collection_number)] = []
+                collection_dict[(group, application.collection_number)].append(application)
+        return collection_dict
 
     get_display.fget.short_description = _("group")
 
@@ -504,7 +525,7 @@ class TopicSelection(models.Model):
         :return: the string representation of this object
         :rtype: str
         """
-        return '{}, {}'.format(self.group, self.topic)
+        return '{}, {}, #{}'.format(self.group, self.topic, self.priority)
 
 
 class TextSaves(models.Model):

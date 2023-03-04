@@ -1,3 +1,5 @@
+import traceback
+
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect, render
@@ -54,9 +56,10 @@ def handle_finalize(request):
         })
 
 
-def handle_start_automatic_assignment():
+def handle_start_automatic_assignment(request):
+    override = request.POST.get('override') == 'true'
     if not automatic_assigment.running:
-        automatic_assigment.main(True)
+        automatic_assigment.start_algo(override)
     return HttpResponse(status=205)
 
 
@@ -105,7 +108,7 @@ def handle_post(request):
         if action == "finalize":
             return handle_finalize(request)
         if action == "startAutomaticAssignment":
-            return handle_start_automatic_assignment()
+            return handle_start_automatic_assignment(request)
         if action == "changeTerm":
             return handle_change_term(request)
         if action == "removeBrokenSlots":
@@ -114,6 +117,7 @@ def handle_post(request):
         return HttpResponse(status=501,
                             content=f"invalid request action: {action}. Please report this and the actions you took to get this message to an administrator!")
     except Exception as e:
+        print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request caused an exception: \n {e}")
 
 
@@ -129,8 +133,8 @@ def render_site(request):
     """
     args = {}
     template_name = 'backend/admin.html'
-    running = False
-    args["running"] = running
+
+    args["running"] = automatic_assigment.running
     args["terms"] = list(Term.objects.all())
     args["activeTerm"] = Term.get_active_term()
 

@@ -11,14 +11,15 @@ def run():
     # --- CONFIG --- #
     default_course_per_term = 30
     default_topic_per_course = 5
-    default_max_group_size = 5
+    default_max_group_size = 5  # this is also the maximum slot size
     default_special_course_per_term = 5
-    default_topic_per_special_course = 3
+    default_topic_per_special_course = 3  # this is also the amount of range of the slots (from 1 to this number)
     default_course_types = 4
     default_students = 100  # should be somewhat in the range of default_course_per_term * default_topic_per_course
     default_cp_range = (1, 12)
     default_applications_per_student_range = (4, 8)
     default_applications_per_group_range = (1, 3)
+    default_maximum_single_applications_for_group_topic_per_slot = 2
 
     course_types = []
     print("Creating Course Types")
@@ -73,24 +74,24 @@ def run():
     sose22 = Term.objects.create(name="SoSe22",
                                  registration_start=sose22_term_registration_start,
                                  registration_deadline=sose22_term_registration_deadline,
-                                 active_term=True)
+                                 )
     sose22_topics = []
     sose22_special_topics = {}
-    for j in range(default_course_per_term):
-        print(f"Creating Courses: {j}/{default_course_per_term}\r", sep=' ', end='', flush=True)
-        temp_course = Course.objects.create(title=f"Course SoSe22 {j}",
-                                            type=course_types[j % len(course_types)],
+    for i in range(default_course_per_term):
+        print(f"Creating Courses: {i}/{default_course_per_term}\r", sep=' ', end='', flush=True)
+        temp_course = Course.objects.create(title=f"Course SoSe22 {i}",
+                                            type=course_types[i % len(course_types)],
                                             term=sose22,
                                             registration_start=sose22_term_registration_start,
                                             registration_deadline=sose22_term_registration_deadline,
-                                            description=f"Description of Course SoSe22{j}",
+                                            description=f"Description of Course SoSe22{i}",
                                             cp=random.randint(default_cp_range[0], default_cp_range[1]),
-                                            faculty=faculties[j % len(faculties)],
-                                            organizer=f"Organizer of Course SoSe22 {j}",
+                                            faculty=faculties[i% len(faculties)],
+                                            organizer=f"Organizer of Course SoSe22 {i}",
                                             )
         for j in range(default_topic_per_course):
             sose22_topics.append(Topic.objects.create(course=temp_course,
-                                                      title=f"Topic {j} Course SoSe22 {j}",
+                                                      title=f"Topic {j} Course SoSe22 {i}",
                                                       max_slots=1,
                                                       min_slot_size=1,
                                                       max_slot_size=1,
@@ -98,17 +99,17 @@ def run():
                                                       ))
     print("Creating Courses: Done!                      ")
 
-    for j in range(default_special_course_per_term):
-        print(f"Creating special Courses: {j}/{default_special_course_per_term}\r", sep=' ', end='', flush=True)
-        temp_course = Course.objects.create(title=f"Special Course SoSe22 {j}",
-                                            type=course_types[j % len(course_types)],
+    for i in range(default_special_course_per_term):
+        print(f"Creating special Courses: {i}/{default_special_course_per_term}\r", sep=' ', end='', flush=True)
+        temp_course = Course.objects.create(title=f"Special Course SoSe22 {i}",
+                                            type=course_types[i % len(course_types)],
                                             term=sose22,
                                             registration_start=sose22_term_registration_start,
                                             registration_deadline=sose22_term_registration_deadline,
-                                            description=f"Description of Special Course SoSe22 {j}",
+                                            description=f"Description of Special Course SoSe22 {i}",
                                             cp=random.randint(default_cp_range[0], default_cp_range[1]),
-                                            faculty=faculties[j % len(faculties)],
-                                            organizer=f"Organizer of Special Course SoSe22 {j}",
+                                            faculty=faculties[i % len(faculties)],
+                                            organizer=f"Organizer of Special Course SoSe22 {i}",
                                             )
 
         for j in range(default_topic_per_special_course):
@@ -116,7 +117,7 @@ def run():
             temp_min_slot_size = random.randint(1, temp_max_slot_size)
 
             temp_topic = Topic.objects.create(course=temp_course,
-                                              title=f"Topic {j} Special Course SoSe22 {j}",
+                                              title=f"Topic {j} Special Course SoSe22 {i}",
                                               max_slots=j + 1,
                                               min_slot_size=temp_min_slot_size,
                                               max_slot_size=temp_max_slot_size,
@@ -131,19 +132,23 @@ def run():
 
     # --- APPLICATIONS TERM SOSE22 --- #
 
-    # TODO multiple collections
     students_of_topic = {}
     for i, group in enumerate(groups[1]):
         print(f"Creating default Applications for Group: {i}/{len(groups[1])}\r", sep=' ', end='', flush=True)
         for j, topic in enumerate(random.sample(sose22_topics, random.randint(default_applications_per_student_range[0],
                                                                               default_applications_per_student_range[1]
                                                                               + 1))):
+
             TopicSelection.objects.create(group=group,
                                           topic=topic,
                                           priority=j + 1)
             if topic not in students_of_topic:
                 students_of_topic[topic] = []
             students_of_topic[topic].extend(group.students.all())
+
+            if topic.max_slot_size > 1 and len(
+                    students_of_topic[topic]) == default_maximum_single_applications_for_group_topic_per_slot:
+                sose22_topics.remove(topic)
 
     print("Creating default Applications for Group: Done!                      ")
 
@@ -181,21 +186,21 @@ def run():
                                  active_term=True)
     wise22_topics = []
     wise22_special_topics = {}
-    for j in range(default_course_per_term):
-        print(f"Creating Courses: {j}/{default_course_per_term}\r", sep=' ', end='', flush=True)
-        temp_course = Course.objects.create(title=f"Course WiSe22 {j}",
-                                            type=course_types[j % len(course_types)],
+    for i in range(default_course_per_term):
+        print(f"Creating Courses: {i}/{default_course_per_term}\r", sep=' ', end='', flush=True)
+        temp_course = Course.objects.create(title=f"Course WiSe22 {i}",
+                                            type=course_types[i % len(course_types)],
                                             term=wise22,
                                             registration_start=wise22_term_registration_start,
                                             registration_deadline=wise22_term_registration_deadline,
-                                            description=f"Description of Course WiSe22 {j}",
+                                            description=f"Description of Course WiSe22 {i}",
                                             cp=random.randint(default_cp_range[0], default_cp_range[1]),
-                                            faculty=faculties[j % len(faculties)],
-                                            organizer=f"Organizer of Course WiSe22 {j}",
+                                            faculty=faculties[i % len(faculties)],
+                                            organizer=f"Organizer of Course WiSe22 {i}",
                                             )
         for j in range(default_topic_per_course):
             wise22_topics.append(Topic.objects.create(course=temp_course,
-                                                      title=f"Topic {j} Course WiSe22 {j}",
+                                                      title=f"Topic {j} Course WiSe22 {i}",
                                                       max_slots=1,
                                                       min_slot_size=1,
                                                       max_slot_size=1,
@@ -203,17 +208,17 @@ def run():
                                                       ))
     print("Creating Courses: Done!                      ")
 
-    for j in range(default_special_course_per_term):
-        print(f"Creating special Courses: {j}/{default_special_course_per_term}\r", sep=' ', end='', flush=True)
-        temp_course = Course.objects.create(title=f"Special Course WiSe22 {j}",
-                                            type=course_types[j % len(course_types)],
-                                            term=sose22,
-                                            registration_start=sose22_term_registration_start,
-                                            registration_deadline=sose22_term_registration_deadline,
-                                            description=f"Description of Special Course WiSe22{j}",
+    for i in range(default_special_course_per_term):
+        print(f"Creating special Courses: {i}/{default_special_course_per_term}\r", sep=' ', end='', flush=True)
+        temp_course = Course.objects.create(title=f"Special Course WiSe22 {i}",
+                                            type=course_types[i % len(course_types)],
+                                            term=wise22,
+                                            registration_start=wise22_term_registration_start,
+                                            registration_deadline=wise22_term_registration_deadline,
+                                            description=f"Description of Special Course WiSe22{i}",
                                             cp=random.randint(default_cp_range[0], default_cp_range[1]),
-                                            faculty=faculties[j % len(faculties)],
-                                            organizer=f"Organizer of Special Course WiSe22 {j}",
+                                            faculty=faculties[i% len(faculties)],
+                                            organizer=f"Organizer of Special Course WiSe22 {i}",
                                             )
 
         for j in range(default_topic_per_special_course):
@@ -221,7 +226,7 @@ def run():
             temp_min_slot_size = random.randint(1, temp_max_slot_size)
 
             temp_topic = Topic.objects.create(course=temp_course,
-                                              title=f"Topic {j} Special Course WiSe22 {j}",
+                                              title=f"Topic {j} Special Course WiSe22 {i}",
                                               max_slots=j + 1,
                                               min_slot_size=temp_min_slot_size,
                                               max_slot_size=temp_max_slot_size,
@@ -249,6 +254,10 @@ def run():
             if topic not in students_of_topic:
                 students_of_topic[topic] = []
             students_of_topic[topic].extend(group.students.all())
+
+            if topic.max_slot_size > 1 and len(
+                    students_of_topic[topic]) == default_maximum_single_applications_for_group_topic_per_slot:
+                wise22_topics.remove(topic)
 
     print("Creating default Applications for Group: Done!                      ")
 
