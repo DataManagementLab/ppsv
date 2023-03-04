@@ -10,6 +10,7 @@ from backend.models import Assignment
 from backend.pages.functions import get_all_applications_by_collection, \
     get_all_applications_in_assignments, get_broken_slots, get_or_error, get_score_and_chart_data
 from course.models import Course, CourseType, Term
+from ppsv import settings
 
 
 def handle_do_automatic_assignments():
@@ -103,7 +104,8 @@ def handle_post(request):
                                     f"to get this message to an administrator!")
 
     except Exception as e:
-        print(traceback.format_exc())
+        if settings.DEBUG:
+            print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 

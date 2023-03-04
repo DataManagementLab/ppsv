@@ -13,6 +13,7 @@ from backend.pages.functions import possible_assignments_for_group, \
     check_collection_satisfied, create_json_response, get_or_error, get_group_data, get_broken_slots, \
     get_score_and_chart_data
 from course.models import TopicSelection, Topic, CourseType, Course, Term
+from ppsv import settings
 
 
 # ----------Database Interactions---------- #
@@ -463,7 +464,6 @@ def handle_post(request):
             return handle_remove_assignment(request)
         if action == "removeOtherAssignment":
             return handle_remove_other_assignment(request)
-
         if action == "getStatisticData":
             return handle_get_statistic_data(request)
         if action == "selectTopic":
@@ -482,7 +482,8 @@ def handle_post(request):
                                     f"to get this message to an administrator!")
 
     except Exception as e:
-        print(traceback.format_exc())
+        if settings.DEBUG:
+            print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 
