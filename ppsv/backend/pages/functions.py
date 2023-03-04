@@ -129,29 +129,16 @@ def get_broken_slots():
     return broken_slots, critical_broken_slots
 
 
-def get_max_score():
-    """
-    :return: Returns the highest possible score when considering the current applications
-    :rtype: int
-    """
-    handled_applications = []
-    score = 0
-    for application in TopicSelection.objects.filter(Term.get_active_term()):
-        if (application.group, application.collection_number) not in handled_applications:
-            handled_applications.append((application.group, application.collection_number))
-            score += get_score_for_assigned(1)
-    return score
-
-
-def get_score_for_assigned(priority):
+def get_score_for_assigned(students, priority):
     """
     Calculates the score if an application is assigned to a topic with the given priority
 
+    :param students: how many students are in this applications
     :param priority: the priority to calculate the score for
     :return: the calculated score
     :rtype: int
     """
-    return 21 - min(11, priority)
+    return round((21 - min(11, priority)) * (0.8 * (students + 1) if students > 1 else 1))
 
 
 def get_score_for_not_assigned():
@@ -179,14 +166,12 @@ def get_group_data(group_id, collection_id):
     group = Group.objects.get(id=group_id)
 
     members = []
-    group_name = ""
     for member in group.members:
         members.append(member.tucan_id)
 
-    assignment_query = Assignment.objects.filter(accepted_applications__group__in=[group],
-                                                 accepted_applications__collection_number=collection_id)
-    assigned = assignment_query.get().topic.id if assignment_query.exists() else None
-
+    assignment = get_or_none(Assignment, accepted_applications__group__in=[group],
+                             accepted_applications__collection_number=collection_id,
+                             topic__course__term=Term.get_active_term())
     application_in_collection = []
     for application in all_applications_from_group(group_id, collection_id):
         topic = {
@@ -202,8 +187,9 @@ def get_group_data(group_id, collection_id):
             'selectedGroup': group_id,
             'selectedCollection': collection_id,
             'members': members,
-            'assigned': assigned,
-            'collection': application_in_collection
+            'assigned': assignment.topic.id if assignment is not None else None,
+            'collection': application_in_collection,
+            'groupID': group.pk
         }
     )
 
@@ -253,10 +239,12 @@ def get_score_and_chart_data(request):
             -1: 0
         }
     }
-    data_score = 0
-    data_max_score = 0
+    score = 0
+    max_score = 0
+    min_score = 0
     data_not_assigned = 0
 
+    handled_collections = []
     for assignment in assignment_query:
         for application in assignment.accepted_applications.all():
             if application.priority > 5:
@@ -265,24 +253,28 @@ def get_score_and_chart_data(request):
             else:
                 data_statistic['groups'][application.priority] += 1
                 data_statistic['students'][application.priority] += application.group.size
-            data_score += get_score_for_assigned(application.priority)
-
-    all_assignments = []
-    for assignment in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
-        for application in assignment.accepted_applications.all():
-            all_assignments.append((application.group, application.collection_number))
+            score += get_score_for_assigned(application.group.size, application.priority)
+            max_score += get_score_for_assigned(application.group.size, 1)
+            min_score += get_score_for_not_assigned()
+            handled_collections.append((application.group, application.collection_number))
 
     for application in application_query:
-        data_max_score += get_score_for_assigned(1)
-        if not check_collection_satisfied(application):
-            data_statistic['groups'][-1] += 1
-            data_statistic['students'][-1] += application.group.size
-            data_score += get_score_for_not_assigned()
-            data_not_assigned += 1
+        if (application.group, application.collection_number) not in handled_collections:
+            handled_collections.append((application.group, application.collection_number))
+            if not check_collection_satisfied(application):
+                data_statistic['groups'][-1] += 1
+                data_statistic['students'][-1] += application.group.size
+                score += get_score_for_not_assigned()
+                min_score += get_score_for_not_assigned()
+                data_not_assigned += 1
+
+    if (max_score - min_score) == 0:
+        data_score = "No Topics with current Filter"
+    else:
+        data_score = "{:.2f} %".format((score - min_score) / (max_score - min_score) * 100)
 
     return (
         [i for i in data_statistic['groups'].values()],
         [i for i in data_statistic['students'].values()],
         data_score,
-        data_max_score,
         data_not_assigned)

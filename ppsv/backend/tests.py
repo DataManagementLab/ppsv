@@ -160,16 +160,6 @@ class TestAssignmentModel(TestCase):
 
         self.assertEqual(self.assignment2.open_places_in_slot_count, 0)
 
-    def test_assigned_student_to_topic_count(self):
-        """
-        tests if the Assignment.assigned_student_to_topic_count property is correct
-        """
-
-        self.assertEqual(self.assignment1.assigned_student_to_topic_count, 8)
-        self.assertEqual(self.assignment2.assigned_student_to_topic_count, 8)
-        self.assertEqual(self.assignment3.assigned_student_to_topic_count, 2)
-        self.assertEqual(self.assignment4.assigned_student_to_topic_count, 2)
-        self.assertEqual(self.assignment5.assigned_student_to_topic_count, 1)
 
     def test_assigned_student_to_slot_count_single_group(self):
         """

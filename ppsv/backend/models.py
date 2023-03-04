@@ -45,7 +45,7 @@ class Assignment(models.Model):
 
     @property
     def locked(self):
-        return False
+        return self.finalized_slot != 0
 
     @property
     def open_places_in_slot_count(self):
@@ -58,16 +58,25 @@ class Assignment(models.Model):
             open_assignment_count -= applications.group.size
         return open_assignment_count
 
-    @property
-    def assigned_student_to_topic_count(self):
+    @staticmethod
+    def assigned_student_to_topic_count(topic):
         """assigned to topic
         :return: returns the count of all assigned students for the topic of this assignment
         :rtype: int
         """
         all_assignment_count = 0
-        for assignment in Assignment.objects.filter(topic=self.topic):
+        for assignment in Assignment.objects.filter(topic=topic, topic__course__term=Term.get_active_term()):
             all_assignment_count += assignment.assigned_student_to_slot_count
         return all_assignment_count
+
+    @staticmethod
+    def has_open_places(topic):
+        """returns how many open places (students) are remaining for this topic"""
+        all_assignment_count = 0
+        max_assignments = topic.max_slot_size * topic.max_slots
+        for assignment in Assignment.objects.filter(topic=topic, topic__course__term=Term.get_active_term()):
+            all_assignment_count += assignment.assigned_student_to_slot_count
+        return max_assignments - all_assignment_count
 
     @property
     def assigned_student_to_slot_count(self):
@@ -83,6 +92,13 @@ class Assignment(models.Model):
     @property
     def max_assigned_student_to_slot(self):
         return self.topic.max_slot_size
+
+    @property
+    def any_application_locked(self):
+        for app in AcceptedApplications.objects.filter(assignment=self):
+            if app.locked:
+                return True
+        return False
 
     def __str__(self):
         if self.topic.is_group_topic:
@@ -130,6 +146,25 @@ class AcceptedApplications(models.Model):
     topic_selection = models.ForeignKey(TopicSelection, on_delete=models.CASCADE)
     finalized_assignment = models.BooleanField(default=False)
 
+    @property
+    def locked(self):
+        return self.finalized_assignment
+
+    @classmethod
+    def get_collection_dict(cls):
+        """
+        :return: a dict with keys (group, collection_number) and values "list of all applications
+        :rtype: QuerySet
+         """
+        collection_dict = {}
+        for application in cls.objects.filter(assignment__topic__course__term=Term.get_active_term()):
+            application = application.topic_selection
+            if application.dict_key not in collection_dict:
+                collection_dict[application.dict_key] = []
+            collection_dict[application.dict_key].append(application)
+
+        return collection_dict
+
 
 class TermFinalization(models.Model):
     """ Saves if a term is finalized or not"""
@@ -142,4 +177,3 @@ class TermFinalization(models.Model):
         if not query.exists():
             return False
         return query.get().finalized
-

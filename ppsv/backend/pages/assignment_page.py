@@ -1,3 +1,7 @@
+import copy
+import time
+import traceback
+
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
@@ -127,7 +131,8 @@ def handle_select_topic(request):
             'possibleAssignmentsForCollection': possible_assignments_for_group(application.group.id,
                                                                                application.collection_number),
             'collectionCount': TopicSelection.objects.filter(group=application.group,
-                                                             collection_number=application.collection_number).count(),
+                                                             collection_number=application.collection_number,
+                                                             topic__course__term=Term.get_active_term()).count(),
             'preference': application.priority,
             'collectionFulfilled': check_collection_satisfied(application),
             'groupID': application.group.id,
@@ -176,7 +181,9 @@ def handle_select_application(request):
     :rtype: JsonResponse
     """
     # get topic
-    application = get_or_error(TopicSelection, id=int(request.POST.get("applicationID")))
+    application = get_or_error(TopicSelection,
+                               id=int(request.POST.get("applicationID")),
+                               topic__course__term=Term.get_active_term())
 
     return get_group_data(application.group_id, application.collection_number)
 
@@ -238,7 +245,8 @@ def handle_remove_other_assignment(request):
     # get accepted application
     accepted_application = get_or_error(AcceptedApplications,
                                         topic_selection__group=application.group,
-                                        topic_selection__collection_number=application.collection_number)
+                                        topic_selection__collection_number=application.collection_number,
+                                        topic_selection__topic__course__term=application.topic.course.term)
 
     # delete accepted application
     accepted_application.delete()
@@ -370,10 +378,60 @@ def handle_get_statistic_data(request):
         'groups': data[0],
         'students': data[1],
         "score": data[2],
-        "maxScore": data[3],
         "brokenSlots": len(broken_slots[0]) + (len(broken_slots[1])),
-        "notAssignedGroups": data[4]
+        "notAssignedGroups": data[3]
     })
+
+
+def handle_get_topics_filtered(request):
+    min_cp = int(request.POST.get('minCP'))
+    max_cp = int(request.POST.get('maxCP'))
+    course_types = request.POST.getlist('courseTypes[]')
+    faculties = request.POST.getlist('faculties[]')
+
+    t0 = time.time()
+    if max_cp == -1:
+        topics = list(Topic.objects.filter(course__cp__gte=min_cp,
+                                           course__type__in=course_types,
+                                           course__faculty__in=faculties,
+                                           course__term=Term.get_active_term()))
+    else:
+        topics = list(Topic.objects.filter(course__cp__in=[min_cp, max_cp],
+                                           course__type__in=course_types,
+                                           course__faculty__in=faculties,
+                                           course__term=Term.get_active_term()))
+
+    filter_type = int(request.POST.get('special'))
+    accepted_application_dict = AcceptedApplications.get_collection_dict()
+
+    filter_topic_ids = []
+
+    for topic in topics:
+        if filter_type == 1:
+            if Assignment.has_open_places(topic) != 0:
+                filter_topic_ids.append(topic.id)
+        if filter_type == 2:
+            for application in TopicSelection.objects.filter(topic=topic):
+                if application.dict_key not in accepted_application_dict:
+                    filter_topic_ids.append(topic.id)
+                    break
+
+    t1 = time.time()
+    print("filter took " + str(round(t1 - t0, 2)))
+    return JsonResponse({
+        'filteredTopics': filter_topic_ids,
+    })
+
+
+def handle_get_bulk_applications_update(request):
+    app_ids = request.POST.getlist('applicationIDs[]')
+    app_data = {}
+    for app in TopicSelection.objects.filter(pk__in=app_ids):
+        app_data[app.pk] = {
+            'possibleAssignments': possible_assignments_for_group(app.group, app.collection_number),
+            'collectionFulfilled': check_collection_satisfied(app)
+        }
+    return JsonResponse(app_data)
 
 
 def handle_post(request):
@@ -393,8 +451,8 @@ def handle_post(request):
 
         action = request.POST.get("action")
 
-        if action == "getPossibleAssignmentsForTopic":
-            return handle_get_possible_assignments_for_topic(request)
+        if action == "getBulkApplicationsUpdate":
+            return handle_get_bulk_applications_update(request)
         if action == "selectApplication":
             return handle_select_application(request)
         if action == "changeAssignment":
@@ -405,12 +463,15 @@ def handle_post(request):
             return handle_remove_assignment(request)
         if action == "removeOtherAssignment":
             return handle_remove_other_assignment(request)
+
         if action == "getStatisticData":
             return handle_get_statistic_data(request)
         if action == "selectTopic":
             return handle_select_topic(request)
         if action == "loadGroupData":
             return handle_load_group_data(request)
+        if action == "getTopicsFiltered":
+            return handle_get_topics_filtered(request)
         if action == "changeFinalizedValueSlot":
             return handle_change_finalized_value_slot(request)
         if action == "changeFinalizedValueApplication":
@@ -421,6 +482,7 @@ def handle_post(request):
                                     f"to get this message to an administrator!")
 
     except Exception as e:
+        print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 

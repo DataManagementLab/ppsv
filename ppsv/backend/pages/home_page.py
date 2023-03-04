@@ -1,3 +1,5 @@
+import traceback
+
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -54,7 +56,8 @@ def handle_get_chart_data(request):
     data = get_score_and_chart_data(request)
     return JsonResponse(data={
         'groups': data[0],
-        'students': data[1]
+        'students': data[1],
+        'score': data[2],
     })
 
 
@@ -100,6 +103,7 @@ def handle_post(request):
                                     f"to get this message to an administrator!")
 
     except Exception as e:
+        print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 

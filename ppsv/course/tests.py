@@ -86,7 +86,7 @@ class test_ModelTests(TestCase):
         """
         Tests the string representation of a topic selection.
         """
-        self.assertEqual(self.selection.__str__(), 'group 2, Title')
+        self.assertEqual(self.selection.__str__(), 'group 2, Title, #1')
 
     def test_topic_selection_get_display(self):
         """
