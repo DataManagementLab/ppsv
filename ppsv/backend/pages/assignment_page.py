@@ -1,4 +1,3 @@
-import time
 import traceback
 
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
@@ -11,6 +10,7 @@ from backend.pages.functions import possible_assignments_for_group, \
     get_or_none, \
     check_collection_satisfied, create_json_response, get_or_error, get_group_data, get_broken_slots, \
     get_score_and_chart_data
+from backend.pages.home_page import handle_clear_slot
 from course.models import TopicSelection, Topic, CourseType, Course, Term
 
 
@@ -387,7 +387,6 @@ def handle_get_topics_filtered(request):
     course_types = request.POST.getlist('courseTypes[]')
     faculties = request.POST.getlist('faculties[]')
 
-    t0 = time.time()
     if max_cp == -1:
         topics = list(Topic.objects.filter(course__cp__gte=min_cp,
                                            course__type__in=course_types,
@@ -414,8 +413,6 @@ def handle_get_topics_filtered(request):
                     filter_topic_ids.append(topic.id)
                     break
 
-    t1 = time.time()
-    print("filter took " + str(round(t1 - t0, 2)))
     return JsonResponse({
         'filteredTopics': filter_topic_ids,
     })
@@ -453,6 +450,12 @@ def handle_groups_by_prio():
     return JsonResponse(group_by_prio)
 
 
+def handle_get_broken_slots():
+    return JsonResponse({
+        'brokenSlots': get_broken_slots()
+    })
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -488,8 +491,12 @@ def handle_post(request):
             return handle_select_topic(request)
         if action == "loadGroupData":
             return handle_load_group_data(request)
-        if action =="groupsByPrio":
+        if action == "groupsByPrio":
             return handle_groups_by_prio()
+        if action == "getBrokenSlots":
+            return handle_get_broken_slots()
+        if action == "clearSlot":
+            return handle_clear_slot(request)
         if action == "getTopicsFiltered":
             return handle_get_topics_filtered(request)
         if action == "changeFinalizedValueSlot":

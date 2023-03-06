@@ -197,6 +197,15 @@
 
     </div>
 
+    <div id="broken-slots" class="bottom-tab">
+        <span title="not influenced by current active filters">
+            Broken Slots
+            <i class="icon fa fa-chevron-up rotation"></i>
+        </span>
+        <div id="broken-slots-div" class="bottom-tab-content inner-list">
+        </div>
+    </div>
+
     <div id="group-by-prio" class="bottom-tab">
         <span title="not influenced by current active filters">
             Groups by currently assigned priority
@@ -442,6 +451,79 @@
         }
     </script>
 
+    <!-- Script block for Broken Slots -->
+    <script>
+        $(document).ready(function () {
+            const div = $('#broken-slots-div')
+            div.slideToggle(0)
+            $('#broken-slots span').click(function () {
+                div.slideToggle();
+                $('#broken-slots span .icon').toggleClass('rotation');
+                updateBrokenSlots();
+            });
+        });
+
+        let brokenSlotsQueue = null;
+
+
+        /**
+         * updated broken slots
+         */
+        function updateBrokenSlots() {
+
+            if (brokenSlotsQueue != null) {
+                clearTimeout(brokenSlotsQueue);
+            }
+            brokenSlotsQueue = setTimeout(() => {
+                if ($('#broken-slots-div').attr('style') !== 'display: none;') {
+                    const brokenSlots = $("#broken-slots-div");
+                    $('#broken-slots span').html($('<div class="title"><span title="not influenced by current active filters">Broken Slots <i class="fa fa-spin fa-circle-o-notch loading"></i></span></div><i class="icon fa fa-chevron-up rotation"></i>'));
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: 'getBrokenSlots'
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            $('#broken-slots .loading').remove()
+                            brokenSlots.empty()
+                            const errors = data['brokenSlots'];
+                            for (let i = 0; i < errors.length; i++) {
+                                for (const error of errors[i]) {
+                                    let item = $(
+                                        '<div class="inner-list-item broken-slot' + (i === 1 ? "critical" : "") + '" onclick="handleTopicAdd(' + error[0] + ')">' +
+                                        '       <div class="slot-str">' + error[2] + '</div>' +
+                                        '       <div class="cause"> Caused by: ' + error[3] + '</div>' +
+                                        '   <button title="Clear Slot" onclick="removeBrokenSlot(' + error[0] + ',' + error[1] + ')"> <i class="fa fa-trash"></i></button>' +
+                                        '</div>'
+                                    );
+                                    brokenSlots.append(item)
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 250);
+        }
+
+        function removeBrokenSlot(topicID, assignmentID) {
+            if (confirm("This well remove all saved applications from this slot.\n This is not reversible\n Do you want to continue?")) {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: 'clearSlot',
+                        assignmentID: assignmentID
+                    },
+                    method: "POST",
+                    success: () => {
+                        location.reload()
+                    }
+                });
+            }
+        }
+    </script>
+
     <!-- Script block for group details -->
     <script>
         let openFirstAppOfGroup = false;
@@ -553,13 +635,8 @@
                             '</div>' +
                             '</div>');
                     html.click(function (event) {
-                        $('.section.single').removeClass('highlight');
                         event.preventDefault();
-                        if (!shownTopics.has(choice['id']))
-                            handleTopicAdd(choice['id']);
-                        const div = $('#assignment-application-' + choice['id']);
-                        div.get(0).scrollIntoView({behavior: 'smooth'});
-                        div.addClass('highlight');
+                        handleTopicAdd(choice['id']);
                     });
                     choiceList.append(html);
                     if (!opened && choice['freeSlots']) {
@@ -669,6 +746,7 @@
 
                             infoPopup("good", data['text'])
                             updateStatistic()
+                            updateBrokenSlots()
                         } else {
                             $(drag).draggable("option", "revert", true);
                             infoPopup("bad", data['text'])
@@ -884,6 +962,7 @@
                                 $(drag).draggable("option", "revert", true);
                             }
                             updateStatistic()
+                            updateBrokenSlots()
                         });
                     } else if (override && exchange) {
                         requestRemoveOtherApp(application, (data) => {
@@ -903,6 +982,7 @@
                                     }
                                     slot.slotAppRel.sortApplicationsList()
                                     updateStatistic()
+                                    updateBrokenSlots()
                                 });
                                 //update applications listing
                                 slot.slotAppRel.sortApplicationsList()
@@ -921,6 +1001,7 @@
                                 slot.slotAppRel.sortApplicationsList()
                                 //Update stats
                                 updateStatistic()
+                                updateBrokenSlots()
                             } else {
                                 infoPopup("bad", data["text"]);
                                 $(drag).draggable("option", "revert", true);
@@ -963,6 +1044,7 @@
                                         infoPopup("good", applicationAcceptedText)
                                         //Update stats
                                         updateStatistic()
+                                        updateBrokenSlots()
                                     } else
                                         infoPopup("bad", applicationAcceptedText)
                                 }
@@ -1026,6 +1108,7 @@
                                     slot.addApplication(application);
                                     infoPopup("good", applicationAcceptedText);
                                     updateStatistic()
+                                    updateBrokenSlots()
                                 } else {
                                     $(drag).draggable("option", "revert", true);
                                     infoPopup("bad", applicationAcceptedText);
@@ -1415,11 +1498,15 @@
          */
         function handleTopicAdd(topicID) {
             if (shownTopics.has(topicID)) {
+                $('.section.single').removeClass('highlight');
+                const div = $('#assignment-application-' + topicID).get(0)
+                div.scrollIntoView({behavior: 'smooth'});
+                $(div).addClass('highlight');
                 return;
             }
 
-            if (shownTopics.size >= 20) {
-                infoPopup("info", "A maximum of 20 Topics can be displayed at once.\n Please note that topics with a large number of applications could lead to slow behaviour");
+            if (shownTopics.size >= 15) {
+                infoPopup("info", "A maximum of 15 Topics can be displayed at once.\n Please note that topics with a large number of applications could lead to slow behaviour");
                 return false;
             }
             const topic = $(".topic").filter(function () {
@@ -1549,7 +1636,6 @@
                     }
 
                     const div = $('#assignment-application-' + topic.data('topicid'));
-                    div.get(0).scrollIntoView({behavior: 'smooth'});
                 })
 
                 // --- PRESELECT TOPIC IF GETTER IS SET --- //
@@ -1907,6 +1993,7 @@
                         filterSettings.saveToCookie();
                         filterSettings.updateTopicList();
                         updateStatistic()
+                        updateBrokenSlots()
                     }
                 }
 

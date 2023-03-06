@@ -95,20 +95,6 @@ class Assignments:
                 return topic_data[topic_id].max_slot_size - assignment.size
         return topic_data[topic_id].max_slot_size
 
-    def biggest_open_slot(self, topic_id):
-        """returns a tuple of (slot_size, slot_id) for the biggest open slot of the given topic. will return (0,1) if
-        there are no slots or no open slots for the given topic"""
-        assignments = self.get_assignments(topic_id)
-        if len(assignments) < topic_data[topic_id].max_slots:
-            return topic_data[topic_id].max_slot_size, len(assignments) + 1
-        open_slot_size = 0
-        open_slot_id = 1
-        for assignment in assignments:
-            if (topic_data[topic_id].max_slot_size - assignment.size) > open_slot_size:
-                open_slot_size = (topic_data[topic_id].max_slot_size - assignment.size)
-                open_slot_id = assignment.slot_id
-        return open_slot_size, open_slot_id
-
     def score(self, applications):
         """returns the score for the all saved assignments. will use all open applications to find collections of groups
          that are not fulfilled. These will result in negativ scoring values. The range is depending on the number of

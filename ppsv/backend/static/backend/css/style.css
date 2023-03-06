@@ -469,6 +469,7 @@ p {
 /* The main content of the assignment page */
 
 #assignment-content {
+    overflow: hidden;
     padding-top: 20px;
     display: flex;
     gap: 3px;
@@ -495,6 +496,7 @@ p {
 #assignment-content .title {
     display: flex;
     justify-content: space-between;
+    width: 100%;
 }
 
 #assignment-content .title i {
@@ -548,7 +550,6 @@ p {
     align-items: center;
     color: var(--blue);
     justify-content: space-between;
-
 }
 
 .inner-item .group-info {
@@ -623,7 +624,6 @@ p {
     margin: 3px;
     width: fit-content;
 }
-
 
 #assignment-content #groupdetails .section-inner {
     border-radius: 3px;
@@ -869,11 +869,6 @@ p {
     cursor: pointer;
 }
 
-.bottom-tab #statistics-chart {
-    width: 500px;
-}
-
-
 .bottom-tab span .icon {
     margin: 3px;
     transform: rotate(180deg);
@@ -888,11 +883,43 @@ p {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    height: 280px;
 }
 
 .bottom-tab button {
     border: 0;
     font-size: 160%;
+}
+
+.bottom-tab .inner-list {
+    margin: 0 ;
+    padding-top: 3px;
+    padding-left: 3px;
+}
+
+#broken-slots {
+    right: 1150px;
+    width: 400px;
+}
+
+#broken-slots-div {
+    flex-direction: column;
+    overflow-y: scroll;
+    justify-content: flex-start;
+}
+
+#broken-slots-div .broken-slot {
+    display: flex;
+    flex-direction: row;
+    height: 40px;
+    width: 100%;
+    align-items: center;
+    overflow: visible;
+}
+
+.broken-slot button {
+    height: 80%;
+    border-radius: 3px;
 }
 
 #group-by-prio {
@@ -917,6 +944,10 @@ p {
 #statistics-numbers p {
     margin: 0;
     font-size: 15px;
+}
+
+.bottom-tab #statistics-chart {
+    width: 500px;
 }
 
 /* Style the tab */

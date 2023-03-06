@@ -4,17 +4,13 @@ This file describes or defines the basic structure of the PPSV.
 A class that extends the models.Model class may represent a Model
 of the platform and can be registered in admin.py.
 """
-from datetime import datetime, time
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 from django.utils import timezone
-from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
 
 
@@ -55,11 +51,8 @@ class Term(models.Model):
     only on can be active"""
     name = models.CharField(max_length=200, verbose_name=_("title"))
     active_term = models.BooleanField(default=False, verbose_name=_("active term"))
-    registration_start = models.DateTimeField(default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
-                                              verbose_name=_("registration Start"))
-    registration_deadline = models.DateTimeField(
-        default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
-        verbose_name=_("registration Deadline"))
+    registration_start = models.DateTimeField(verbose_name=_("registration Start"))
+    registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
 
     class Meta:
         """Meta options

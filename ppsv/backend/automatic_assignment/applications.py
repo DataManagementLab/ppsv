@@ -78,17 +78,3 @@ class Applications:
             if application.size <= max_size:
                 applications.append(application)
         return applications
-
-    def get_applications_for_group(self, group_id, collection_number):
-        """returns all applications for a given group and collection number
-        :return: all applications for a given group and collection number
-        :rtype: []
-        """
-        return self.applications_for_group[(group_id, collection_number)]
-
-    def has_topic(self, topic_id):
-        """returns true if there are applications for the given topic
-        :return: true if there are applications for the given topic
-        :rtype: bool
-        """
-        return topic_id in self.applications_for_topic

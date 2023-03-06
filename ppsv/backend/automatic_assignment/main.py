@@ -1,4 +1,5 @@
 import cProfile
+import itertools
 import statistics
 import time
 import traceback
@@ -139,19 +140,6 @@ def do_iteration(strategy, topic_ids):
                                               assignments,
                                               slot_id,
                                               assignments.get_remaining_space_in_slot(topic_id, slot_id))
-
-                # # find the first possible group application
-                # permutations = list(itertools.permutations(possible_applications))
-                # print("populating slot " + str(slot_id) + " of " + str(topic) + " testing " + str(len(permutations)) + " perms")
-                #
-                # for possible_applications in permutations:
-                #     if create_group_topic_assignment(applications,
-                #                                      possible_applications,
-                #                                      strategy,
-                #                                      topic,
-                #                                      assignments,
-                #                                      slot_id):
-                #         break
         else:
             for slot_id in range(1, topic_data[topic_id].slots + 1):
                 possible_applications = get_possible_applications_for_slot(applications, assignments, topic_id, slot_id)
@@ -171,13 +159,6 @@ def get_possible_applications_for_slot(applications, assignments, topic_id, slot
     return applications.get_applications_for_topic_with_max_size(topic_id,
                                                                  assignments.get_remaining_space_in_slot(topic_id,
                                                                                                          slot_id))
-
-
-def load_data(applications, assignments, topic_id):
-    biggest_open_slot = assignments.biggest_open_slot(topic_id)
-    possible_applications = applications.get_applications_for_topic_with_max_size(topic_id, biggest_open_slot[0])
-
-    return biggest_open_slot, possible_applications
 
 
 def create_group_topic_assignment(applications, possible_applications, strategy, topic_id, assignments, slot,
