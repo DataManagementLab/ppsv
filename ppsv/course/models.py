@@ -4,15 +4,18 @@ This file describes or defines the basic structure of the PPSV.
 A class that extends the models.Model class may represent a Model
 of the platform and can be registered in admin.py.
 """
-from django.contrib.auth.models import User
-from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-from django.conf import settings
-from django.core.exceptions import ValidationError
 from datetime import datetime, time
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+from django.utils import timezone
 from django.utils.timezone import make_aware
+from django.utils.translation import gettext_lazy as _
 
 
 class CourseType(models.Model):
@@ -362,12 +365,11 @@ class Group(models.Model):
     :type Group.applications: ManyToManyField - Topic
     :property Group.size: The size of a group
     :type Group.size: int
-    :property Group.get_display: The tucan_id of the students separated with commas
-    :type Group.get_display: str
 
     """
     students = models.ManyToManyField(Student, verbose_name=_("students"))
     collection_count = models.IntegerField(verbose_name=_("number of collections"), default=1)
+    term = models.ForeignKey(Term, verbose_name=_("term"), default=Term.get_active_term, on_delete=models.CASCADE)
 
     @property
     def members(self):

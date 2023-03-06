@@ -153,15 +153,13 @@ class AcceptedApplications(models.Model):
     @classmethod
     def get_collection_dict(cls):
         """
-        :return: a dict with keys (group, collection_number) and values "list of all applications
+        :return: a dict with keys (group, collection_number) and values accepted application
         :rtype: QuerySet
          """
         collection_dict = {}
         for application in cls.objects.filter(assignment__topic__course__term=Term.get_active_term()):
             application = application.topic_selection
-            if application.dict_key not in collection_dict:
-                collection_dict[application.dict_key] = []
-            collection_dict[application.dict_key].append(application)
+            collection_dict[application.dict_key] = application
 
         return collection_dict
 

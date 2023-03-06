@@ -205,23 +205,22 @@
         <div class="tabs-div bottom-tab-content">
             <div class="tabs-sel">
                 <button class="tablinks active" onclick="openTab(event,0)">0</button>
-                <button class="tablinks" onclick="openTab(event,1)">1</button>
-                <button class="tablinks" onclick="openTab(event,2)">2</button>
-                <button class="tablinks" onclick="openTab(event,3)">3</button>
-                <button class="tablinks" onclick="openTab(event,4)">4</button>
-                <button class="tablinks" onclick="openTab(event,5)">5</button>
                 <button class="tablinks" onclick="openTab(event,6)">>5</button>
+                <button class="tablinks" onclick="openTab(event,5)">5</button>
+                <button class="tablinks" onclick="openTab(event,4)">4</button>
+                <button class="tablinks" onclick="openTab(event,3)">3</button>
+                <button class="tablinks" onclick="openTab(event,2)">2</button>
+                <button class="tablinks" onclick="openTab(event,1)">1</button>
+                <button class="tablinks" onclick="reloadTabs()"><i class="fa fa-refresh"></i></button>
             </div>
             <div class="tabs-tabs">
-                {% for key, value in group_by_prio.items %}
-                    <div class="tab inner-list" id="group-by-prio-{{ key }}">
-                        {% for group_id, collection_number in value %}
-                            <div class="inner-list-item"
-                                 onclick="getGroupDetails({{ group_id }},{{ collection_number }})">
-                                Group {{ group_id }} Collection {{ collection_number }} </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
+                <div class="tab inner-list" id="group-by-prio-0"></div>
+                <div class="tab inner-list" id="group-by-prio-1"></div>
+                <div class="tab inner-list" id="group-by-prio-2"></div>
+                <div class="tab inner-list" id="group-by-prio-3"></div>
+                <div class="tab inner-list" id="group-by-prio-4"></div>
+                <div class="tab inner-list" id="group-by-prio-5"></div>
+                <div class="tab inner-list" id="group-by-prio-6"></div>
             </div>
         </div>
     </div>
@@ -270,6 +269,8 @@
          * Schedules an update of Statistic and Stats
          */
         function updateStatistic() {
+
+
             if (statisticQueue != null) {
                 clearTimeout(statisticQueue);
             }
@@ -279,6 +280,8 @@
                     const score = $('#statistics-score');
                     const brokenSlots = $('#statistics-broken_slots');
                     const notAssignedGroups = $('#statistics-not_assigned_groups');
+                    $('#statistics-window span').html($('<div class="title"><span title="influenced by current active filters">Statistics  <i class="fa fa-spin fa-circle-o-notch loading"></i></span></div><i class="icon fa fa-chevron-up rotation"></i>'));
+
                     $.ajax({
                         data: {
                             csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -374,6 +377,7 @@
                                 notAssignedGroups.text(data["notAssignedGroups"])
                             }
 
+                            $('#statistics-window span').html($('<span title="influenced by current active filters">Statistics<i class="icon fa fa-chevron-up rotation"></i></span>'));
                             updateNumbers();
                             updateChart();
                         }
@@ -391,7 +395,7 @@
             $('#group-by-prio span').click(function () {
                 div.slideToggle();
                 $('#group-by-prio span .icon').toggleClass('rotation');
-                updateStatistic();
+                reloadTabs();
             });
             $('#group-by-prio-0').show()
         })
@@ -408,6 +412,33 @@
             // Show the current tab, and add an "active" class to the button that opened the tab
             $('#group-by-prio-' + index).show();
             $(event.currentTarget).addClass('active');
+        }
+
+        function reloadTabs() {
+            for (let i = 0; i < 7; i++) {
+                const tab = $('#group-by-prio-' + i);
+                tab.empty();
+                tab.append($('<i class="fa fa-spin fa-circle-o-notch loading"></i>'));
+            }
+            $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "groupsByPrio",
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        for (let i = 0; i < 7; i++) {
+                            const tab = $('#group-by-prio-' + i);
+                            tab.empty();
+                            for (const element of data[i]) {
+                                const div = '<div class="inner-list-item" onclick="getGroupDetails(' + element[0] + ',' + element[1] + ')">Group ' + element[0] + ' Collection ' + element[1] + ' </div>';
+                                tab.append($(div))
+                            }
+                        }
+                    }
+                }
+            );
         }
     </script>
 
@@ -451,12 +482,6 @@
          * @param appID the application id
          */
         function updateApplicationGroupDetails(appID) {
-            if ($('#assignment-modal').is(':visible'))
-                return;
-            let groupDetailDiv = $('#assignment-content #groupdetails');
-            groupDetailDiv.attr('data-groupid', '-1');
-            groupDetailDiv.attr('data-applicationid', appID);
-            groupDetailDiv.attr('data-collectionid', '-1');
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -474,16 +499,10 @@
 
         /**
          * Function for retrieving details about a group and displaying it
-         * @param groupID  The id of the group
-         * @param collectionID The collection of the group
          */
         function getGroupDetails(groupID, collectionID) {
             if ($('#assignment-modal').is(':visible'))
                 return;
-            let groupDetailDiv = $('#assignment-content #groupdetails');
-            groupDetailDiv.attr('data-groupid', groupID);
-            groupDetailDiv.attr('data-applicationid', '-1');
-            groupDetailDiv.attr('data-collectionid', collectionID);
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -495,7 +514,7 @@
                     },
                     method: "POST",
                     dataType: "json",
-                    success: handleGroupDetailServerResponse(groupID, collectionID)
+                    success: handleGroupDetailServerResponse()
                 }
             );
         }
@@ -504,9 +523,9 @@
          * Function for handling the server response of group details
          * Opens first free topic if option is selected
          */
-        function handleGroupDetailServerResponse(groupID, collectionID) {
+        function handleGroupDetailServerResponse() {
             return function (data) {
-                $('#groupdetails span').text('Group Details: Group ' + groupID + " Collection " + collectionID)
+                $('#groupdetails span').text('Group Details: Group ' + data['selectedGroup'] + " Collection " + data['selectedCollection'])
                 let groupList = $('#groupdetails .members .inner-list');
                 groupList.html('');
                 data['members'].forEach(function (member) {
@@ -1211,26 +1230,6 @@
 
                 handleLockButtonClickApplication(this, '#' + buttonID)
             }
-
-            /**
-             * Updated the data of this application
-             */
-            {#updatePossibleAssignment() {#}
-            {#    $.ajax({#}
-            {#        data: {#}
-            {#            csrfmiddlewaretoken: "{{ csrf_token }}",#}
-            {#            action: "getPossibleAssignmentsForTopic",#}
-            {#            applicationID: this.id,#}
-            {#        },#}
-            {#        method: "POST",#}
-            {#        dataType: "json",#}
-            {#        success: data => {#}
-            {#            this.possibleAssignments = data['possibleAssignments'];#}
-            {#            this.collectionFullfilled = data['collectionFulfilled'];#}
-            {#            this.updateDiv();#}
-            {#        }#}
-            {#    })#}
-            {# } #}
         }
 
         /**
@@ -1549,10 +1548,8 @@
                         handleTopicAdd(topic.data('topicid'));
                     }
 
-                    $('.section.single').removeClass('highlight');
                     const div = $('#assignment-application-' + topic.data('topicid'));
                     div.get(0).scrollIntoView({behavior: 'smooth'});
-                    div.addClass('highlight');
                 })
 
                 // --- PRESELECT TOPIC IF GETTER IS SET --- //

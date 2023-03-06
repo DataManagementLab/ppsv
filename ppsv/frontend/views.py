@@ -1,6 +1,7 @@
 """Purpose of this file
 This file describes the frontend views.
 """
+from django.apps import apps
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -14,6 +15,18 @@ from frontend.decorators import user_passes_test
 from .forms.forms import NewUserForm, NewStudentForm, UserLoginForm
 
 
+def check_domain(func):
+    def wrapper(request, *args, **kwargs):
+        if apps.is_installed("django.contrib.admin"):
+            from backend.models import TermFinalization
+            if TermFinalization.is_finalized(Term.get_active_term()):
+                return redirect("backend:term_finalized")
+        return func(request, *args, **kwargs)
+
+    return wrapper
+
+
+@check_domain
 def homepage(request):
     """View for homepage
     :param request: The given request
@@ -28,25 +41,29 @@ def homepage(request):
             args = {}
             recommendations = {}
 
-            groups_of_student = models.Group.objects.filter(students=request.user.student)
+            groups_of_student = models.Group.objects.filter(students=request.user.student, term=Term.get_active_term())
             selections_exist = False
             selections_need_motivation = False
             need_to_assign_topics_to_collection = False
             collection_has_mixed_course_types = False
             for group in groups_of_student:
-                if models.TopicSelection.objects.filter(group=group, topic__course__term=Term.get_active_term()).exists():
+                if models.TopicSelection.objects.filter(group=group,
+                                                        topic__course__term=Term.get_active_term()).exists():
                     selections_exist = True
                     break
 
             for group in groups_of_student:
-                if models.TopicSelection.objects.filter(group=group, motivation="", topic__course__term=Term.get_active_term()).exists():
-                    for selection in models.TopicSelection.objects.filter(group=group, motivation="", topic__course__term=Term.get_active_term()):
+                if models.TopicSelection.objects.filter(group=group, motivation="",
+                                                        topic__course__term=Term.get_active_term()).exists():
+                    for selection in models.TopicSelection.objects.filter(group=group, motivation="",
+                                                                          topic__course__term=Term.get_active_term()):
                         if selection.topic.course.motivation_text:
                             selections_need_motivation = True
                             break
 
             for group in groups_of_student:
-                if models.TopicSelection.objects.filter(group=group, collection_number=0, topic__course__term=Term.get_active_term()).exists():
+                if models.TopicSelection.objects.filter(group=group, collection_number=0,
+                                                        topic__course__term=Term.get_active_term()).exists():
                     need_to_assign_topics_to_collection = True
                     break
 
@@ -55,7 +72,8 @@ def homepage(request):
                 # collection 0 is allowed to have mixed types of courses
                 for collection in range(1, group.collection_count + 1):
                     # check if there are topics in the selection
-                    if models.TopicSelection.objects.filter(group=group, collection_number=collection, topic__course__term=Term.get_active_term()).exists():
+                    if models.TopicSelection.objects.filter(group=group, collection_number=collection,
+                                                            topic__course__term=Term.get_active_term()).exists():
                         topics_in_current_collection = models.TopicSelection.objects.filter(
                             group=group, collection_number=collection, topic__course__term=Term.get_active_term())
                         # only look at collections with one or more entry
@@ -103,7 +121,7 @@ def homepage(request):
                 recommendations[msg] = link
 
             # Pins message to board if no group was created
-            if len(models.Group.objects.filter(students=request.user.student)) <= 1:
+            if len(models.Group.objects.filter(students=request.user.student, term=Term.get_active_term())) <= 1:
                 msg = _("You can create a group here:")
                 link = "frontend:groups"
                 recommendations[msg] = link
@@ -117,6 +135,7 @@ def homepage(request):
         return login_request(request, template_name)
 
 
+@check_domain
 def overview(request):
     """View for overview page
 
@@ -130,7 +149,8 @@ def overview(request):
         # Display all faculties when coming back from somewhere else in overview
         if "faculty_view" in request.POST:
 
-            all_faculties = models.Course.objects.filter(term=Term.get_active_term()).values("faculty").distinct().order_by("faculty")
+            all_faculties = models.Course.objects.filter(term=Term.get_active_term()).values(
+                "faculty").distinct().order_by("faculty")
 
             faculties = {}
             for faculty in all_faculties:
@@ -152,7 +172,8 @@ def overview(request):
             else:
                 chosen_faculty = str(request.POST.get("choose_faculty"))
 
-            courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty, term=Term.get_active_term())
+            courses_in_chosen_faculty = models.Course.objects.filter(faculty=chosen_faculty,
+                                                                     term=Term.get_active_term())
 
             # sorts "courses_in_chosen_faculty"
             if "|" in str(request.POST.get("choose_faculty")):
@@ -164,7 +185,7 @@ def overview(request):
                         courses_in_chosen_faculty = sorted(courses_in_chosen_faculty, key=lambda x: x.get_status)
                 else:
                     if "dsc" in data[2]:
-                        courses_in_chosen_faculty = list(courses_in_chosen_faculty.order_by("-"+data[1]))
+                        courses_in_chosen_faculty = list(courses_in_chosen_faculty.order_by("-" + data[1]))
                     else:
                         courses_in_chosen_faculty = list(courses_in_chosen_faculty.order_by(data[1]))
 
@@ -179,6 +200,7 @@ def overview(request):
                     args["courses"] = courses_in_chosen_faculty
                 else:
                     args["courses"] = "No_Courses"
+
         # when a course is chosen display its topics
         elif "choose_course" in request.POST:
 
@@ -187,10 +209,11 @@ def overview(request):
             chosen_faculty = data[1]
             open_course_info = data[2]
 
-            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course, course__term=Term.get_active_term())
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course,
+                                                                  course__term=Term.get_active_term())
 
             args["chosen_faculty"] = chosen_faculty
-            args["chosen_course"] = models.Course.objects.get(id=chosen_course,term=Term.get_active_term())
+            args["chosen_course"] = models.Course.objects.get(id=chosen_course, term=Term.get_active_term())
             if len(topics_in_chosen_course) != 0:
                 args["topics"] = topics_in_chosen_course
             else:
@@ -207,8 +230,9 @@ def overview(request):
                     student_id_of_user = str(request.user.student)
 
                     show_select_all_topics_button = False
-                    for group in models.Group.objects.filter(students=student_id_of_user):
-                        topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id, topic__course__term=Term.get_active_term())
+                    for group in models.Group.objects.filter(students=student_id_of_user, term=Term.get_active_term()):
+                        topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id,
+                                                                                         topic__course__term=Term.get_active_term())
                         for selected_topic_of_group in topic_selections_of_group:
                             if topics_in_chosen_course.filter(id=selected_topic_of_group.topic.id).exists():
                                 show_select_all_topics_button = True
@@ -231,7 +255,8 @@ def overview(request):
 
             student_id_of_user = str(request.user.student)
 
-            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course, course__term=Term.get_active_term())
+            topics_in_chosen_course = models.Topic.objects.filter(course=chosen_course,
+                                                                  course__term=Term.get_active_term())
 
             args["chosen_faculty"] = chosen_faculty
             args["chosen_course"] = models.Course.objects.get(id=chosen_course, term=Term.get_active_term())
@@ -247,8 +272,9 @@ def overview(request):
             group_to_select = None
             target_collection_number = 0
             highest_priority_in_collection = 0
-            for group in models.Group.objects.filter(students=student_id_of_user):
-                topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id, topic__course__term=Term.get_active_term())
+            for group in models.Group.objects.filter(students=student_id_of_user, term=Term.get_active_term()):
+                topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id,
+                                                                                 topic__course__term=Term.get_active_term())
                 for selected_topic_of_group in topic_selections_of_group:
                     if topics_in_chosen_course.filter(id=selected_topic_of_group.topic.id).exists():
                         group_to_select = group
@@ -258,14 +284,16 @@ def overview(request):
                     continue
                 break
 
-            for selection_in_group in models.TopicSelection.objects.filter(group=group_to_select.id, topic__course__term=Term.get_active_term()):
+            for selection_in_group in models.TopicSelection.objects.filter(group=group_to_select.id,
+                                                                           topic__course__term=Term.get_active_term()):
                 if selection_in_group.collection_number == target_collection_number:
                     highest_priority_in_collection += 1
 
             a_topic_has_too_little_space = False
             selected_at_least_one_new_topic = False
             if group_to_select is not None:
-                topic_selections_of_group = models.TopicSelection.objects.filter(group=group_to_select.id, topic__course__term=Term.get_active_term())
+                topic_selections_of_group = models.TopicSelection.objects.filter(group=group_to_select.id,
+                                                                                 topic__course__term=Term.get_active_term())
                 for topic_to_select in topics_in_chosen_course:
                     # Don't select topics that have already been selected by the group
                     if not topic_selections_of_group.filter(topic=topic_to_select.id).exists():
@@ -273,7 +301,8 @@ def overview(request):
                         if group_to_select.size <= topic_to_select.max_slots:
                             user_selection = TopicSelection()
                             user_selection.group = group_to_select
-                            user_selection.topic = models.Topic.objects.get(id=topic_to_select.id, course__term=Term.get_active_term())
+                            user_selection.topic = models.Topic.objects.get(id=topic_to_select.id,
+                                                                            course__term=Term.get_active_term())
                             user_selection.collection_number = target_collection_number
                             highest_priority_in_collection += 1
                             user_selection.priority = highest_priority_in_collection
@@ -312,9 +341,11 @@ def overview(request):
                 if any(["choose_topic" in request.POST, "select_with_existing_group" in request.POST]):
                     # check if no group of the user has already selected a topic in the same course
                     course_of_chosen_topic = data[1]
-                    topics_in_chosen_course = models.Topic.objects.filter(course=course_of_chosen_topic, course__term=Term.get_active_term())
-                    for group in models.Group.objects.filter(students=student_id_of_user):
-                        topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id, topic__course__term=Term.get_active_term())
+                    topics_in_chosen_course = models.Topic.objects.filter(course=course_of_chosen_topic,
+                                                                          course__term=Term.get_active_term())
+                    for group in models.Group.objects.filter(students=student_id_of_user, term=Term.get_active_term()):
+                        topic_selections_of_group = models.TopicSelection.objects.filter(group=group.id,
+                                                                                         topic__course__term=Term.get_active_term())
                         for selected_topic_of_group in topic_selections_of_group:
                             if topics_in_chosen_course.filter(id=selected_topic_of_group.topic.id).exists():
                                 group_to_select = group
@@ -331,8 +362,9 @@ def overview(request):
                         data = str(request.POST.get("open_group_select")).split("|")
                         args["open_group_select"] = True
                         args["groups"] = filter(
-                            lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0], course__term=Term.get_active_term()).max_slots,
-                            models.Group.objects.filter(students=request.user.student))
+                            lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0],
+                                                                             course__term=Term.get_active_term()).max_slots,
+                            models.Group.objects.filter(students=request.user.student, term=Term.get_active_term()))
 
                     # when selecting a topic alone
                     elif "select_topic" in request.POST:
@@ -345,9 +377,11 @@ def overview(request):
 
                         # Check if other groups of the user have already selected topics from the same course
                         group_already_selected_same_course = False
-                        course_of_chosen_topic = models.Course.objects.filter(id=data[1], term=Term.get_active_term())[0]
+                        course_of_chosen_topic = models.Course.objects.filter(id=data[1], term=Term.get_active_term())[
+                            0]
 
-                        for group_of_user in models.Group.objects.filter(students=student_tu_id):
+                        for group_of_user in models.Group.objects.filter(students=student_tu_id,
+                                                                         term=Term.get_active_term()):
                             # get the hidden group of the user if it exists
                             if group_of_user.size == 1:
                                 existing_groups.append(group_of_user)
@@ -361,7 +395,8 @@ def overview(request):
                             existing_groups.append(group_of_student)
                             created_hidden_group = True
 
-                        for group_of_user in models.Group.objects.filter(students=student_tu_id):
+                        for group_of_user in models.Group.objects.filter(students=student_tu_id,
+                                                                         term=Term.get_active_term()):
                             if group_of_user != existing_groups[0]:
                                 topic_selections_of_group = models.TopicSelection.objects.filter(
                                     group=group_of_user.id, topic__course__term=Term.get_active_term())
@@ -375,7 +410,8 @@ def overview(request):
 
                                 user_selection = TopicSelection()
                                 user_selection.group = group_of_student
-                                user_selection.topic = models.Topic.objects.get(id=selected_topic_id, course__term=Term.get_active_term())
+                                user_selection.topic = models.Topic.objects.get(id=selected_topic_id,
+                                                                                course__term=Term.get_active_term())
                                 user_selection.collection_number = 0
                                 user_selection.save()
 
@@ -389,7 +425,7 @@ def overview(request):
                             # when the user already has a hidden group for himself
                             else:
                                 topic_selections_of_group = models.TopicSelection.objects.filter(
-                                    group=existing_groups[0].id,topic__course__term=Term.get_active_term())
+                                    group=existing_groups[0].id, topic__course__term=Term.get_active_term())
 
                                 already_selected = False
 
@@ -412,7 +448,8 @@ def overview(request):
 
                                     user_selection = TopicSelection()
                                     user_selection.group = existing_groups[0]
-                                    user_selection.topic = models.Topic.objects.get(id=selected_topic_id, course__term=Term.get_active_term())
+                                    user_selection.topic = models.Topic.objects.get(id=selected_topic_id,
+                                                                                    course__term=Term.get_active_term())
                                     user_selection.collection_number = target_collection_number
                                     user_selection.priority = highest_priority + 1
                                     user_selection.save()
@@ -438,8 +475,10 @@ def overview(request):
                         if chosen_group_id != str(-1):
                             already_selected_topic = False
 
-                            for group_of_user in models.Group.objects.filter(students=student_tu_id):
-                                topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_user, topic__course__term=Term.get_active_term())
+                            for group_of_user in models.Group.objects.filter(students=student_tu_id,
+                                                                             term=Term.get_active_term()):
+                                topic_selections_of_group = models.TopicSelection.objects.filter(group=group_of_user,
+                                                                                                 topic__course__term=Term.get_active_term())
                                 for known_selection in topic_selections_of_group:
                                     if int(selected_topic_id) == int(known_selection.topic.id):
                                         already_selected_topic = True
@@ -451,7 +490,8 @@ def overview(request):
                                 member_of_group_already_selected_course = False
                                 members_of_group = models.Student.objects.filter(group=chosen_group_id)
                                 for member_of_group in members_of_group:
-                                    groups_of_member = models.Group.objects.filter(students=member_of_group)
+                                    groups_of_member = models.Group.objects.filter(students=member_of_group,
+                                                                                   term=Term.get_active_term())
                                     for group_of_member in groups_of_member:
                                         if group_of_member != chosen_group_id:
                                             topic_selections_of_group = models.TopicSelection.objects.filter(
@@ -462,8 +502,10 @@ def overview(request):
 
                                 if not member_of_group_already_selected_course:
                                     selection = TopicSelection()
-                                    selection.group = models.Group.objects.get(id=chosen_group_id)
-                                    selection.topic = models.Topic.objects.get(id=selected_topic_id, course__term=Term.get_active_term())
+                                    selection.group = models.Group.objects.get(id=chosen_group_id,
+                                                                               term=Term.get_active_term())
+                                    selection.topic = models.Topic.objects.get(id=selected_topic_id,
+                                                                               course__term=Term.get_active_term())
                                     selection.collection_number = 0
                                     selection.save()
 
@@ -482,8 +524,9 @@ def overview(request):
                         else:
                             args["open_group_select"] = True
                             args["groups"] = filter(
-                                lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0], course__term=Term.get_active_term()).max_slots,
-                                models.Group.objects.filter(students=request.user.student))
+                                lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0],
+                                                                                 course__term=Term.get_active_term()).max_slots,
+                                models.Group.objects.filter(students=request.user.student, term=Term.get_active_term()))
                             messages.error(request, "No group selected!")
 
                     # when choosing to create a new group
@@ -513,9 +556,11 @@ def overview(request):
                                                        _(" was not found."))
                                 else:
                                     messages.error(request, _("Your group would be too large for ") +
-                                                   str(models.Topic.objects.get(id=data[0],course__term=Term.get_active_term()).title)
+                                                   str(models.Topic.objects.get(id=data[0],
+                                                                                course__term=Term.get_active_term()).title)
                                                    + _(". Your group can only have a maximum of ") +
-                                                   str(models.Topic.objects.get(id=data[0],course__term=Term.get_active_term()).max_slots)
+                                                   str(models.Topic.objects.get(id=data[0],
+                                                                                course__term=Term.get_active_term()).max_slots)
                                                    + _(" members."))
                             else:
                                 messages.error(request, _("A student with the TUCaN-ID ") +
@@ -550,8 +595,9 @@ def overview(request):
 
                         existing_groups = []
                         for member in members_in_new_group:
-                            if models.Group.objects.filter(students=member).exists():
-                                existing_groups.append(models.Group.objects.filter(students=member))
+                            if models.Group.objects.filter(students=member, term=Term.get_active_term()).exists():
+                                existing_groups.append(
+                                    models.Group.objects.filter(students=member, term=Term.get_active_term()))
 
                         exception = False
 
@@ -559,7 +605,8 @@ def overview(request):
                             messages.error(request, _(f"Your group needs to contain more members than yourself!"))
                             exception = True
 
-                        course_of_chosen_topic = models.Course.objects.filter(id=data[1], term=Term.get_active_term())[0]
+                        course_of_chosen_topic = models.Course.objects.filter(id=data[1], term=Term.get_active_term())[
+                            0]
                         for groups_of_member in existing_groups:
                             if not exception:
                                 for group in groups_of_member:
@@ -612,7 +659,8 @@ def overview(request):
                         members_of_group = models.Student.objects.filter(group=group_to_select.id)
 
                         for member_of_group in members_of_group:
-                            groups_of_member = models.Group.objects.filter(students=member_of_group)
+                            groups_of_member = models.Group.objects.filter(students=member_of_group,
+                                                                           term=Term.get_active_term())
                             for group_of_member in groups_of_member:
                                 if group_of_member != group_to_select:
                                     topic_selections_of_group = models.TopicSelection.objects.filter(
@@ -624,7 +672,7 @@ def overview(request):
                         if not member_of_group_already_selected_course:
                             highest_priority = 0
                             for topic_selection in models.TopicSelection.objects.filter(
-                                        group=group_to_select.id, topic__course__term=Term.get_active_term()):
+                                    group=group_to_select.id, topic__course__term=Term.get_active_term()):
                                 if topic_selection.collection_number == target_collection_number:
                                     highest_priority += 1
 
@@ -665,17 +713,20 @@ def overview(request):
                 args["open_course_info"] = False
 
             if request.user.is_authenticated and hasattr(request.user, "student"):
-                all_groups_of_student = models.Group.objects.filter(students=request.user.student)
+                all_groups_of_student = models.Group.objects.filter(students=request.user.student,
+                                                                    term=Term.get_active_term())
                 all_topics_selected_by_groups = []
                 for group in all_groups_of_student:
-                    for selection in models.TopicSelection.objects.filter(group=group, topic__course__term=Term.get_active_term()):
+                    for selection in models.TopicSelection.objects.filter(group=group,
+                                                                          topic__course__term=Term.get_active_term()):
                         all_topics_selected_by_groups.append(selection.topic.id)
 
                 args["selected_topics"] = all_topics_selected_by_groups
     # initially show all faculties
     else:
 
-        all_faculties = models.Course.objects.filter(term=Term.get_active_term()).values("faculty").distinct().order_by("faculty")
+        all_faculties = models.Course.objects.filter(term=Term.get_active_term()).values("faculty").distinct().order_by(
+            "faculty")
 
         faculties = {}
         for faculty in all_faculties:
@@ -687,6 +738,7 @@ def overview(request):
     return render(request, template_name, args)
 
 
+@check_domain
 def check_profile(user):
     """Checks if an user has the attribute student
 
@@ -698,6 +750,7 @@ def check_profile(user):
     return hasattr(user, 'student')
 
 
+@check_domain
 @login_required
 @user_passes_test(check_profile, login_url='/profile/', message=_("Please create a student profile before "
                                                                   "selecting courses."))
@@ -717,10 +770,11 @@ def your_selection(request):
     selections_of_groups = []
 
     # check if user has groups and collect them
-    if models.Group.objects.filter(students=student_tucan_id).exists():
-        groups_of_student = models.Group.objects.filter(students=student_tucan_id)
+    if models.Group.objects.filter(students=student_tucan_id, term=Term.get_active_term()).exists():
+        groups_of_student = models.Group.objects.filter(students=student_tucan_id, term=Term.get_active_term())
         for group in groups_of_student:
-            selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id, topic__course__term=Term.get_active_term()))
+            selections_of_groups.append(
+                models.TopicSelection.objects.filter(group=group.id, topic__course__term=Term.get_active_term()))
 
     selections_of_collections_of_groups = {}
 
@@ -747,7 +801,8 @@ def your_selection(request):
             selection_id = int(data[0])
             collection_number = int(data[1])
             # Only remove the topic if it is still there
-            if models.TopicSelection.objects.filter(id=selection_id, topic__course__term=Term.get_active_term()).exists():
+            if models.TopicSelection.objects.filter(id=selection_id,
+                                                    topic__course__term=Term.get_active_term()).exists():
 
                 group_of_selection = get_selection(selections_of_groups, selection_id).group
 
@@ -756,10 +811,12 @@ def your_selection(request):
                 selections_of_groups.clear()
 
                 # show the groups and selected topics without the deleted one
-                if models.Group.objects.filter(students=student_tucan_id).exists():
-                    groups_of_student = models.Group.objects.filter(students=student_tucan_id)
+                if models.Group.objects.filter(students=student_tucan_id, term=Term.get_active_term()).exists():
+                    groups_of_student = models.Group.objects.filter(students=student_tucan_id,
+                                                                    term=Term.get_active_term())
                     for group in groups_of_student:
-                        selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id, topic__course__term=Term.get_active_term()))
+                        selections_of_groups.append(models.TopicSelection.objects.filter(group=group.id,
+                                                                                         topic__course__term=Term.get_active_term()))
 
                 del (selections_of_collections_of_groups[group_of_selection])[collection_number]
 
@@ -830,7 +887,8 @@ def your_selection(request):
             data = str(request.POST.get("up_priority")).split("|")
             chosen_selection_id = int(data[0])
             collection_number = int(data[1])
-            if models.TopicSelection.objects.filter(id=chosen_selection_id, topic__course__term=Term.get_active_term()).exists():
+            if models.TopicSelection.objects.filter(id=chosen_selection_id,
+                                                    topic__course__term=Term.get_active_term()).exists():
                 chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
 
                 selections_in_same_collection = (selections_of_collections_of_groups[chosen_selection.group])[
@@ -851,7 +909,8 @@ def your_selection(request):
             data = str(request.POST.get("down_priority")).split("|")
             chosen_selection_id = int(data[0])
             collection_number = int(data[1])
-            if models.TopicSelection.objects.filter(id=chosen_selection_id, topic__course__term=Term.get_active_term()).exists():
+            if models.TopicSelection.objects.filter(id=chosen_selection_id,
+                                                    topic__course__term=Term.get_active_term()).exists():
                 chosen_selection = get_selection(selections_of_groups, chosen_selection_id)
 
                 selections_in_same_collection = (selections_of_collections_of_groups[chosen_selection.group])[
@@ -962,8 +1021,10 @@ def your_selection(request):
 
     # leave course information visible when pressing other buttons
     if (not request.POST.get("open_selection_info") is None) and "close_info_button" not in request.POST:
-        if models.TopicSelection.objects.filter(id=int(request.POST.get("open_selection_info")), topic__course__term=Term.get_active_term()).exists():
-            info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("open_selection_info")), topic__course__term=Term.get_active_term())
+        if models.TopicSelection.objects.filter(id=int(request.POST.get("open_selection_info")),
+                                                topic__course__term=Term.get_active_term()).exists():
+            info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("open_selection_info")),
+                                                               topic__course__term=Term.get_active_term())
             args["info_selection"] = info_selection
         if str(request.POST.get("open_course_info")) == 'True':
             args["open_course_info"] = True
@@ -974,8 +1035,10 @@ def your_selection(request):
     args["motivation_text_required"] = motivation_text_required
     # opening the info of a selected topic
     if "info_button" in request.POST:
-        if models.TopicSelection.objects.filter(id=int(request.POST.get("info_button")), topic__course__term=Term.get_active_term()).exists():
-            info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("info_button")), topic__course__term=Term.get_active_term())
+        if models.TopicSelection.objects.filter(id=int(request.POST.get("info_button")),
+                                                topic__course__term=Term.get_active_term()).exists():
+            info_selection = models.TopicSelection.objects.get(id=int(request.POST.get("info_button")),
+                                                               topic__course__term=Term.get_active_term())
             args["info_selection"] = info_selection
         open_course_info = False
 
@@ -983,7 +1046,8 @@ def your_selection(request):
     # expanding the information the course of a selected topic
     if "course_info_button" in request.POST:
         is_open = "".join(str(request.POST.get("selection")).split("|")[0].split())
-        if models.TopicSelection.objects.filter(id=int(str(request.POST.get("selection")).split("|")[1]), topic__course__term=Term.get_active_term()).exists():
+        if models.TopicSelection.objects.filter(id=int(str(request.POST.get("selection")).split("|")[1]),
+                                                topic__course__term=Term.get_active_term()).exists():
             info_selection = models.TopicSelection.objects.get(
                 id=int(str(request.POST.get("selection")).split("|")[1]))
             args["info_selection"] = info_selection
@@ -1050,7 +1114,7 @@ def change_collection(request, data, selections_of_collections_of_groups):
                                 #                                   "with topics from the same course."))
                                 #         error = True
                                 # else:
-                                    # If given topic is not exclusive but we try to put it into an exclusive collection
+                                # If given topic is not exclusive but we try to put it into an exclusive collection
                                 # if not len(collections_of_group[int(data[3])]) == 0:
                                 #     if not collections_of_group[int(data[3])][0].topic.course \
                                 #            == selection.topic.course:
@@ -1166,6 +1230,7 @@ def get_selection(selections_of_groups, chosen_selection_id):
                 return selection
 
 
+@check_domain
 @login_required
 @user_passes_test(check_profile, login_url='/profile/', message=_("Please create a student profile before "
                                                                   "accessing your groups."))
@@ -1231,8 +1296,8 @@ def groups(request):
 
             existing_groups = []
             for member in members_in_new_group:
-                if models.Group.objects.filter(students=member).exists():
-                    existing_groups.append(models.Group.objects.filter(students=member))
+                if models.Group.objects.filter(students=member, term=Term.get_active_term()).exists():
+                    existing_groups.append(models.Group.objects.filter(students=member, term=Term.get_active_term()))
 
             error = False
 
@@ -1270,8 +1335,9 @@ def groups(request):
             args["chosen_group_for_deletion"] = chosen_group_for_deletion
         # Confirm the group deletion
         elif "delete_group" in request.POST:
-            if models.Group.objects.filter(id=int(request.POST.get("delete_group"))).exists():
-                models.Group.objects.get(id=int(request.POST.get("delete_group"))).delete()
+            if models.Group.objects.filter(id=int(request.POST.get("delete_group")),
+                                           term=Term.get_active_term()).exists():
+                models.Group.objects.get(id=int(request.POST.get("delete_group")), term=Term.get_active_term()).delete()
         # when clicking on the cog symbol to edit a group
         elif "open_edit" in request.POST:
             chosen_group_for_edit = int(request.POST.get("open_edit"))
@@ -1282,16 +1348,18 @@ def groups(request):
                 if models.Student.objects.filter(tucan_id=str(request.POST.get("student_id"))).exists():
                     if not models.Student.objects.get(
                             tucan_id=str(request.POST.get("student_id"))) in models.Group.objects.get(
-                                id=int(request.POST.get("add_student"))).students.all():
+                        id=int(request.POST.get("add_student")), term=Term.get_active_term()).students.all():
                         new_member_student = \
                             models.Student.objects.get(tucan_id=str(request.POST.get("student_id")))
-                        group = models.Group.objects.get(id=int(request.POST.get("add_student")))
+                        group = models.Group.objects.get(id=int(request.POST.get("add_student")),
+                                                         term=Term.get_active_term())
                         students_after_addition = []
                         for student in group.students.all():
                             students_after_addition.append(student)
                         students_after_addition.append(new_member_student)
 
-                        colliding_group = models.Group.objects.filter(students=students_after_addition[0])
+                        colliding_group = models.Group.objects.filter(students=students_after_addition[0],
+                                                                      term=Term.get_active_term())
                         for student in students_after_addition:
                             colliding_group = colliding_group.filter(students=student.tucan_id)
                         for check_group in colliding_group:
@@ -1327,7 +1395,7 @@ def groups(request):
         # Remove student from group if possible or delete the group if it is too small or a duplicate
         elif "remove_student" in request.POST:
             data = str(request.POST.get("remove_student")).split("|")
-            group = models.Group.objects.get(id=int(data[0]))
+            group = models.Group.objects.get(id=int(data[0]), term=Term.get_active_term())
             leaving_student = models.Student.objects.get(tucan_id=str(data[1]))
 
             if group.size == 2:
@@ -1338,7 +1406,8 @@ def groups(request):
                 for student in group.students.all():
                     if leaving_student.tucan_id != student.tucan_id:
                         rest_students_after_removal.append(student)
-                colliding_group = models.Group.objects.filter(students=rest_students_after_removal[0])
+                colliding_group = models.Group.objects.filter(students=rest_students_after_removal[0],
+                                                              term=Term.get_active_term())
 
                 for student in rest_students_after_removal:
                     colliding_group = colliding_group.filter(students=student.tucan_id)
@@ -1359,7 +1428,8 @@ def groups(request):
 
             args["chosen_group_for_edit"] = group.id
 
-    groups_of_student = models.Group.objects.filter(students=request.user.student.tucan_id)
+    groups_of_student = models.Group.objects.filter(students=request.user.student.tucan_id,
+                                                    term=Term.get_active_term())
     members_of_groups = {}
     for group in groups_of_student:
         members = []
@@ -1436,6 +1506,7 @@ def register(request):
     return render(request=request, template_name="registration/register.html", context={"register_form": form})
 
 
+@check_domain
 @login_required
 def profile(request):
     """View for profile/student creation

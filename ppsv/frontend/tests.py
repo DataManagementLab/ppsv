@@ -76,6 +76,8 @@ class HomepageViewTests(TestCase):
         """
         Sets up test data.
         """
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+
         cls.superuser = User.objects.create_superuser(username='testsuperuser', password='12345')
 
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
@@ -86,7 +88,6 @@ class HomepageViewTests(TestCase):
         cls.group1.students.add(cls.student1)
         cls.seminar_type = CourseType.objects.create(type='Seminar')
         cls.internship_type = CourseType.objects.create(type='Internship')
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
         cls.course = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, motivation_text=True,
                                            type=cls.seminar_type, created_by=cls.superuser)
         cls.topic = Topic.objects.create(course=cls.course, title='Title')
@@ -156,6 +157,8 @@ class OverviewViewTests(TestCase):
         Sets up test data.
         """
         cls.superuser = User.objects.create_superuser(username='testsuperuser', password='12345')
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+
 
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
         cls.user2 = User.objects.create_user(username='testuser2', password='12345')
@@ -170,7 +173,6 @@ class OverviewViewTests(TestCase):
 
         cls.date_future = timezone.now() + datetime.timedelta(days=30)
         cls.course_type = CourseType.objects.create(type='Testtype')
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
 
         cls.course_unselected = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, motivation_text=True,
                                                       registration_start=timezone.now(), cp=5, faculty='FB01',
@@ -504,6 +506,8 @@ class YourSelectionViewTests(TestCase):
         """
         Sets up test data.
         """
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+
         cls.superuser = User.objects.create_superuser(username='testsuperuser', password='12345')
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
         cls.user_no_student = User.objects.create_user(username='testuser2', password='12345')
@@ -513,7 +517,6 @@ class YourSelectionViewTests(TestCase):
 
         cls.date_future = timezone.now() + datetime.timedelta(days=30)
         cls.course_type = CourseType.objects.create(type='Testtype')
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
 
         cls.course = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, registration_start=timezone.now(),
                                            cp=5, motivation_text=True, faculty='FB01', title='TestCourse',
@@ -767,6 +770,8 @@ class GroupsViewTests(TestCase):
         """
         Sets up test data.
         """
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
         cls.user2 = User.objects.create_user(username='testuser2', password='12345')
         cls.user3 = User.objects.create_user(username='testuser3', password='12345')

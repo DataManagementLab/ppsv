@@ -13,6 +13,8 @@ class test_ModelTests(TestCase):
         """
         Sets up test data.
         """
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+
         cls.superuser = User.objects.create_superuser(username='testsuperuser', password='12345')
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
         cls.user2 = User.objects.create_user(username='testuser2', password='12345')
@@ -27,7 +29,6 @@ class test_ModelTests(TestCase):
         cls.group2 = Group.objects.create()
         cls.group2.students.add(cls.student1)
         cls.course_type = CourseType.objects.create(type='Testart')
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
 
         cls.course = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, type=cls.course_type,
                                            created_by=cls.superuser)

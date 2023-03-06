@@ -851,6 +851,11 @@ p {
     border-radius: 3px;
 }
 
+.bottom-tab .title i{
+    align-self: center;
+    margin-left: 10px;
+}
+
 
 .bottom-tab span {
     display: flex;
@@ -919,7 +924,7 @@ p {
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
-    max-height: 445px;
+    max-height: 330px;
 }
 
 .tabs-tabs {
@@ -939,7 +944,7 @@ p {
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 14px 16px;
+    padding: 3px 10px;
     transition: 0.3s;
     border-bottom: var(--lightblue) 1px solid;
     margin-bottom: 1px;

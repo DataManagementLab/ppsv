@@ -38,13 +38,14 @@
                     <div class="text"></div>
                 </div>
             </div>
-            <div id="automaticAssignmentNoOverrideDiv" class="text-button">
-                <button id="automaticAssignmentNoOverride" class="{% if running %} running {% endif %}"
-                        onclick="automaticAssignment(false)"><i
-                        class="fa fa-check" aria-hidden="true"></i>
-                </button>
-                <p>Start an automatic Assignment without Override</p>
-            </div>
+{#            produces broken slots#}
+{#            <div id="automaticAssignmentNoOverrideDiv" class="text-button">#}
+{#                <button id="automaticAssignmentNoOverride" class="{% if running %} running {% endif %}"#}
+{#                        onclick="automaticAssignment(false)"><i#}
+{#                        class="fa fa-check" aria-hidden="true"></i>#}
+{#                </button>#}
+{#                <p>Start an automatic Assignment without Override</p>#}
+{#            </div>#}
             <div id="finalizeAllAssignmentsDiv" class="text-button">
                 <button id="finalizeAllAssignments" onclick="finalizeAllAssignments(true)"><i
                         class="fa fa-check" aria-hidden="true"></i>

@@ -433,6 +433,26 @@ def handle_get_bulk_applications_update(request):
     return JsonResponse(app_data)
 
 
+def handle_groups_by_prio():
+    """
+    returns a json object with a list of groups (value) per prio (key)
+    0 stands for not assigned, 6 for prio over 5
+    """
+    group_by_prio = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+    accepted_application_dict = AcceptedApplications.get_collection_dict()
+    for app_key in TopicSelection.get_collection_dict():
+        group_id_collection_id_key = (app_key[0].id, app_key[1])
+        if app_key in accepted_application_dict:
+            if accepted_application_dict[app_key].priority > 5:
+                group_by_prio[6].append(group_id_collection_id_key)
+            else:
+                group_by_prio[accepted_application_dict[app_key].priority].append(group_id_collection_id_key)
+        else:
+            group_by_prio[0].append(group_id_collection_id_key)
+
+    return JsonResponse(group_by_prio)
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -468,6 +488,8 @@ def handle_post(request):
             return handle_select_topic(request)
         if action == "loadGroupData":
             return handle_load_group_data(request)
+        if action =="groupsByPrio":
+            return handle_groups_by_prio()
         if action == "getTopicsFiltered":
             return handle_get_topics_filtered(request)
         if action == "changeFinalizedValueSlot":
@@ -519,17 +541,6 @@ def render_site(request):
             faculties.append(course.faculty)
     faculties.sort()
 
-    group_by_prio = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
-    accepted_application_dict = AcceptedApplications.get_collection_dict()
-    for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term()):
-        if application.dict_key in accepted_application_dict:
-            if application.priority > 5:
-                group_by_prio[6].append((application.group.id, application.collection_number))
-            else:
-                group_by_prio[application.priority].append((application.group.id, application.collection_number))
-        else:
-            group_by_prio[0].append((application.group.id, application.collection_number))
-
     # load information from url
     topic_ids = False
     group_id = False
@@ -549,7 +560,6 @@ def render_site(request):
     args["topicids"] = topic_ids
     args["groupid"] = group_id
     args["collectionid"] = collection_id
-    args["group_by_prio"] = group_by_prio
 
     return render(request, template_name, args)
 
