@@ -76,7 +76,7 @@ class HomepageViewTests(TestCase):
         """
         Sets up test data.
         """
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True, registration_start=timezone.now(), registration_deadline=timezone.now())
 
         cls.superuser = User.objects.create_superuser(username='testsuperuser', password='12345')
 
@@ -157,7 +157,7 @@ class OverviewViewTests(TestCase):
         Sets up test data.
         """
         cls.superuser = User.objects.create_superuser(username='testsuperuser', password='12345')
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True, registration_start=timezone.now(), registration_deadline=timezone.now())
 
 
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
@@ -506,7 +506,7 @@ class YourSelectionViewTests(TestCase):
         """
         Sets up test data.
         """
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True, registration_start=timezone.now(), registration_deadline=timezone.now())
 
         cls.superuser = User.objects.create_superuser(username='testsuperuser', password='12345')
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
@@ -770,7 +770,7 @@ class GroupsViewTests(TestCase):
         """
         Sets up test data.
         """
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True, registration_start=timezone.now(), registration_deadline=timezone.now())
 
         cls.user1 = User.objects.create_user(username='testuser1', password='12345')
         cls.user2 = User.objects.create_user(username='testuser2', password='12345')

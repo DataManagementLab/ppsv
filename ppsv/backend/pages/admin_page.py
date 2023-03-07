@@ -44,7 +44,7 @@ def handle_finalize(request):
         fin.finalized = True
         fin.save()
         return JsonResponse({
-            "success": "yes",
+            "success": "true",
         })
     else:
         for assignment in Assignment.objects.all():
@@ -55,7 +55,7 @@ def handle_finalize(request):
         fin.finalized = False
         fin.save()
         return JsonResponse({
-            "success": "no",
+            "success": "true",
         })
 
 
