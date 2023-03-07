@@ -2,11 +2,11 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from course.models import Group
+from course.models import Group
+from course.models import Topic
 from course.models import Topic
 from course.models import TopicSelection
 from course.models import TopicSelection, Term
-from course.models import Topic
-from course.models import Group
 
 
 class Assignment(models.Model):
@@ -167,6 +167,7 @@ class AcceptedApplications(models.Model):
 class TermFinalization(models.Model):
     """ Saves if a term is finalized or not"""
     term = models.ForeignKey(Term, on_delete=models.CASCADE)
+    mails_send = models.BooleanField(default=False)
     finalized = models.BooleanField(default=False)
 
     @staticmethod

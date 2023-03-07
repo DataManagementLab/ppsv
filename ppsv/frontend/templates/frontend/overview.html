@@ -97,7 +97,7 @@
                             <div class="table-btn">
                                 <div style="display:flex;justify-content: space-around;">
                                     <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
-                                    <div style="flex-basis:100%"> {% if topic.max_slots == 9999 %} &#8734 {% else %} {{ topic.max_slots }} {% endif %} </div>
+                                    <div style="flex-basis:100%"> {{ topic.max_slot_size }}</div>
                                 </div>
                             </div>
                             </div>
@@ -165,7 +165,7 @@
                                                     {% if group_to_select_is_None %}
                                                         <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
                                                             {# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
-                                                            {% if chosen_topic.max_slots > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i> {% translate " Select with a group" %} </button> {% endif %}
+                                                            {% if chosen_topic.max_slot_size > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i> {% translate " Select with a group" %} </button> {% endif %}
                                                             <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_slots > 1 %} {% translate "Select without a group" %} {% else %} {% translate "Select topic" %} {% endif %} </button>
                                                         </div>
                                                     {% else %}

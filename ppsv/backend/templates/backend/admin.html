@@ -38,14 +38,14 @@
                     <div class="text"></div>
                 </div>
             </div>
-{#            produces broken slots#}
-{#            <div id="automaticAssignmentNoOverrideDiv" class="text-button">#}
-{#                <button id="automaticAssignmentNoOverride" class="{% if running %} running {% endif %}"#}
-{#                        onclick="automaticAssignment(false)"><i#}
-{#                        class="fa fa-check" aria-hidden="true"></i>#}
-{#                </button>#}
-{#                <p>Start an automatic Assignment without Override</p>#}
-{#            </div>#}
+            {#            produces broken slots#}
+            {#            <div id="automaticAssignmentNoOverrideDiv" class="text-button">#}
+            {#                <button id="automaticAssignmentNoOverride" class="{% if running %} running {% endif %}"#}
+            {#                        onclick="automaticAssignment(false)"><i#}
+            {#                        class="fa fa-check" aria-hidden="true"></i>#}
+            {#                </button>#}
+            {#                <p>Start an automatic Assignment without Override</p>#}
+            {#            </div>#}
             <div id="finalizeAllAssignmentsDiv" class="text-button">
                 <button id="finalizeAllAssignments" onclick="finalizeAllAssignments(true)"><i
                         class="fa fa-check" aria-hidden="true"></i>
@@ -57,6 +57,12 @@
                         class="fa fa-check" aria-hidden="true"></i>
                 </button>
                 <p>Unlock all Assignments</p>
+            </div>
+            <div id="sendEmailsDiv" class="text-button">
+                <button id="sendEmails" onclick="sendEmails()"><i
+                        class="fa fa-check" aria-hidden="true"></i>
+                </button>
+                <p>Send Emails</p>
             </div>
         </div>
         <div class="section">
@@ -88,6 +94,23 @@
 
     <!-- script block for finalisation actions -->
     <script>
+
+        function sendEmails() {
+            if (confirm("Do you really want to send all Emails to all Students now?")) {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "sendEmails",
+                    },
+                    method: "POST",
+                    success: () => {
+                        alert("Emails send!");
+                    }
+                });
+            }
+
+        }
+
         let assignmentRunning = {% if running %} true {% else %} false {% endif %}
 
         function automaticAssignment(override) {

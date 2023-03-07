@@ -363,7 +363,7 @@ def overview(request):
                         args["open_group_select"] = True
                         args["groups"] = filter(
                             lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0],
-                                                                             course__term=Term.get_active_term()).max_slots,
+                                                                             course__term=Term.get_active_term()).max_slot_size,
                             models.Group.objects.filter(students=request.user.student, term=Term.get_active_term()))
 
                     # when selecting a topic alone

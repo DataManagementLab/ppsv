@@ -1,13 +1,14 @@
 import traceback
 
 from django.core.exceptions import ValidationError
+from django.core.mail import get_connection, EmailMultiAlternatives
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from course.models import Term
+from course.models import Term, Group
 from ..automatic_assignment import main as automatic_assigment
-from ..models import Assignment, TermFinalization
+from ..models import Assignment, TermFinalization, AcceptedApplications
 
 
 def handle_get_assignment_progress():
@@ -47,11 +48,13 @@ def handle_finalize(request):
             "success": "true",
         })
     else:
+        fin = TermFinalization.objects.get_or_create(term=Term.get_active_term())[0]
+        if fin.mails_send:
+            return HttpResponse(status=500, content="Emails got already send for this Term. Term is not changeable anymore")
         for assignment in Assignment.objects.all():
             if assignment.finalized_slot > 1:
                 assignment.finalized_slot -= 2
                 assignment.save()
-        fin = TermFinalization.objects.get_or_create(term=Term.get_active_term())[0]
         fin.finalized = False
         fin.save()
         return JsonResponse({
@@ -94,6 +97,78 @@ def handle_remove_broken_slots():
     return HttpResponse(status=205)
 
 
+def handle_send_mail():
+    term = Term.get_active_term()
+    if not TermFinalization.is_finalized(term):
+        return HttpResponse(status=500, content="Term needs to be finalized")
+    term_info = TermFinalization.objects.get(term=term)
+    if term_info.mails_send:
+        return HttpResponse(status=500, content="Emails got already send for this Term")
+
+    mails = {}
+    for group in Group.objects.filter(term=Term.get_active_term()):
+        for student in group.students.all():
+            if student not in mails:
+                mails[student] = None
+            else:
+                break
+            query = AcceptedApplications.objects.filter(topic_selection__group__students__in=[student])
+            email_body_german = ""
+            email_body_english = ""
+            if query.exists():
+                email_body_german += '<h3>Du (oder deine Gruppen) wurden folgenden Topics zugewiesen</h3><ul>'
+                email_body_english += '<h3>You (or your Groups) were assigned to the following Topics</h3><ul>'
+                for accepted_application in query.all():
+                    email_body_german += '<li>' + str(accepted_application.topic_selection.topic.course) + " "
+                    email_body_german += str(accepted_application.topic_selection.topic)
+                    email_body_english += '<li>' + str(accepted_application.topic_selection.topic.course) + " "
+                    email_body_english += str(accepted_application.topic_selection.topic)
+                    if accepted_application.topic_selection.group.size > 1:
+                        email_body_german += "; " + str(accepted_application.topic_selection.group.get_display)
+                        email_body_english += "; " + str(accepted_application.topic_selection.group.get_display)
+                    email_body_german += '</li>'
+                    email_body_english += '</li>'
+                email_body_german += '</ul>'
+                email_body_german += '<h3> Bitte melde dich umgehend in TUCAN zu diesen Kursen an.</h3>'
+                email_body_english += '</ul>'
+                email_body_english += '<h3> Please register as fast as possible for these Topics in TUCAN.</h3>'
+            else:
+                email_body_german += '<h3>Du (oder deine Gruppe) haben leider keinen gewünschten Platz zugewiesen bekommen.</h3>'
+                email_body_english += '<h3>Unfortunately, you (or your Groups) did not get any of your chosen Topics.</h3>'
+            mails[student] = "* english version below *" + email_body_german + "\n" + \
+                             "------------------------------------------------------------------------------------------------------" + \
+                             "\n" + email_body_english
+
+    connection = get_connection(
+        username=None,
+        password=None,
+        fail_silently=True,
+    )
+
+    subject = 'Information zur Praktikums- und Seminarplatzvergabe ' + term.name + ' / Information for Internship & Seminar Allocation ' + term.name
+    from_email = "PPSV <info@ppsv.tu-darmstadt.de>"
+
+    messages = [
+        EmailMultiAlternatives(
+            subject=subject,
+            body="<html><head></head><body>" + html_message + "</body></html>",
+            from_email=from_email,
+            to=[student.email],
+            connection=connection,
+        )
+        for student, html_message in mails.items()
+    ]
+    for m in messages:
+        m.content_subtype = 'html'
+    term_info.mails_send = True
+    term_info.save()
+
+    if connection.send_messages(messages):
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=500)
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -119,6 +194,8 @@ def handle_post(request):
             return handle_change_term(request)
         if action == "removeBrokenSlots":
             return handle_remove_broken_slots()
+        if action == "sendEmails":
+            return handle_send_mail()
 
         return HttpResponse(status=501,
                             content=f"invalid request action: {action}. Please report this and the actions you took to "
