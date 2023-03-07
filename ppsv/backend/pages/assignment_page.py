@@ -1,3 +1,5 @@
+import cProfile
+import time
 import traceback
 
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
@@ -420,6 +422,7 @@ def handle_get_topics_filtered(request):
 
 def handle_get_bulk_applications_update(request):
     """returns the status for all applications of the request"""
+    print("request")
     app_ids = request.POST.getlist('applicationIDs[]')
     app_data = {}
     for app in TopicSelection.objects.filter(pk__in=app_ids):
@@ -474,7 +477,12 @@ def handle_post(request):
         action = request.POST.get("action")
 
         if action == "getBulkApplicationsUpdate":
-            return handle_get_bulk_applications_update(request)
+            profiler = cProfile.Profile()
+            profiler.enable()
+            t = handle_get_bulk_applications_update(request)
+            profiler.disable()
+            profiler.dump_stats('getBulkApplicationsUpdate.prof')
+            return t
         if action == "selectApplication":
             return handle_select_application(request)
         if action == "changeAssignment":

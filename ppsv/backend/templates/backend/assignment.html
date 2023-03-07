@@ -56,6 +56,9 @@
                 <button id="openFirstAppGroup" onclick="openFirstAppGroup()"><i class="fa fa-times"></i></button>
             </div>
         </div>
+        <div class="group">
+            <div id="applications-pending-update"></div>
+        </div>
     </div>
 
     <div id="assignment-content">
@@ -997,7 +1000,12 @@
                                 //remove app from this topic
                                 slot.removeApplication(exchangeItem);
                                 //add app to this topic
-                                requestAddAppThis(application);
+                                if (application.slotID === -1) {
+                                    requestAddAppThis(application);
+                                } else {
+                                    const old_slot_id = application.slotID
+                                    requestSwitchSlots(application, () => requestAddOtherApp(exchangeItem, slot.slotAppRel.slots.get(old_slot_id)))
+                                }
                                 slot.slotAppRel.sortApplicationsList()
                                 //Update stats
                                 updateStatistic()
@@ -1012,13 +1020,13 @@
                     else if (application.slotID === -1) {
                         requestAddAppThis(application);
                     } else {
-                        requestSwitchSlots(application)
+                        requestSwitchSlots(application, null)
                     }
 
                     //Helper functions
 
                     //Switches Slots in this topic
-                    function requestSwitchSlots(application) {
+                    function requestSwitchSlots(application, success) {
                         //switch from slot to another
                         $.ajax({
                                 data: {
@@ -1045,6 +1053,9 @@
                                         //Update stats
                                         updateStatistic()
                                         updateBrokenSlots()
+                                        if (success != null) {
+                                            success.call(this)
+                                        }
                                     } else
                                         infoPopup("bad", applicationAcceptedText)
                                 }
@@ -1089,6 +1100,11 @@
 
                     //adds a not assigned application to this slot
                     function requestAddAppThis(application) {
+                        requestAddOtherApp(application,slot)
+                    }
+
+                    //adds a not assigned application to a slot
+                    function requestAddOtherApp(application, slot) {
                         $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -1315,34 +1331,55 @@
             }
         }
 
+        let possibleAssignmentQueue = false
+
         /**
-         * Updates all possibleAssignmentValues for all shown Topics
+         * Updates all possibleAssignmentValues for all shown Topics if there is no query running, otherwise schedules
+         * it
          */
         function updateApplicationsPossibleAssignments() {
-            let apps = []
-            let appIDs = []
-            shownTopics.forEach(slotAppRel => {
-                slotAppRel.applications.forEach(application => {
-                    apps.push(application)
-                    appIDs.push(application.id)
+            if (!possibleAssignmentQueue) {
+                possibleAssignmentQueue = true
+                helper();
+            } else if (possibleAssignmentQueue) {
+                possibleAssignmentQueue = true;
+            }
+
+            function helper() {
+                $('#applications-pending-update').html('<i class="fa fa-spin fa-circle-o-notch loading"></i>')
+
+                let apps = [];
+                let appIDs = []
+                shownTopics.forEach(slotAppRel => {
+                    slotAppRel.applications.forEach(application => {
+                        apps.push(application)
+                        appIDs.push(application.id)
+                    });
                 });
-            });
-            $.ajax({
-                data: {
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                    action: "getBulkApplicationsUpdate",
-                    applicationIDs: appIDs,
-                },
-                method: "POST",
-                dataType: "json",
-                success: data => {
-                    for (const app of apps) {
-                        app.possibleAssignments = data[app.id]['possibleAssignments'];
-                        app.collectionFullfilled = data[app.id]['collectionFulfilled'];
-                        app.updateDiv();
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "getBulkApplicationsUpdate",
+                        applicationIDs: appIDs,
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        $('#applications-pending-update').empty()
+
+                        for (const app of apps) {
+                            app.possibleAssignments = data[app.id]['possibleAssignments'];
+                            app.collectionFullfilled = data[app.id]['collectionFulfilled'];
+                            app.updateDiv();
+                        }
+                        // do next update if scheduled
+                        if (possibleAssignmentQueue) {
+                            helper()
+                        }
+                        possibleAssignmentQueue = false;
                     }
-                }
-            });
+                });
+            }
         }
 
         /**
@@ -2147,11 +2184,11 @@
         $.ajaxSetup({
             error: function (error) {
                 if (error.statusText === 'timeout') {
-                    infoPopup("bad", 'Request timeout after 10s.\nTry reloading the Page')
+                    infoPopup("bad", 'Request timeout after 10s.\nPlease reload the Page\n' )
                 } else
                     infoPopup("bad", error.statusText + " (╯°□°)╯︵ ┻━┻\n " + error.responseText);
             },
-            timeout: 10000
+            timeout: 30000
         })
     </script>
 
