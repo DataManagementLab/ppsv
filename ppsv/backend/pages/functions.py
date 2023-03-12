@@ -41,14 +41,16 @@ def create_json_response(success, msg):
 
 
 def possible_assignments_for_group(group_id, collection_number):
-    """possible applications in collection
-    :return: the number of possible applications of this group for the given collection
-    :rtype: int
+    """
+    Returns the number of possible applications of this group for the given collection
+    :param group_id: the group id
+    :param collection_number: the collection id
     """
 
     term = Term.get_active_term()
 
     all_applications = all_applications_from_group(group_id, collection_number)
+
     possible_assignments_for_group = 0
     for application in all_applications:
         query_assignments_for_topic = Assignment.objects.filter(topic=application.topic,
@@ -86,28 +88,6 @@ def all_applications_from_group(group_id, collection_number):
     return list(TopicSelection.objects.filter(group_id=group_id, topic__course__term=Term.get_active_term()).filter(
         collection_number=collection_number).order_by(
         'priority'))
-
-
-def get_all_applications_by_collection():
-    """returns a dictionary with a (group,collection_number) pair as key, containing all applications for this group in
-     this collection
-    """
-
-    application_for_group = {}
-    for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term()):
-        if (application.group, application.collection_number) not in application_for_group:
-            application_for_group[(application.group, application.collection_number)] = []
-        application_for_group[(application.group, application.collection_number)].append(application)
-    return application_for_group
-
-
-def get_all_applications_in_assignments():
-    """returns a list of (group,collection_number) pairs, containing all accepted applications"""
-    all_accepted_applications = []
-    for assignment in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
-        for accepted_application in assignment.accepted_applications.all():
-            all_accepted_applications.append((accepted_application.group, accepted_application.collection_number))
-    return all_accepted_applications
 
 
 def get_broken_slots():
@@ -165,11 +145,9 @@ def get_group_data(group_id, collection_id):
     :return: all the group data connected to the given collection of the given group
     :rtype: JsonResponse
     """
-    group = Group.objects.get(id=group_id,term=Term.get_active_term())
+    group = Group.objects.get(id=group_id, term=Term.get_active_term())
 
-    members = []
-    for member in group.members:
-        members.append(member.tucan_id)
+    members = list(group.members.all())
 
     assignment = get_or_none(Assignment, accepted_applications__group__in=[group],
                              accepted_applications__collection_number=collection_id,
@@ -209,7 +187,8 @@ def get_score_and_chart_data(request):
         application_query = TopicSelection.objects.filter(topic__course__cp__gte=min_cp,
                                                           topic__course__type__in=course_types,
                                                           topic__course__faculty__in=faculties,
-                                                          topic__course__term=Term.get_active_term())
+                                                          topic__course__term=Term.get_active_term(),
+                                                          collection_number__gt=0)
     else:
         assignment_query = Assignment.objects.filter(topic__course__cp__range=(min_cp, max_cp),
                                                      topic__course__type__in=course_types,
@@ -218,7 +197,8 @@ def get_score_and_chart_data(request):
         application_query = TopicSelection.objects.filter(topic__course__cp__range=(min_cp, max_cp),
                                                           topic__course__type__in=course_types,
                                                           topic__course__faculty__in=faculties,
-                                                          topic__course__term=Term.get_active_term())
+                                                          topic__course__term=Term.get_active_term(),
+                                                          collection_number__gt=0)
 
     data_statistic = {
         'groups': {

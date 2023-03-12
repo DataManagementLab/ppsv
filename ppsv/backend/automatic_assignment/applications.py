@@ -24,7 +24,7 @@ def init_applications(override_assignments):
             assignment__topic__course__term=Term.get_active_term()):
         if (not override_assignments) or accepted_application.assignment.locked or accepted_application.locked:
             init_accepted_applications.append(accepted_application.topic_selection.dict_key)
-    for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term()).order_by('priority'):
+    for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term(),collection_number__gt=0).order_by('priority'):
         if application.dict_key not in init_accepted_applications:
             temp_application = TempApplication(
                 id=application.pk,

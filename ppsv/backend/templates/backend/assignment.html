@@ -733,7 +733,6 @@
                         csrfmiddlewaretoken: "{{ csrf_token }}",
                         action: "removeAssignment",
                         applicationID: application.id,
-                        slotID: application.slotID
                     },
                     method: "POST",
                     dataType: "json",
@@ -952,7 +951,7 @@
                     infoPopup("wait", "Waiting for server response");
 
                     if (override && !exchange) {
-                        requestRemoveOtherApp(application, (data) => {
+                        requestRemoveApp(application, (data) => {
                             if (data['requestStatus']) {
                                 //remove from topic if shown
                                 removeFromShownTopics(application);
@@ -968,7 +967,7 @@
                             updateBrokenSlots()
                         });
                     } else if (override && exchange) {
-                        requestRemoveOtherApp(application, (data) => {
+                        requestRemoveApp(application, (data) => {
                             if (data['requestStatus']) {
                                 //remove app from topic if shown
                                 removeFromShownTopics(application);
@@ -1033,7 +1032,6 @@
                                     csrfmiddlewaretoken: "{{ csrf_token }}",
                                     action: "changeAssignment",
                                     applicationID: application.id,
-                                    oldSlotID: application.slotID,
                                     newSlotID: slot.id
                                 },
                                 method: "POST",
@@ -1069,24 +1067,6 @@
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
                                 action: "removeAssignment",
-                                applicationID: application.id,
-                                slotID: slot.id
-                            },
-                            method: "POST",
-                            dataType: "json",
-                            fail: () => {
-                                infoPopup("bad", "Internal Server Error.");
-                            },
-                            success: success
-                        });
-                    }
-
-                    //removes an application from its assignment
-                    function requestRemoveOtherApp(application, success) {
-                        $.ajax({
-                            data: {
-                                csrfmiddlewaretoken: "{{ csrf_token }}",
-                                action: "removeOtherAssignment",
                                 applicationID: application.id,
                             },
                             method: "POST",
