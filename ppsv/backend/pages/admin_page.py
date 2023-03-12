@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from course.models import Term, Group
+from ppsv import settings
 from ..automatic_assignment import main as automatic_assigment
 from ..models import Assignment, TermFinalization, AcceptedApplications
 
@@ -201,7 +202,8 @@ def handle_post(request):
                             content=f"invalid request action: {action}. Please report this and the actions you took to "
                                     f"get this message to an administrator!")
     except Exception as e:
-        print(traceback.format_exc())
+        if settings.DEBUG:
+            print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request caused an exception: \n {e}")
 
 

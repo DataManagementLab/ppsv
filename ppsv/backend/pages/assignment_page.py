@@ -14,6 +14,7 @@ from backend.pages.functions import possible_assignments_for_group, \
     get_score_and_chart_data
 from backend.pages.home_page import handle_clear_slot
 from course.models import TopicSelection, Topic, CourseType, Course, Term
+from ppsv import settings
 
 
 # ----------Database Interactions---------- #
@@ -517,7 +518,8 @@ def handle_post(request):
                                     f"to get this message to an administrator!")
 
     except Exception as e:
-        print(traceback.format_exc())
+        if settings.DEBUG:
+            print(traceback.format_exc())
         return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 
