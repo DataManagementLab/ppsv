@@ -147,7 +147,9 @@ def get_group_data(group_id, collection_id):
     """
     group = Group.objects.get(id=group_id, term=Term.get_active_term())
 
-    members = list(group.members.all())
+    members = []
+    for member in group.members:
+        members.append(member.tucan_id)
 
     assignment = get_or_none(Assignment, accepted_applications__group__in=[group],
                              accepted_applications__collection_number=collection_id,
