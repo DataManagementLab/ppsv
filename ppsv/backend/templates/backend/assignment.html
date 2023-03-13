@@ -1080,7 +1080,7 @@
 
                     //adds a not assigned application to this slot
                     function requestAddAppThis(application) {
-                        requestAddOtherApp(application,slot)
+                        requestAddOtherApp(application, slot)
                     }
 
                     //adds a not assigned application to a slot
@@ -1369,8 +1369,8 @@
          */
         function handleLockButtonClickSlot(slot, buttonID) {
             $(buttonID).on('click', {slot: slot}, function (event) {
-                console.log("clicked button");
                 let oldFinalized = event.data.slot.finalized;
+                console.log(oldFinalized)
                 if (oldFinalized === 0) {
                     if (event.data.slot.nowAssignedSize >= event.data.slot.minSlotSize) {
                         $(buttonID).removeClass("fa fa-unlock-alt lock-open")
@@ -1396,15 +1396,16 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        infoPopup(data["finalizationChangedStatus"], data["finalizationChangedText"]);
-                        if (!data['finalizationChanged']) {
+                        if (!data['requestStatus']) {
                             event.data.slot.finalized = oldFinalized;
                         }
-                        if (data['finalizationValue'] === 0) {
+                        if (event.data.slot.finalized === 0) {
                             event.data.slot.div.addClass('droppable');
                         } else {
                             event.data.slot.div.removeClass('droppable');
                         }
+                        let popupState = data['requestStatus'] ? 'good' : 'bad'
+                        infoPopup(popupState, data["text"]);
                     }
                 })
             });
@@ -1418,7 +1419,6 @@
         function handleLockButtonClickApplication(application, buttonID) {
 
             $(buttonID).on('click', {application: application}, function (event) {
-                console.log("clicked button");
 
                 $.ajax({
                     data: {
@@ -1431,10 +1431,11 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        infoPopup(data["finalizationChangedStatus"], data["finalizationChangedText"]);
-                        event.data.application.finalized = data['finalizationValue'];
-                        if (data['finalizationChanged']) {
-                            if (data['finalizationValue']) {
+                        let popupState = 'bad';
+                        if (data['requestStatus']) {
+                            popupState = 'good';
+                            event.data.application.finalized = !event.data.application.finalized;
+                            if (event.data.application.finalized) {
                                 $(buttonID).removeClass("fa fa-unlock-alt lock-open");
                                 $(buttonID).addClass("fa fa-lock lock-closed");
                             } else {
@@ -1442,6 +1443,7 @@
                                 $(buttonID).addClass("fa fa-unlock-alt lock-open");
                             }
                         }
+                        infoPopup(popupState, data["text"]);
                     }
                 })
             });
@@ -2164,7 +2166,7 @@
         $.ajaxSetup({
             error: function (error) {
                 if (error.statusText === 'timeout') {
-                    infoPopup("bad", 'Request timeout after 10s.\nPlease reload the Page\n' )
+                    infoPopup("bad", 'Request timeout after 10s.\nPlease reload the Page\n')
                 } else
                     infoPopup("bad", error.statusText + " (╯°□°)╯︵ ┻━┻\n " + error.responseText);
             },

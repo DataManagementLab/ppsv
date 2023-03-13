@@ -97,7 +97,7 @@ def remove_assignment(application_id):
         return False, "This assignment is locked and cannot be changed"
 
     # delete the assignment
-    assignment.accepted_applications.remove(application)
+    accepted_application.delete()
 
     # delete the slot if it is empty
     if assignment.accepted_applications.count() == 0:
@@ -158,7 +158,7 @@ def handle_select_topic(request):
 
     # load slot data
     term_finalized = TermFinalization.is_finalized(Term.get_active_term())
-    slots_finalized = [int(term_finalized) for _ in range(topic.max_slots)]
+    slots_finalized = [int(term_finalized) * 2 for _ in range(topic.max_slots)]
     if not term_finalized:
         counter = 0
         for assignment in assignments:
@@ -255,35 +255,26 @@ def handle_change_finalized_value_slot(request):
     assignment = Assignment.objects.get_or_create(slot_id=request.POST.get("slotID"),
                                                   topic_id=request.POST.get("slotTopicID"))[0]
     if TermFinalization.is_finalized(Term.get_active_term()):
-        assignment.finalized_slot = 2
+        if assignment.finalized_slot < 2:
+            assignment.finalized_slot += 2
+            assignment.save()
 
     old_finalized_value = assignment.finalized_slot
 
     if old_finalized_value >= 2:
         finalization_changed = False
-        finalization_value = old_finalized_value
-        finalization_changed_status = "bad"
         finalization_changed_text = "Slot can't be unlocked"
     elif (assignment.assigned_student_to_slot_count < assignment.topic.min_slot_size) and (old_finalized_value == 0):
         finalization_changed = False
-        finalization_value = old_finalized_value
-        finalization_changed_status = "bad"
         finalization_changed_text = "Only slots with the minimum amount of needed applications can be locked"
     else:
         assignment.finalized_slot = request.POST.get("newFinalized")
         assignment.save()
         finalization_changed = True
-        finalization_value = request.POST.get("newFinalized")
-        finalization_changed_status = "good"
         finalization_changed_text = "Slot has been locked" if (
                 old_finalized_value == 0) else "Slot has been unlocked"
 
-    return JsonResponse({
-        'finalizationChanged': finalization_changed,
-        'finalizationValue': finalization_value,
-        'finalizationChangedStatus': finalization_changed_status,
-        'finalizationChangedText': finalization_changed_text,
-    })
+    return create_json_response(finalization_changed, finalization_changed_text)
 
 
 def handle_change_finalized_value_application(request):
@@ -307,27 +298,16 @@ def handle_change_finalized_value_application(request):
     old_finalized_value_slot = assignment_slot.finalized_slot
 
     if old_finalized_value_slot < 2:
-
         old_finalized_value_application = accepted_application.finalized_assignment
         accepted_application.finalized_assignment = not old_finalized_value_application
         accepted_application.save()
         finalization_changed = True
-        finalization_value = accepted_application.finalized_assignment
-        finalization_changed_status = "good"
         finalization_changed_text = "Assignment has been locked" if not old_finalized_value_application else "Assignment has been unlocked"
     else:
         finalization_changed = False
-        finalization_value = accepted_application.finalized_assignment
-
-        finalization_changed_status = "bad"
         finalization_changed_text = "Application can't be (un)locked"
 
-    return JsonResponse({
-        'finalizationChanged': finalization_changed,
-        'finalizationValue': finalization_value,
-        'finalizationChangedStatus': finalization_changed_status,
-        'finalizationChangedText': finalization_changed_text,
-    })
+    return create_json_response(finalization_changed, finalization_changed_text)
 
 
 def handle_get_statistic_data(request):
