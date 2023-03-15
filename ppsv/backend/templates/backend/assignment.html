@@ -23,10 +23,6 @@
 {% endblock %}
 
 {% block content %}
-    <style>
-
-    </style>
-
     <div id="user-feedback"></div>
 
     <div id="assignment-topBar" class="topBar">
@@ -412,6 +408,11 @@
             $('#group-by-prio-0').show()
         })
 
+        /**
+         * Opens a tab of the group by priority window
+         * @param event the event that triggered the function
+         * @param index the index of the tab to open
+         */
         function openTab(event, index) {
             $('.tab').each((index, element) => {
                 $(element).hide();
@@ -426,6 +427,9 @@
             $(event.currentTarget).addClass('active');
         }
 
+        /**
+         * Reloads the tabs of the group by priority window
+         */
         function reloadTabs() {
             for (let i = 0; i < 7; i++) {
                 const tab = $('#group-by-prio-' + i);
@@ -510,6 +514,11 @@
             }, 250);
         }
 
+        /**
+         * Clears the slot with the given topic and assignment id
+         * @param topicID the topic id of the slot
+         * @param assignmentID the assignment id of the slot
+         */
         function removeBrokenSlot(topicID, assignmentID) {
             if (confirm("This well remove all saved applications from this slot.\n This is not reversible\n Do you want to continue?")) {
                 $.ajax({
@@ -531,6 +540,9 @@
     <script>
         let openFirstAppOfGroup = false;
 
+        /**
+         * Toggles whether the first application of a group should be opened upon clicking on the group
+         */
         function openFirstAppGroup() {
             const button = $('#openFirstAppGroup');
             button.toggleClass('selected');
@@ -584,6 +596,8 @@
 
         /**
          * Function for retrieving details about a group and displaying it
+         * @param groupID  The id of the group
+         * @param collectionID The collection of the group
          */
         function getGroupDetails(groupID, collectionID) {
             if ($('#assignment-modal').is(':visible'))
@@ -1370,7 +1384,6 @@
         function handleLockButtonClickSlot(slot, buttonID) {
             $(buttonID).on('click', {slot: slot}, function (event) {
                 let oldFinalized = event.data.slot.finalized;
-                console.log(oldFinalized)
                 if (oldFinalized === 0) {
                     if (event.data.slot.nowAssignedSize >= event.data.slot.minSlotSize) {
                         $(buttonID).removeClass("fa fa-unlock-alt lock-open")
@@ -1396,7 +1409,8 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        if (!data['requestStatus']) {
+                        infoPopup(data["finalizationChangedStatus"], data["finalizationChangedText"]);
+                        if (!data['finalizationChanged']) {
                             event.data.slot.finalized = oldFinalized;
                         }
                         if (event.data.slot.finalized === 0) {
@@ -2166,7 +2180,7 @@
         $.ajaxSetup({
             error: function (error) {
                 if (error.statusText === 'timeout') {
-                    infoPopup("bad", 'Request timeout after 10s.\nPlease reload the Page\n')
+                    infoPopup("bad", 'Request timeout after 10s.\nPlease reload the Page\n' )
                 } else
                     infoPopup("bad", error.statusText + " (╯°□°)╯︵ ┻━┻\n " + error.responseText);
             },

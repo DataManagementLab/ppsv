@@ -311,6 +311,9 @@ def handle_change_finalized_value_application(request):
 
 
 def handle_get_statistic_data(request):
+    """
+    Returns the statistic data for the current term
+    """
     data = get_score_and_chart_data(request)
     broken_slots = get_broken_slots()
 
@@ -322,9 +325,11 @@ def handle_get_statistic_data(request):
         "notAssignedGroups": data[3]
     })
 
-
 def handle_get_topics_filtered(request):
-    """returns a list of topicIDs of the applied filter"""
+    """
+    Returns the statistic data for the current term.
+    This method will also apply the given filters for CP, course type and faculty.
+    """
     min_cp = int(request.POST.get('minCP'))
     max_cp = int(request.POST.get('maxCP'))
     course_types = request.POST.getlist('courseTypes[]')
@@ -336,7 +341,7 @@ def handle_get_topics_filtered(request):
                                            course__faculty__in=faculties,
                                            course__term=Term.get_active_term()))
     else:
-        topics = list(Topic.objects.filter(course__cp__in=[min_cp, max_cp],
+        topics = list(Topic.objects.filter(course__cp__range=(min_cp, max_cp),
                                            course__type__in=course_types,
                                            course__faculty__in=faculties,
                                            course__term=Term.get_active_term()))
@@ -363,7 +368,7 @@ def handle_get_topics_filtered(request):
 
 def handle_get_bulk_applications_update(request):
     """returns the status for all applications of the request"""
-    print("request")
+
     app_ids = request.POST.getlist('applicationIDs[]')
     app_data = {}
     for app in TopicSelection.objects.filter(pk__in=app_ids, collection_number__gt=0):
@@ -395,6 +400,11 @@ def handle_groups_by_prio():
 
 
 def handle_get_broken_slots():
+    """
+    returns two lists of all broken slots each with (topicID, slotid, String of the Slot, Error Message) Tuples.
+    The first list are slots that are non-critical errors, and the second are slots that are critical errors and could
+    cause issues
+    """
     return JsonResponse({
         'brokenSlots': get_broken_slots()
     })

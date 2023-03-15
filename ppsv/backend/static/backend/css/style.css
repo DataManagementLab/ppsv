@@ -758,12 +758,10 @@ p {
 #overrideControl.selected .fa:before {
     content: "\f00c";
     font-size: 85%;
-
 }
 
 #ignoreAssigned .fa:before {
     content: "\f00d";
-
 }
 
 #ignoreAssigned.selected .fa:before {
@@ -976,10 +974,10 @@ p {
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 3px 10px;
     transition: 0.3s;
     border-bottom: var(--lightblue) 1px solid;
     margin-bottom: 1px;
+    max-height: 34px;
 }
 
 /* Change background color of buttons on hover */

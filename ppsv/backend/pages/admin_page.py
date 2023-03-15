@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from course.models import Term, Group
+from course.models import Term, Group, TopicSelection
 from ppsv import settings
 from ..automatic_assignment import main as automatic_assigment
 from ..models import Assignment, TermFinalization, AcceptedApplications
@@ -93,12 +93,16 @@ def handle_remove_broken_slots():
         else:
             if not slot.assigned_student_to_slot_count == 0 and \
                     slot.assigned_student_to_slot_count < slot.topic.min_slot_size:
-                slot.accepted_applications.clear()
-                slot.save()
+                slot.delete()
     return HttpResponse(status=205)
 
 
 def handle_send_mail():
+    """
+    sends an email to all students that have selected a topic in the current term.
+    If emails have already been sent or the current term is not finalized, this function will return an error.
+    """
+
     term = Term.get_active_term()
     if not TermFinalization.is_finalized(term):
         return HttpResponse(status=500, content="Term needs to be finalized")
@@ -113,11 +117,12 @@ def handle_send_mail():
                 mails[student] = None
             else:
                 break
-            query = AcceptedApplications.objects.filter(topic_selection__group__students__in=[student])
+            query = AcceptedApplications.objects.filter(topic_selection__group__students__in=[student],
+                                                        topic_selection__group__term=Term.get_active_term())
             email_body_german = ""
             email_body_english = ""
             if query.exists():
-                email_body_german += '<h3>Du (oder deine Gruppen) wurden folgenden Topics zugewiesen</h3><ul>'
+                email_body_german += '<h3>Ihnen (oder Ihren Gruppen) wurden folgenden Themen zugewiesen</h3><ul>'
                 email_body_english += '<h3>You (or your Groups) were assigned to the following Topics</h3><ul>'
                 for accepted_application in query.all():
                     email_body_german += '<li>' + str(accepted_application.topic_selection.topic.course) + " "
@@ -130,11 +135,12 @@ def handle_send_mail():
                     email_body_german += '</li>'
                     email_body_english += '</li>'
                 email_body_german += '</ul>'
-                email_body_german += '<h3> Bitte melde dich umgehend in TUCAN zu diesen Kursen an.</h3>'
+                email_body_german += '<h3> Bitte melden Sie sich zeitnah in TUCAN zu diesen Kursen an.</h3>'
                 email_body_english += '</ul>'
                 email_body_english += '<h3> Please register as fast as possible for these Topics in TUCAN.</h3>'
-            else:
-                email_body_german += '<h3>Du (oder deine Gruppe) haben leider keinen gewünschten Platz zugewiesen bekommen.</h3>'
+            elif TopicSelection.objects.filter(group__students__in=[student], collection_number__gt=0,
+                                               group__term=Term.get_active_term()).exists():
+                email_body_german += '<h3>Ihnen (oder Ihren Gruppen) wurde leider keiner der gewünschten Plätze zugewiesen.</h3>'
                 email_body_english += '<h3>Unfortunately, you (or your Groups) did not get any of your chosen Topics.</h3>'
             mails[student] = "* english version below *" + email_body_german + "\n" + \
                              "------------------------------------------------------------------------------------------------------" + \
@@ -238,7 +244,7 @@ def admin_page(request):
     """
 
     if not request.user.is_superuser:
-        return redirect(reverse('admin:login') + '?next=' + reverse('backend:assignment_page'))
+        return redirect(reverse('admin:login') + '?next=' + reverse('backend:admin_page'))
 
     # check if the request is a post
     if request.method == "POST":
