@@ -5,6 +5,7 @@ omit =
     */__init__.py
     */admin.py
     */apps.py
+    */export_applications_and_assignments_page.py
     */automatic_assignment/*
     */tests.py
     ppsv/*
