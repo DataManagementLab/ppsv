@@ -35,7 +35,6 @@
     <script src="{% static 'backend/js/cookie.js' %}"></script>
 
 
-
 </head>
 
 
@@ -50,15 +49,18 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
     <div id="header" class="header-background">
         <div class="white-strip"></div>
         <div id="header-content">
-            <h3> <a class="default_look" href="{% url 'backend:home_page' %}"> {% translate "Internship & Seminar Allocation" %} - {% block title %} {% endblock %} </a></h3>
+            <h3><a class="default_look"
+                   href="{% url 'backend:home_page' %}"> {% translate "Internship & Seminar Allocation" %} -
+                {% block title %} {% endblock %} </a></h3>
             <div id="controls">
                 {% block additional_buttons %}
                 {% endblock %}
                 {% if user.is_authenticated %}
                     {% if user.is_superuser %}
-                        <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">Django
-                            Admin</a>
-                        <a href="{% url 'backend:admin_page' %}" class="adminbtn btn btn-danger navbar-inline-list">Admin Controls</a>
+                        <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">
+                            Django Admin</a>
+                        <a href="{% url 'backend:admin_page' %}" class="adminbtn btn btn-danger navbar-inline-list">
+                            Admin Controls</a>
                     {% endif %}
                 {% endif %}
                 <div class="login-box">

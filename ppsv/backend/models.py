@@ -91,10 +91,19 @@ class Assignment(models.Model):
 
     @property
     def max_assigned_student_to_slot(self):
+        """
+        :return: returns the maximum amount of students that can be assigned to slot of the corresponding topic
+        :rtype: int
+        """
         return self.topic.max_slot_size
 
     @property
     def any_application_locked(self):
+        """
+        :return: Returns true, if any corresponding accepted applications are locked
+        :rtype: Boolean
+        """
+
         for app in AcceptedApplications.objects.filter(assignment=self):
             if app.locked:
                 return True
