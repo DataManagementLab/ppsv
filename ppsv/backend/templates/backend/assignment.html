@@ -514,6 +514,11 @@
             }, 250);
         }
 
+        /**
+         * Clears the slot with the given topic and assignment id
+         * @param topicID the topic id of the slot
+         * @param assignmentID the assignment id of the slot
+         */
         function removeBrokenSlot(topicID, assignmentID) {
             if (confirm("This well remove all saved applications from this slot.\n This is not reversible\n Do you want to continue?")) {
                 $.ajax({
@@ -536,7 +541,7 @@
         let openFirstAppOfGroup = false;
 
         /**
-         * Toggles wheter the first application of a group should be opened upon clicking on the group
+         * Toggles whether the first application of a group should be opened upon clicking on the group
          */
         function openFirstAppGroup() {
             const button = $('#openFirstAppGroup');
@@ -591,8 +596,8 @@
 
         /**
          * Function for retrieving details about a group and displaying it
-         * @param groupID the group id
-         * @param collectionID the collection id
+         * @param groupID  The id of the group
+         * @param collectionID The collection of the group
          */
         function getGroupDetails(groupID, collectionID) {
             if ($('#assignment-modal').is(':visible'))
@@ -742,7 +747,6 @@
                         csrfmiddlewaretoken: "{{ csrf_token }}",
                         action: "removeAssignment",
                         applicationID: application.id,
-                        slotID: application.slotID
                     },
                     method: "POST",
                     dataType: "json",
@@ -961,7 +965,7 @@
                     infoPopup("wait", "Waiting for server response");
 
                     if (override && !exchange) {
-                        requestRemoveOtherApp(application, (data) => {
+                        requestRemoveApp(application, (data) => {
                             if (data['requestStatus']) {
                                 //remove from topic if shown
                                 removeFromShownTopics(application);
@@ -977,7 +981,7 @@
                             updateBrokenSlots()
                         });
                     } else if (override && exchange) {
-                        requestRemoveOtherApp(application, (data) => {
+                        requestRemoveApp(application, (data) => {
                             if (data['requestStatus']) {
                                 //remove app from topic if shown
                                 removeFromShownTopics(application);
@@ -1042,7 +1046,6 @@
                                     csrfmiddlewaretoken: "{{ csrf_token }}",
                                     action: "changeAssignment",
                                     applicationID: application.id,
-                                    oldSlotID: application.slotID,
                                     newSlotID: slot.id
                                 },
                                 method: "POST",
@@ -1079,24 +1082,6 @@
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
                                 action: "removeAssignment",
                                 applicationID: application.id,
-                                slotID: slot.id
-                            },
-                            method: "POST",
-                            dataType: "json",
-                            fail: () => {
-                                infoPopup("bad", "Internal Server Error.");
-                            },
-                            success: success
-                        });
-                    }
-
-                    //removes an application from its assignment
-                    function requestRemoveOtherApp(application, success) {
-                        $.ajax({
-                            data: {
-                                csrfmiddlewaretoken: "{{ csrf_token }}",
-                                action: "removeOtherAssignment",
-                                applicationID: application.id,
                             },
                             method: "POST",
                             dataType: "json",
@@ -1109,7 +1094,7 @@
 
                     //adds a not assigned application to this slot
                     function requestAddAppThis(application) {
-                        requestAddOtherApp(application,slot)
+                        requestAddOtherApp(application, slot)
                     }
 
                     //adds a not assigned application to a slot
@@ -1398,7 +1383,6 @@
          */
         function handleLockButtonClickSlot(slot, buttonID) {
             $(buttonID).on('click', {slot: slot}, function (event) {
-                console.log("clicked button");
                 let oldFinalized = event.data.slot.finalized;
                 if (oldFinalized === 0) {
                     if (event.data.slot.nowAssignedSize >= event.data.slot.minSlotSize) {
@@ -1429,11 +1413,13 @@
                         if (!data['finalizationChanged']) {
                             event.data.slot.finalized = oldFinalized;
                         }
-                        if (data['finalizationValue'] === 0) {
+                        if (event.data.slot.finalized === 0) {
                             event.data.slot.div.addClass('droppable');
                         } else {
                             event.data.slot.div.removeClass('droppable');
                         }
+                        let popupState = data['requestStatus'] ? 'good' : 'bad'
+                        infoPopup(popupState, data["text"]);
                     }
                 })
             });
@@ -1447,7 +1433,6 @@
         function handleLockButtonClickApplication(application, buttonID) {
 
             $(buttonID).on('click', {application: application}, function (event) {
-                console.log("clicked button");
 
                 $.ajax({
                     data: {
@@ -1460,10 +1445,11 @@
                     method: "POST",
                     dataType: "json",
                     success: data => {
-                        infoPopup(data["finalizationChangedStatus"], data["finalizationChangedText"]);
-                        event.data.application.finalized = data['finalizationValue'];
-                        if (data['finalizationChanged']) {
-                            if (data['finalizationValue']) {
+                        let popupState = 'bad';
+                        if (data['requestStatus']) {
+                            popupState = 'good';
+                            event.data.application.finalized = !event.data.application.finalized;
+                            if (event.data.application.finalized) {
                                 $(buttonID).removeClass("fa fa-unlock-alt lock-open");
                                 $(buttonID).addClass("fa fa-lock lock-closed");
                             } else {
@@ -1471,6 +1457,7 @@
                                 $(buttonID).addClass("fa fa-unlock-alt lock-open");
                             }
                         }
+                        infoPopup(popupState, data["text"]);
                     }
                 })
             });
