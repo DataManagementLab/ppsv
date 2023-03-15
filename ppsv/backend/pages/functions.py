@@ -46,11 +46,13 @@ def possible_assignments_for_group(group_id, collection_number):
     :rtype: int
     """
 
+    term = Term.get_active_term()
+
     all_applications = all_applications_from_group(group_id, collection_number)
     possible_assignments_for_group = 0
     for application in all_applications:
         query_assignments_for_topic = Assignment.objects.filter(topic=application.topic,
-                                                                topic__course__term=Term.get_active_term())
+                                                                topic__course__term=term)
         if query_assignments_for_topic.count() < application.topic.max_slots:
             possible_assignments_for_group += 1
             continue
@@ -163,7 +165,7 @@ def get_group_data(group_id, collection_id):
     :return: all the group data connected to the given collection of the given group
     :rtype: JsonResponse
     """
-    group = Group.objects.get(id=group_id)
+    group = Group.objects.get(id=group_id,term=Term.get_active_term())
 
     members = []
     for member in group.members:
@@ -189,7 +191,6 @@ def get_group_data(group_id, collection_id):
             'members': members,
             'assigned': assignment.topic.id if assignment is not None else None,
             'collection': application_in_collection,
-            'groupID': group.pk
         }
     )
 
@@ -256,11 +257,11 @@ def get_score_and_chart_data(request):
             score += get_score_for_assigned(application.group.size, application.priority)
             max_score += get_score_for_assigned(application.group.size, 1)
             min_score += get_score_for_not_assigned()
-            handled_collections.append((application.group, application.collection_number))
+            handled_collections.append(application.dict_key)
 
     for application in application_query:
-        if (application.group, application.collection_number) not in handled_collections:
-            handled_collections.append((application.group, application.collection_number))
+        if application.dict_key not in handled_collections:
+            handled_collections.append(application.dict_key)
             if not check_collection_satisfied(application):
                 data_statistic['groups'][-1] += 1
                 data_statistic['students'][-1] += application.group.size

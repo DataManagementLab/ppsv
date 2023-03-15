@@ -2,11 +2,11 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from course.models import Group
+from course.models import Group
+from course.models import Topic
 from course.models import Topic
 from course.models import TopicSelection
 from course.models import TopicSelection, Term
-from course.models import Topic
-from course.models import Group
 
 
 class Assignment(models.Model):
@@ -153,15 +153,13 @@ class AcceptedApplications(models.Model):
     @classmethod
     def get_collection_dict(cls):
         """
-        :return: a dict with keys (group, collection_number) and values "list of all applications
+        :return: a dict with keys (group, collection_number) and values accepted application
         :rtype: QuerySet
          """
         collection_dict = {}
         for application in cls.objects.filter(assignment__topic__course__term=Term.get_active_term()):
             application = application.topic_selection
-            if application.dict_key not in collection_dict:
-                collection_dict[application.dict_key] = []
-            collection_dict[application.dict_key].append(application)
+            collection_dict[application.dict_key] = application
 
         return collection_dict
 
@@ -169,6 +167,7 @@ class AcceptedApplications(models.Model):
 class TermFinalization(models.Model):
     """ Saves if a term is finalized or not"""
     term = models.ForeignKey(Term, on_delete=models.CASCADE)
+    mails_send = models.BooleanField(default=False)
     finalized = models.BooleanField(default=False)
 
     @staticmethod

@@ -32,10 +32,12 @@
                     <input id="searchbar" type="text" placeholder="{% translate "Search course/topic" %}">
                 </label>
             </div>
-            <div id="filterDiv" class="text-button">
-                <p>Filter: </p>
+            <div id="filterDiv" class="button-text">
                 <button id="filterButton" onclick="openFilterModal()"><i class="fa fa-filter" aria-hidden="true"></i>
+                    Filter
+
                 </button>
+
             </div>
             <div id="overrideControlDiv" class="text-button">
                 <p>Override Slot:</p>
@@ -45,6 +47,13 @@
                 <p>Override Application:</p>
                 <button id="ignoreAssigned" onclick="ignoreAssigned()"><i class="fa fa-times"></i></button>
             </div>
+            <div id="openFirstAppGroup" class="text-button">
+                <p>Open first open Application of group:</p>
+                <button id="openFirstAppGroup" onclick="openFirstAppGroup()"><i class="fa fa-times"></i></button>
+            </div>
+        </div>
+        <div class="group">
+            <div id="applications-pending-update"></div>
         </div>
     </div>
 
@@ -187,10 +196,49 @@
 
     </div>
 
-    <div id="statistics-window">
-        <span title="influenced by current active filters">Statistics<i
-                class="icon fa fa-chevron-up rotation"></i></span>
-        <div id="statistics-div">
+    <div id="broken-slots" class="bottom-tab">
+        <span title="not influenced by current active filters">
+            Broken Slots
+            <i class="icon fa fa-chevron-up rotation"></i>
+        </span>
+        <div id="broken-slots-div" class="bottom-tab-content inner-list">
+        </div>
+    </div>
+
+    <div id="group-by-prio" class="bottom-tab">
+        <span title="not influenced by current active filters">
+            Groups by currently assigned priority
+            <i class="icon fa fa-chevron-up rotation"></i>
+        </span>
+        <div class="tabs-div bottom-tab-content">
+            <div class="tabs-sel">
+                <button class="tablinks active" onclick="openTab(event,0)">0</button>
+                <button class="tablinks" onclick="openTab(event,6)">>5</button>
+                <button class="tablinks" onclick="openTab(event,5)">5</button>
+                <button class="tablinks" onclick="openTab(event,4)">4</button>
+                <button class="tablinks" onclick="openTab(event,3)">3</button>
+                <button class="tablinks" onclick="openTab(event,2)">2</button>
+                <button class="tablinks" onclick="openTab(event,1)">1</button>
+                <button class="tablinks" onclick="reloadTabs()"><i class="fa fa-refresh"></i></button>
+            </div>
+            <div class="tabs-tabs">
+                <div class="tab inner-list" id="group-by-prio-0"></div>
+                <div class="tab inner-list" id="group-by-prio-1"></div>
+                <div class="tab inner-list" id="group-by-prio-2"></div>
+                <div class="tab inner-list" id="group-by-prio-3"></div>
+                <div class="tab inner-list" id="group-by-prio-4"></div>
+                <div class="tab inner-list" id="group-by-prio-5"></div>
+                <div class="tab inner-list" id="group-by-prio-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="statistics-window" class="bottom-tab">
+        <span title="influenced by current active filters">
+            Statistics
+            <i class="icon fa fa-chevron-up rotation"></i>
+        </span>
+        <div id="statistics-div" class="bottom-tab-content">
             <div id="statistics-numbers">
                 <div>
                     <p> Score: </p>
@@ -229,6 +277,8 @@
          * Schedules an update of Statistic and Stats
          */
         function updateStatistic() {
+
+
             if (statisticQueue != null) {
                 clearTimeout(statisticQueue);
             }
@@ -238,6 +288,8 @@
                     const score = $('#statistics-score');
                     const brokenSlots = $('#statistics-broken_slots');
                     const notAssignedGroups = $('#statistics-not_assigned_groups');
+                    $('#statistics-window span').html($('<div class="title"><span title="influenced by current active filters">Statistics  <i class="fa fa-spin fa-circle-o-notch loading"></i></span></div><i class="icon fa fa-chevron-up rotation"></i>'));
+
                     $.ajax({
                         data: {
                             csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -333,6 +385,7 @@
                                 notAssignedGroups.text(data["notAssignedGroups"])
                             }
 
+                            $('#statistics-window span').html($('<span title="influenced by current active filters">Statistics<i class="icon fa fa-chevron-up rotation"></i></span>'));
                             updateNumbers();
                             updateChart();
                         }
@@ -342,8 +395,155 @@
         }
     </script>
 
+    <!-- Script block for Groups by Priority -->
+    <script>
+        $(document).ready(function () {
+            const div = $('#group-by-prio .bottom-tab-content')
+            div.slideToggle(0)
+            $('#group-by-prio span').click(function () {
+                div.slideToggle();
+                $('#group-by-prio span .icon').toggleClass('rotation');
+                reloadTabs();
+            });
+            $('#group-by-prio-0').show()
+        })
+
+        /**
+         * Opens a tab of the group by priority window
+         * @param event the event that triggered the function
+         * @param index the index of the tab to open
+         */
+        function openTab(event, index) {
+            $('.tab').each((index, element) => {
+                $(element).hide();
+            });
+
+            $('.tablinks').each((index, element) => {
+                $(element).removeClass('active');
+            });
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            $('#group-by-prio-' + index).show();
+            $(event.currentTarget).addClass('active');
+        }
+
+        /**
+         * Reloads the tabs of the group by priority window
+         */
+        function reloadTabs() {
+            for (let i = 0; i < 7; i++) {
+                const tab = $('#group-by-prio-' + i);
+                tab.empty();
+                tab.append($('<i class="fa fa-spin fa-circle-o-notch loading"></i>'));
+            }
+            $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "groupsByPrio",
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        for (let i = 0; i < 7; i++) {
+                            const tab = $('#group-by-prio-' + i);
+                            tab.empty();
+                            for (const element of data[i]) {
+                                const div = '<div class="inner-list-item" onclick="getGroupDetails(' + element[0] + ',' + element[1] + ')">Group ' + element[0] + ' Collection ' + element[1] + ' </div>';
+                                tab.append($(div))
+                            }
+                        }
+                    }
+                }
+            );
+        }
+    </script>
+
+    <!-- Script block for Broken Slots -->
+    <script>
+        $(document).ready(function () {
+            const div = $('#broken-slots-div')
+            div.slideToggle(0)
+            $('#broken-slots span').click(function () {
+                div.slideToggle();
+                $('#broken-slots span .icon').toggleClass('rotation');
+                updateBrokenSlots();
+            });
+        });
+
+        let brokenSlotsQueue = null;
+
+
+        /**
+         * updated broken slots
+         */
+        function updateBrokenSlots() {
+
+            if (brokenSlotsQueue != null) {
+                clearTimeout(brokenSlotsQueue);
+            }
+            brokenSlotsQueue = setTimeout(() => {
+                if ($('#broken-slots-div').attr('style') !== 'display: none;') {
+                    const brokenSlots = $("#broken-slots-div");
+                    $('#broken-slots span').html($('<div class="title"><span title="not influenced by current active filters">Broken Slots <i class="fa fa-spin fa-circle-o-notch loading"></i></span></div><i class="icon fa fa-chevron-up rotation"></i>'));
+                    $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: 'getBrokenSlots'
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            $('#broken-slots .loading').remove()
+                            brokenSlots.empty()
+                            const errors = data['brokenSlots'];
+                            for (let i = 0; i < errors.length; i++) {
+                                for (const error of errors[i]) {
+                                    let item = $(
+                                        '<div class="inner-list-item broken-slot' + (i === 1 ? "critical" : "") + '" onclick="handleTopicAdd(' + error[0] + ')">' +
+                                        '       <div class="slot-str">' + error[2] + '</div>' +
+                                        '       <div class="cause"> Caused by: ' + error[3] + '</div>' +
+                                        '   <button title="Clear Slot" onclick="removeBrokenSlot(' + error[0] + ',' + error[1] + ')"> <i class="fa fa-trash"></i></button>' +
+                                        '</div>'
+                                    );
+                                    brokenSlots.append(item)
+                                }
+                            }
+                        }
+                    });
+                }
+            }, 250);
+        }
+
+        function removeBrokenSlot(topicID, assignmentID) {
+            if (confirm("This well remove all saved applications from this slot.\n This is not reversible\n Do you want to continue?")) {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: 'clearSlot',
+                        assignmentID: assignmentID
+                    },
+                    method: "POST",
+                    success: () => {
+                        location.reload()
+                    }
+                });
+            }
+        }
+    </script>
+
     <!-- Script block for group details -->
     <script>
+        let openFirstAppOfGroup = false;
+
+        /**
+         * Toggles wheter the first application of a group should be opened upon clicking on the group
+         */
+        function openFirstAppGroup() {
+            const button = $('#openFirstAppGroup');
+            button.toggleClass('selected');
+            openFirstAppOfGroup = !!button.hasClass('selected');
+        }
+
         $(document).ready(function () {
             $('#assignment-content #groupdetails .section-inner p').on('click', function () {
                 let innerlist = $(this).siblings('.inner-list').first();
@@ -374,12 +574,6 @@
          * @param appID the application id
          */
         function updateApplicationGroupDetails(appID) {
-            if ($('#assignment-modal').is(':visible'))
-                return;
-            let groupDetailDiv = $('#assignment-content #groupdetails');
-            groupDetailDiv.attr('data-groupid', '-1');
-            groupDetailDiv.attr('data-applicationid', appID);
-            groupDetailDiv.attr('data-collectionid', '-1');
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -397,16 +591,12 @@
 
         /**
          * Function for retrieving details about a group and displaying it
-         * @param groupID  The id of the group
-         * @param collectionID The collection of the group
+         * @param groupID the group id
+         * @param collectionID the collection id
          */
         function getGroupDetails(groupID, collectionID) {
             if ($('#assignment-modal').is(':visible'))
                 return;
-            let groupDetailDiv = $('#assignment-content #groupdetails');
-            groupDetailDiv.attr('data-groupid', groupID);
-            groupDetailDiv.attr('data-applicationid', '-1');
-            groupDetailDiv.attr('data-collectionid', collectionID);
             $('#assignment-content #groupdetails .description').hide();
             $('#assignment-content #groupdetails .section-inner').show();
             $.ajax({
@@ -425,10 +615,11 @@
 
         /**
          * Function for handling the server response of group details
+         * Opens first free topic if option is selected
          */
         function handleGroupDetailServerResponse() {
             return function (data) {
-                $('#groupdetails span').text('Group Details: Group' + data['groupID'])
+                $('#groupdetails span').text('Group Details: Group ' + data['selectedGroup'] + " Collection " + data['selectedCollection'])
                 let groupList = $('#groupdetails .members .inner-list');
                 groupList.html('');
                 data['members'].forEach(function (member) {
@@ -437,6 +628,7 @@
                 });
                 let choiceList = $('#groupdetails .choices .inner-list');
                 choiceList.html('');
+                let opened = !openFirstAppOfGroup
                 data['collection'].forEach(function (choice) {
                     let classes = '';
                     if (choice['freeSlots'] < 1)
@@ -455,15 +647,14 @@
                             '</div>' +
                             '</div>');
                     html.click(function (event) {
-                        $('.section.single').removeClass('highlight');
                         event.preventDefault();
-                        if (!shownTopics.has(choice['id']))
-                            handleTopicAdd(choice['id']);
-                        const div = $('#assignment-application-' + choice['id']);
-                        div.get(0).scrollIntoView({behavior: 'smooth'});
-                        div.addClass('highlight');
+                        handleTopicAdd(choice['id']);
                     });
                     choiceList.append(html);
+                    if (!opened && choice['freeSlots']) {
+                        opened = true;
+                        handleTopicAdd(choice['id']);
+                    }
                 })
                 updateURL(null, data['selectedGroup'], data['selectedCollection'])
             }
@@ -567,6 +758,7 @@
 
                             infoPopup("good", data['text'])
                             updateStatistic()
+                            updateBrokenSlots()
                         } else {
                             $(drag).draggable("option", "revert", true);
                             infoPopup("bad", data['text'])
@@ -782,6 +974,7 @@
                                 $(drag).draggable("option", "revert", true);
                             }
                             updateStatistic()
+                            updateBrokenSlots()
                         });
                     } else if (override && exchange) {
                         requestRemoveOtherApp(application, (data) => {
@@ -801,6 +994,7 @@
                                     }
                                     slot.slotAppRel.sortApplicationsList()
                                     updateStatistic()
+                                    updateBrokenSlots()
                                 });
                                 //update applications listing
                                 slot.slotAppRel.sortApplicationsList()
@@ -815,10 +1009,16 @@
                                 //remove app from this topic
                                 slot.removeApplication(exchangeItem);
                                 //add app to this topic
-                                requestAddAppThis(application);
+                                if (application.slotID === -1) {
+                                    requestAddAppThis(application);
+                                } else {
+                                    const old_slot_id = application.slotID
+                                    requestSwitchSlots(application, () => requestAddOtherApp(exchangeItem, slot.slotAppRel.slots.get(old_slot_id)))
+                                }
                                 slot.slotAppRel.sortApplicationsList()
                                 //Update stats
                                 updateStatistic()
+                                updateBrokenSlots()
                             } else {
                                 infoPopup("bad", data["text"]);
                                 $(drag).draggable("option", "revert", true);
@@ -829,13 +1029,13 @@
                     else if (application.slotID === -1) {
                         requestAddAppThis(application);
                     } else {
-                        requestSwitchSlots(application)
+                        requestSwitchSlots(application, null)
                     }
 
                     //Helper functions
 
                     //Switches Slots in this topic
-                    function requestSwitchSlots(application) {
+                    function requestSwitchSlots(application, success) {
                         //switch from slot to another
                         $.ajax({
                                 data: {
@@ -861,6 +1061,10 @@
                                         infoPopup("good", applicationAcceptedText)
                                         //Update stats
                                         updateStatistic()
+                                        updateBrokenSlots()
+                                        if (success != null) {
+                                            success.call(this)
+                                        }
                                     } else
                                         infoPopup("bad", applicationAcceptedText)
                                 }
@@ -905,6 +1109,11 @@
 
                     //adds a not assigned application to this slot
                     function requestAddAppThis(application) {
+                        requestAddOtherApp(application,slot)
+                    }
+
+                    //adds a not assigned application to a slot
+                    function requestAddOtherApp(application, slot) {
                         $.ajax({
                             data: {
                                 csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -924,6 +1133,7 @@
                                     slot.addApplication(application);
                                     infoPopup("good", applicationAcceptedText);
                                     updateStatistic()
+                                    updateBrokenSlots()
                                 } else {
                                     $(drag).draggable("option", "revert", true);
                                     infoPopup("bad", applicationAcceptedText);
@@ -1128,56 +1338,57 @@
 
                 handleLockButtonClickApplication(this, '#' + buttonID)
             }
-
-            /**
-             * Updated the data of this application
-             */
-            {#updatePossibleAssignment() {#}
-            {#    $.ajax({#}
-            {#        data: {#}
-            {#            csrfmiddlewaretoken: "{{ csrf_token }}",#}
-            {#            action: "getPossibleAssignmentsForTopic",#}
-            {#            applicationID: this.id,#}
-            {#        },#}
-            {#        method: "POST",#}
-            {#        dataType: "json",#}
-            {#        success: data => {#}
-            {#            this.possibleAssignments = data['possibleAssignments'];#}
-            {#            this.collectionFullfilled = data['collectionFulfilled'];#}
-            {#            this.updateDiv();#}
-            {#        }#}
-            {#    })#}
-            {# } #}
         }
 
+        let possibleAssignmentQueue = false
+
         /**
-         * Updates all possibleAssignmentValues for all shown Topics
+         * Updates all possibleAssignmentValues for all shown Topics if there is no query running, otherwise schedules
+         * it
          */
         function updateApplicationsPossibleAssignments() {
-            let apps = []
-            let appIDs = []
-            shownTopics.forEach(slotAppRel => {
-                slotAppRel.applications.forEach(application => {
-                    apps.push(application)
-                    appIDs.push(application.id)
+            if (!possibleAssignmentQueue) {
+                possibleAssignmentQueue = true
+                helper();
+            } else if (possibleAssignmentQueue) {
+                possibleAssignmentQueue = true;
+            }
+
+            function helper() {
+                $('#applications-pending-update').html('<i class="fa fa-spin fa-circle-o-notch loading"></i>')
+
+                let apps = [];
+                let appIDs = []
+                shownTopics.forEach(slotAppRel => {
+                    slotAppRel.applications.forEach(application => {
+                        apps.push(application)
+                        appIDs.push(application.id)
+                    });
                 });
-            });
-            $.ajax({
-                data: {
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                    action: "getBulkApplicationsUpdate",
-                    applicationIDs: appIDs,
-                },
-                method: "POST",
-                dataType: "json",
-                success: data => {
-                    for (const app of apps) {
-                        app.possibleAssignments = data[app.id]['possibleAssignments'];
-                        app.collectionFullfilled = data[app.id]['collectionFulfilled'];
-                        app.updateDiv();
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "getBulkApplicationsUpdate",
+                        applicationIDs: appIDs,
+                    },
+                    method: "POST",
+                    dataType: "json",
+                    success: data => {
+                        $('#applications-pending-update').empty()
+
+                        for (const app of apps) {
+                            app.possibleAssignments = data[app.id]['possibleAssignments'];
+                            app.collectionFullfilled = data[app.id]['collectionFulfilled'];
+                            app.updateDiv();
+                        }
+                        // do next update if scheduled
+                        if (possibleAssignmentQueue) {
+                            helper()
+                        }
+                        possibleAssignmentQueue = false;
                     }
-                }
-            });
+                });
+            }
         }
 
         /**
@@ -1332,9 +1543,16 @@
          * @return true when the topic was added, otherwise false
          */
         function handleTopicAdd(topicID) {
+            if (shownTopics.has(topicID)) {
+                $('.section.single').removeClass('highlight');
+                const div = $('#assignment-application-' + topicID).get(0)
+                div.scrollIntoView({behavior: 'smooth'});
+                $(div).addClass('highlight');
+                return;
+            }
 
-            if (shownTopics.size >= 20) {
-                infoPopup("info", "A maximum of 20 Topics can be displayed at once.\n Please note that topics with a large number of applications could lead to slow behaviour");
+            if (shownTopics.size >= 15) {
+                infoPopup("info", "A maximum of 15 Topics can be displayed at once.\n Please note that topics with a large number of applications could lead to slow behaviour");
                 return false;
             }
             const topic = $(".topic").filter(function () {
@@ -1463,10 +1681,7 @@
                         handleTopicAdd(topic.data('topicid'));
                     }
 
-                    $('.section.single').removeClass('highlight');
                     const div = $('#assignment-application-' + topic.data('topicid'));
-                    div.get(0).scrollIntoView({behavior: 'smooth'});
-                    div.addClass('highlight');
                 })
 
                 // --- PRESELECT TOPIC IF GETTER IS SET --- //
@@ -1824,6 +2039,7 @@
                         filterSettings.saveToCookie();
                         filterSettings.updateTopicList();
                         updateStatistic()
+                        updateBrokenSlots()
                     }
                 }
 
@@ -1977,11 +2193,13 @@
         $.ajaxSetup({
             error: function (error) {
                 if (error.statusText === 'timeout') {
-                    infoPopup("bad", 'Request timeout after 10s.\nTry reloading the Page')
+                    infoPopup("bad", 'Request timeout after 10s.\nPlease reload the Page\n' )
                 } else
                     infoPopup("bad", error.statusText + " (╯°□°)╯︵ ┻━┻\n " + error.responseText);
             },
-            timeout: 10000
+            timeout: 30000
         })
     </script>
+
+
 {% endblock content %}

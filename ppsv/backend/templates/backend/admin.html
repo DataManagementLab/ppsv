@@ -38,13 +38,6 @@
                     <div class="text"></div>
                 </div>
             </div>
-            <div id="automaticAssignmentNoOverrideDiv" class="text-button">
-                <button id="automaticAssignmentNoOverride" class="{% if running %} running {% endif %}"
-                        onclick="automaticAssignment(false)"><i
-                        class="fa fa-check" aria-hidden="true"></i>
-                </button>
-                <p>Start an automatic Assignment without Override</p>
-            </div>
             <div id="finalizeAllAssignmentsDiv" class="text-button">
                 <button id="finalizeAllAssignments" onclick="finalizeAllAssignments(true)"><i
                         class="fa fa-check" aria-hidden="true"></i>
@@ -56,6 +49,12 @@
                         class="fa fa-check" aria-hidden="true"></i>
                 </button>
                 <p>Unlock all Assignments</p>
+            </div>
+            <div id="sendEmailsDiv" class="text-button">
+                <button id="sendEmails" onclick="sendEmails()"><i
+                        class="fa fa-check" aria-hidden="true"></i>
+                </button>
+                <p>Send Emails</p>
             </div>
         </div>
         <div class="section">
@@ -87,8 +86,32 @@
 
     <!-- script block for finalisation actions -->
     <script>
+
+        /**
+         * Sends an ajax request to the backend to send emails to all students that have selected a topic in the current term.
+         */
+        function sendEmails() {
+            if (confirm("Do you really want to send all Emails to all Students now?")) {
+                $.ajax({
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        action: "sendEmails",
+                    },
+                    method: "POST",
+                    success: () => {
+                        alert("Emails send!");
+                    }
+                });
+            }
+
+        }
+
         let assignmentRunning = {% if running %} true {% else %} false {% endif %}
 
+        /**
+         * Sends an ajax request to the backend to start the automatic assignment.
+         * @param override if true override all non-locked slots and applications if it finds a better result
+         */
         function automaticAssignment(override) {
             if (assignmentRunning) {
                 window.alert("This process is already running");
@@ -122,6 +145,9 @@
 
         let autoQuery
 
+        /**
+         * Starts an interval to query the backend for the progress of the automatic assignment.
+         */
         function startAutoUpdate() {
             if (autoQuery != null)
                 return
@@ -151,7 +177,7 @@
                         }
                     }
                 });
-            }, 500)
+            }, 250)
         }
 
         /**
@@ -201,6 +227,9 @@
 
     <!-- script block for change term -->
     <script>
+        /**
+         * Sends an ajax request to the backend to change the currently active term.
+         */
         function changeActiveTerm() {
             $.ajax({
                 data: {
@@ -219,6 +248,9 @@
 
     <!-- script block for removals -->
     <script>
+        /**
+         * Sends an ajax request to the backend to remove all applications from all broken slots.
+         */
         function removeBrokenSlots() {
             if (confirm("Delete all assignments from all broken slots? \nIgnores finalized status \nASSIGNMENTS ARE NOT RECOVERABLE!")) {
                 $.ajax({

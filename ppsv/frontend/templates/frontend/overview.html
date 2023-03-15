@@ -16,7 +16,7 @@
     <div class="container-fluid" style="display:flex;justify-content:center;font-size:17px">
         <ul class="responsive-table" style="width:80%;padding:0px;margin:0px">
             <li class="table-header" style="padding: 16px;position:relative;font-size:17px;margin-bottom:5px">
-            <span> {{ chosen_course.id }} </span>
+            <span> {{ chosen_course }} </span>
 {#				The button, which lets the user return to the previous page, will first appear when at least a faculty was chosen.#}
 {#				   The buttons' name changes according to the page it will return the user to if pressed.#}
                 {% if courses or topics or chosen_topic %}
@@ -45,7 +45,6 @@
                         <p> <label style="font-weight:500"> {% translate "Course Type" %}: </label> {{ chosen_course.type|safe }} </p>
                         <p> <label style="font-weight:500"> {% translate "Faculty" %}: </label> {{ chosen_course.get_faculty_display }} </p>
                         <p> <label style="font-weight:500"> {% translate "Language" %}: </label> Sprache </p>
-                        <p> <label style="font-weight:500"> {% translate "Min | Max Participants" %}: </label> {% if chosen_course.unlimited %} - | - {% else %} - | {{ chosen_course.max_slots }} {% endif %} </p>
                         <p> <label style="font-weight:500"> {% translate "Registration" %}: </label> {{ chosen_course.registration_start }} - {{ chosen_course.registration_deadline }} </p>
                         <p> <label style="font-weight:500"> CP: </label> {{ chosen_course.cp }} </p>
                         <p> <label style="font-weight:500"> {% translate "Motivation Text" %}: </label> {% if chosen_course.motivation_text %} {% translate "required" %} {% else %} {% translate "not required" %} {% endif %}</p>
@@ -73,7 +72,7 @@
                     <div class="table-info" style="{% if chosen_topic %} width:60%; {% endif %}">
                         <div style="display:flex;justify-content: space-around;">
                             <div style="flex-basis:100%"> {% translate "Title" %} </div>
-                            <div style="flex-basis:100%"> {% translate "Max Participants" %} </div>
+                            <div style="flex-basis:100%"> {% translate "Min | Max Participants" %} </div>
                         </div>
                     </div>
                     {% endif %}
@@ -82,7 +81,7 @@
                         <button class="table-btn" name="choose_topic" type="submit" value="{{ topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|False">
                             <div style="display:flex;justify-content: space-around;">
                                 <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
-                                <div style="flex-basis:100%"> {% if topic.max_slots == 9999 %} &#8734 {% else %} {{ topic.max_slots }} {% endif %} </div>
+                                <div style="flex-basis:100%"> {{ topic.min_slot_size }} | {{ topic.max_slot_size }} </div>
                             </div>
                         </button>
 {#						If a topic has been chosen, the page of the chosen topic opens#}
@@ -98,7 +97,7 @@
                             <div class="table-btn">
                                 <div style="display:flex;justify-content: space-around;">
                                     <div style="flex-basis:100%;overflow:hidden;text-overflow: ellipsis;"> {{ topic.title }} </div>
-                                    <div style="flex-basis:100%"> {% if topic.max_slots == 9999 %} &#8734 {% else %} {{ topic.max_slots }} {% endif %} </div>
+                                    <div style="flex-basis:100%"> {{ topic.max_slot_size }}</div>
                                 </div>
                             </div>
                             </div>
@@ -166,7 +165,7 @@
                                                     {% if group_to_select_is_None %}
                                                         <div style="display:grid;padding:15px;width:40%;margin-bottom:10px;position:relative">
                                                             {# If the topic only allows 1 participant, only the option to select the topic alone will be shown #}
-                                                            {% if chosen_topic.max_slots > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i> {% translate " Select with a group" %} </button> {% endif %}
+                                                            {% if chosen_topic.max_slot_size > 1 %} <button name="open_group_select" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#ffa826;color:white;border-radius:3px;margin:5px;"> <i class="fa fa-users" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:25px"> </i> {% translate " Select with a group" %} </button> {% endif %}
                                                             <button name="select_topic" value="{{ chosen_topic.id }}|{{ chosen_course.id }}|{{ chosen_faculty }}|open_course_info" class="undecorated-btn" style="background-color:#2a8538;color:white;border-radius:3px;margin:5px"> <i class="fa fa-user" aria-hidden="true" style="font-size:25px;position:absolute;z-index:2;left:30px;"></i> {% if chosen_topic.max_slots > 1 %} {% translate "Select without a group" %} {% else %} {% translate "Select topic" %} {% endif %} </button>
                                                         </div>
                                                     {% else %}
@@ -248,7 +247,6 @@
                         <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|type|{% if not dsc and sortBy == "type" %}dsc{% else %}asc{% endif %}"> {% translate "Type" %} <i class="{% if not dsc and sortBy == "type" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
                         <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|status|{% if not dsc and sortBy == "status" %}dsc{% else %}asc{% endif %}"> {% translate "Status" %} <i class="{% if not dsc and sortBy == "status" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
                         <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|registration_deadline|{% if not dsc and sortBy == "registration_deadline" %}dsc{% else %}asc{% endif %}"> {% translate "Registration End" %} <i class="{% if not dsc and sortBy == "registration_deadline" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
-                        <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|max_slots|{% if not dsc and sortBy == "max_slots" %}dsc{% else %}asc{% endif %}"> {% translate "Max Participants" %} <i class="{% if not dsc and sortBy == "max_slots" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
                         <div style="flex-basis:100%"> <button class="undecorated-btn" style="color:white" name="choose_faculty" value="{{ chosen_faculty }}|cp|{% if not dsc and sortBy == "cp" %}dsc{% else %}asc{% endif %}"> CP  <i class="{% if not dsc and sortBy == "cp" %}fa fa-caret-up{% else %}fa fa-caret-down{% endif %}" aria-hidden="true"> </i> </button> </div>
                     </div>
                     </div>
@@ -266,7 +264,6 @@
                                         {% endif %}
                                     </div>
                                     <div style="flex-basis:100%"> {{ course.registration_deadline|date }} </div>
-                                    <div style="flex-basis:100%"> {% if course.max_slots == 9999 %} &#8734 {% else %} {{ course.max_slots }} {% endif %} </div>
                                     <div style="flex-basis:100%"> {{ course.cp }} </div>
                                 </div>
                             </button>

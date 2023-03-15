@@ -174,21 +174,9 @@ class TopicSelectionAdmin(ImportExportMixin, admin.ModelAdmin):
     :type TopicSelectionAdmin.list_filter: list[str]
     """
     list_display = ('__str__', 'get_display', 'topic', 'collection_number')
-    readonly_fields = ('get_display',)
-    search_fields = ('group__id', 'topic__title', 'collection_number')
-    list_filter = ('topic',)
-
-    def get_form(self, request, obj=None, **kwargs):
-        """
-        Returns a ModelForm class for use in the admin add and change views.
-        :return: ModelForm for adding and changing
-        :rtype: ModelForm
-        """
-        form = super().get_form(request, obj, **kwargs)
-        # disable group and topic creation during group creation and editing
-        form.base_fields['group'].widget.can_add_related = False
-        form.base_fields['topic'].widget.can_add_related = False
-        return form
+    readonly_fields = ('group', 'topic', 'motivation', 'priority', 'collection_number')
+    search_fields = ('group__id', 'topic__title', 'collection_number','group__students__tucan_id')
+    list_filter = ('topic__course__term', 'topic__course')
 
 
 admin.site.register(TopicSelection, TopicSelectionAdmin)

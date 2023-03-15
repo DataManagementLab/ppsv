@@ -6,7 +6,6 @@ class Strategy:
     """The strategy in which applications and topics will be iterated."""
 
     def __init__(self):
-
         self.iteration = 0
         self.seed = random.randint(0, 256)
         # self.seed = -1
@@ -17,13 +16,7 @@ class Strategy:
         self._topic_cycle_order = {}
         self.application_order = {}
         self.application_order_index = {}
-        # self.score_for_topic_cycle = {}
-
-    @property
-    def topic_cycle(self):
-        if math.floor(self.iteration / self.topic_list_mutation_cycle) == 1:
-            return math.floor(self.iteration / self.topic_list_mutation_cycle)
-        return math.floor(self.iteration / self.topic_list_mutation_cycle)
+        self.topic_cycle = 0
 
     @property
     def topic_cycle_order(self):
@@ -34,7 +27,6 @@ class Strategy:
 
     def get_next_application(self, topic, applications):
         """returns the next application from the given applications based on the iteration"""
-
         if topic not in self.topic_cycle_order:
             if self.iteration % self.mutation_cycle == 0:
                 application = applications[0]
@@ -102,3 +94,11 @@ class Strategy:
         self.application_order = {}
         self.application_order_index = {}
         self.iteration += 1
+
+        # print("getting applications took " + str(round(self.time * 1000)) + "ms")
+
+        if self.iteration % self.topic_list_mutation_cycle == 0:
+            self.topic_cycle = math.floor(self.iteration / self.topic_list_mutation_cycle)
+
+    def topic_cycle(self, value):
+        self.topic_cycle = value

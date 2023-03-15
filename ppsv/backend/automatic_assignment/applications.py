@@ -1,7 +1,8 @@
 import copy
 
+from backend.automatic_assignment.dataclasses import TempApplication
 from backend.automatic_assignment.my_dict_list import MyDictList
-from backend.models import Assignment, AcceptedApplications
+from backend.models import AcceptedApplications
 from course.models import TopicSelection, Topic, Term
 
 init_applications_for_topic = MyDictList()
@@ -17,7 +18,7 @@ def init_applications(override_assignments):
     init_applications_for_topic = MyDictList()
     init_applications_for_group = MyDictList()
     for topic in Topic.objects.filter(course__term=Term.get_active_term()):
-        init_applications_for_topic[topic] = []
+        init_applications_for_topic[topic.pk] = []
     init_accepted_applications = []
     for accepted_application in AcceptedApplications.objects.filter(
             assignment__topic__course__term=Term.get_active_term()):
@@ -25,10 +26,19 @@ def init_applications(override_assignments):
             init_accepted_applications.append(accepted_application.topic_selection.dict_key)
     for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term()).order_by('priority'):
         if application.dict_key not in init_accepted_applications:
-            init_applications_for_topic[application.topic].append(application)
-            if application.dict_key not in init_applications_for_group:
-                init_applications_for_group[application.dict_key] = []
-            init_applications_for_group[application.dict_key].append(application)
+            temp_application = TempApplication(
+                id=application.pk,
+                size=application.group.size,
+                priority=application.priority,
+                topic_id=application.topic.pk,
+                collection_id=application.collection_number,
+                locked=False,
+                group_id=application.group.pk
+            )
+            init_applications_for_topic[application.topic.pk].append(temp_application)
+            if (application.group_id, application.collection_number) not in init_applications_for_group:
+                init_applications_for_group[(application.group_id, application.collection_number)] = []
+            init_applications_for_group[(application.group_id, application.collection_number)].append(temp_application)
 
 
 class Applications:
@@ -47,39 +57,24 @@ class Applications:
 
     def accept(self, application):
         """If we accept we will also remove all applications from this group and collection"""
+        for application_for_group in self.applications_for_group[application.dict_key]:
+            self.applications_for_topic[application_for_group.topic_id].remove(application_for_group)
+        self.applications_for_group.remove(application.dict_key)
 
-        for application_for_group in self.applications_for_group[(application.group, application.collection_number)]:
-            self.applications_for_topic[application_for_group.topic].remove(application_for_group)
-        self.applications_for_group.remove((application.group, application.collection_number))
-
-    def get_applications_for_topic(self, topic):
+    def get_applications_for_topic(self, topic_id):
         """returns all applications for a given topic
         :return: all applications for a given topic
         :rtype: []
         """
-        return self.applications_for_topic[topic]
+        return self.applications_for_topic[topic_id]
 
-    def get_applications_for_topic_with_max_size(self, topic, max_size):
+    def get_applications_for_topic_with_max_size(self, topic_id, max_size):
         """returns all applications for a given topic with a maximum of max_size members
                 :return: all applications for a given topic with a max_size
                 :rtype: []
                 """
         applications = []
-        for application in self.get_applications_for_topic(topic):
-            if application.group.size <= max_size:
+        for application in self.get_applications_for_topic(topic_id):
+            if application.size <= max_size:
                 applications.append(application)
         return applications
-
-    def get_applications_for_group(self, group, collection_number):
-        """returns all applications for a given group and collection number
-        :return: all applications for a given group and collection number
-        :rtype: []
-        """
-        return self.applications_for_group[(group, collection_number)]
-
-    def has_topic(self, topic):
-        """returns true if there are applications for the given topic
-        :return: true if there are applications for the given topic
-        :rtype: bool
-        """
-        return topic in self.applications_for_topic
