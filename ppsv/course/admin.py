@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import path
+from django.utils.translation import gettext_lazy as _
 from import_export.admin import ImportExportMixin
 
 from .models import Course, Term
@@ -139,8 +140,10 @@ class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr GroupAdmin.filter_horizontal: enables searching for students while creating or editing a group
     :type GroupAdmin.filter_horizontal: tuple[str, ]
     """
-    list_display = ('get_display', 'size')
-    readonly_fields = ('get_display', 'size',)
+    list_display = ('get_display', 'size', 'term')
+    readonly_fields = ('get_display', 'size', 'term')
+    list_filter = ['term']
+    search_fields = ['students__tucan_id']
     fieldsets = [
         (None, {'fields': ['students', 'size', 'collection_count']}),
     ]
@@ -173,10 +176,14 @@ class TopicSelectionAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr TopicSelectionAdmin.list_filter: activates filters in the right sidebar of the change list page of the admin
     :type TopicSelectionAdmin.list_filter: list[str]
     """
-    list_display = ('__str__', 'get_display', 'topic', 'collection_number')
+    list_display = ('__str__', 'get_display', 'topic', 'collection_number', 'get_term')
     readonly_fields = ('group', 'topic', 'motivation', 'priority', 'collection_number')
-    search_fields = ('group__id', 'topic__title', 'collection_number','group__students__tucan_id')
-    list_filter = ('topic__course__term', 'topic__course')
+    search_fields = ('group__id', 'topic__course__title', 'topic__title', 'group__students__tucan_id')
+    list_filter = ['topic__course__term']
+
+    @admin.display(description=_('Term'))
+    def get_term(self, obj):
+        return obj.topic.course.term
 
 
 admin.site.register(TopicSelection, TopicSelectionAdmin)

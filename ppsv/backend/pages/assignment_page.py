@@ -32,7 +32,8 @@ def new_assignment(application_id, slot_id):
     """
 
     # check if the application exists
-    application = get_or_error(TopicSelection, pk=application_id, topic__course__term=Term.get_active_term())
+    application = get_or_error(TopicSelection, pk=application_id, topic__course__term=Term.get_active_term(),
+                               collection_number__gt=0)
 
     # check if there is space in the slot for this application
     if application.group.size > application.topic.max_slot_size:
@@ -48,7 +49,8 @@ def new_assignment(application_id, slot_id):
                                                       slot_id=slot_id,
                                                       topic__course__term=Term.get_active_term())
     except MultipleObjectsReturned as e:
-        raise ValidationError(f"Error in getting an object from {Assignment}: \n {e}")
+        raise ValidationError(f"There are multiple slots found with this ID. Please delete the slot if it is broken or"
+                              f"contact an Administrator. {Assignment}: \n {e}")
 
     assignment = assignment[0]
     if assignment.open_places_in_slot_count < application.group.size:
@@ -58,32 +60,33 @@ def new_assignment(application_id, slot_id):
     accepted_application = AcceptedApplications.objects.get_or_create(assignment=assignment,
                                                                       topic_selection=application)
     if not accepted_application[1]:
-        return False, "Could not save the assignment"
+        return False, "This assignment was already saved"
     return True, "Saved to Database"
 
 
-def remove_assignment(application_id, slot_id):
+def remove_assignment(application_id):
     """
     removes the application from this assignment and deletes the assignment if this was the last application
 
     :param application_id: the id of the application to remove
     :type application_id: int
-    :param slot_id: the id of the slot to remove the application from
-    :type slot_id: int
 
     :return: True, if the assignment got delete and a text describing it
     :rtype: (Boolean, String)
     """
 
     # get application
-    application = get_or_error(TopicSelection, pk=application_id, topic__course__term=Term.get_active_term())
+    application = get_or_error(TopicSelection, pk=application_id, topic__course__term=Term.get_active_term(),
+                               collection_number__gt=0)
+
+    # get accepted application
+    accepted_application = get_or_error(AcceptedApplications,
+                                        topic_selection__group=application.group,
+                                        topic_selection__collection_number=application.collection_number,
+                                        topic_selection__topic__course__term=application.topic.course.term)
 
     # get slot
-    assignment = get_or_error(Assignment, topic=application.topic, slot_id=slot_id,
-                              topic__course__term=Term.get_active_term())
-
-    # get assignment
-    accepted_application = get_or_error(AcceptedApplications, assignment=assignment, topic_selection=application)
+    assignment = accepted_application.assignment
 
     # check if slot locked
     if assignment.finalized_slot > 0:
@@ -94,7 +97,7 @@ def remove_assignment(application_id, slot_id):
         return False, "This assignment is locked and cannot be changed"
 
     # delete the assignment
-    assignment.accepted_applications.remove(application)
+    accepted_application.delete()
 
     # delete the slot if it is empty
     if assignment.accepted_applications.count() == 0:
@@ -116,7 +119,9 @@ def handle_select_topic(request):
     topic = get_or_error(Topic, id=int(request.POST.get("topicID")))
 
     # get query applications for topic
-    applications = TopicSelection.objects.filter(topic=topic, topic__course__term=Term.get_active_term())
+    applications = TopicSelection.objects.filter(topic=topic, topic__course__term=Term.get_active_term(),
+                                                 collection_number__gt=0)
+    application_dict = TopicSelection.get_collection_dict()
 
     # get query assignments for topic
     assignments = Assignment.objects.filter(topic=topic, topic__course__term=Term.get_active_term())
@@ -130,9 +135,7 @@ def handle_select_topic(request):
             'applicationID': application.id,
             'possibleAssignmentsForCollection': possible_assignments_for_group(application.group.id,
                                                                                application.collection_number),
-            'collectionCount': TopicSelection.objects.filter(group=application.group,
-                                                             collection_number=application.collection_number,
-                                                             topic__course__term=Term.get_active_term()).count(),
+            'collectionCount': len(application_dict.get(application.dict_key)),
             'preference': application.priority,
             'collectionFulfilled': check_collection_satisfied(application),
             'groupID': application.group.id,
@@ -155,7 +158,7 @@ def handle_select_topic(request):
 
     # load slot data
     term_finalized = TermFinalization.is_finalized(Term.get_active_term())
-    slots_finalized = [int(term_finalized) for _ in range(topic.max_slots)]
+    slots_finalized = [int(term_finalized) * 2 for _ in range(topic.max_slots)]
     if not term_finalized:
         counter = 0
         for assignment in assignments:
@@ -183,7 +186,7 @@ def handle_select_application(request):
     # get topic
     application = get_or_error(TopicSelection,
                                id=int(request.POST.get("applicationID")),
-                               topic__course__term=Term.get_active_term())
+                               topic__course__term=Term.get_active_term(), collection_number__gt=0)
 
     return get_group_data(application.group_id, application.collection_number)
 
@@ -202,20 +205,18 @@ def handle_new_assignment(request):
 
 def handle_change_assignment(request):
     """
-    Handles a request to change an assignment.
+    Handles a request to change an assignment from one slot to another in the same topic.
 
     :return: the response of the change
     :rtype: JsonResponse
     """
 
     application_id = int(request.POST.get("applicationID"))
-    old_slot_id = int(request.POST.get("oldSlotID"))
-    new_slot_id = int(request.POST.get("newSlotID"))
-    _remove_assignment = remove_assignment(application_id, old_slot_id)
+    _remove_assignment = remove_assignment(application_id)
     # couldn't remove the old selection
     if not _remove_assignment[0]:
         return create_json_response(False, _remove_assignment[1])
-    _new_assignment = new_assignment(application_id, new_slot_id)
+    _new_assignment = new_assignment(application_id, request.POST.get("newSlotID"))
     return create_json_response(_new_assignment[0], _new_assignment[1])
 
 
@@ -227,47 +228,8 @@ def handle_remove_assignment(request):
     :rtype: JsonResponse
     """
 
-    _remove_assignment = remove_assignment(int(request.POST.get("applicationID")), int(request.POST.get("slotID")))
+    _remove_assignment = remove_assignment(int(request.POST.get("applicationID")))
     return create_json_response(_remove_assignment[0], _remove_assignment[1])
-
-
-def handle_remove_other_assignment(request):
-    """
-    Handle a remove assignment other request. This is used if we want to override an already assigned application
-
-    :return: If the assignment was successfully removed
-    :rtype: JsonResponse
-    """
-    # get application
-    application = get_or_error(TopicSelection, id=request.POST.get("applicationID"),
-                               topic__course__term=Term.get_active_term())
-
-    # get accepted application
-    accepted_application = get_or_error(AcceptedApplications,
-                                        topic_selection__group=application.group,
-                                        topic_selection__collection_number=application.collection_number,
-                                        topic_selection__topic__course__term=application.topic.course.term)
-
-    # delete accepted application
-    accepted_application.delete()
-    return create_json_response(True, "Removed Assignment")
-
-
-def handle_get_possible_assignments_for_topic(request):
-    """
-    Handles the request for getting possible assignments of a topic.
-
-    :param request: the handled request
-    return: the possible assignments for a topic
-    :rtype: JsonResponse
-    """
-    application = get_or_error(TopicSelection, pk=request.POST.get("applicationID"),
-                               topic__course__term=Term.get_active_term())
-
-    return JsonResponse({
-        "possibleAssignments": possible_assignments_for_group(application.group.id, application.collection_number),
-        "collectionFulfilled": check_collection_satisfied(application)
-    })
 
 
 def handle_load_group_data(request):
@@ -293,35 +255,26 @@ def handle_change_finalized_value_slot(request):
     assignment = Assignment.objects.get_or_create(slot_id=request.POST.get("slotID"),
                                                   topic_id=request.POST.get("slotTopicID"))[0]
     if TermFinalization.is_finalized(Term.get_active_term()):
-        assignment.finalized_slot = 2
+        if assignment.finalized_slot < 2:
+            assignment.finalized_slot += 2
+            assignment.save()
 
     old_finalized_value = assignment.finalized_slot
 
     if old_finalized_value >= 2:
         finalization_changed = False
-        finalization_value = old_finalized_value
-        finalization_changed_status = "bad"
         finalization_changed_text = "Slot can't be unlocked"
     elif (assignment.assigned_student_to_slot_count < assignment.topic.min_slot_size) and (old_finalized_value == 0):
         finalization_changed = False
-        finalization_value = old_finalized_value
-        finalization_changed_status = "bad"
         finalization_changed_text = "Only slots with the minimum amount of needed applications can be locked"
     else:
         assignment.finalized_slot = request.POST.get("newFinalized")
         assignment.save()
         finalization_changed = True
-        finalization_value = request.POST.get("newFinalized")
-        finalization_changed_status = "good"
         finalization_changed_text = "Slot has been locked" if (
                 old_finalized_value == 0) else "Slot has been unlocked"
 
-    return JsonResponse({
-        'finalizationChanged': finalization_changed,
-        'finalizationValue': finalization_value,
-        'finalizationChangedStatus': finalization_changed_status,
-        'finalizationChangedText': finalization_changed_text,
-    })
+    return create_json_response(finalization_changed, finalization_changed_text)
 
 
 def handle_change_finalized_value_application(request):
@@ -345,27 +298,16 @@ def handle_change_finalized_value_application(request):
     old_finalized_value_slot = assignment_slot.finalized_slot
 
     if old_finalized_value_slot < 2:
-
         old_finalized_value_application = accepted_application.finalized_assignment
         accepted_application.finalized_assignment = not old_finalized_value_application
         accepted_application.save()
         finalization_changed = True
-        finalization_value = accepted_application.finalized_assignment
-        finalization_changed_status = "good"
         finalization_changed_text = "Assignment has been locked" if not old_finalized_value_application else "Assignment has been unlocked"
     else:
         finalization_changed = False
-        finalization_value = accepted_application.finalized_assignment
-
-        finalization_changed_status = "bad"
         finalization_changed_text = "Application can't be (un)locked"
 
-    return JsonResponse({
-        'finalizationChanged': finalization_changed,
-        'finalizationValue': finalization_value,
-        'finalizationChangedStatus': finalization_changed_status,
-        'finalizationChangedText': finalization_changed_text,
-    })
+    return create_json_response(finalization_changed, finalization_changed_text)
 
 
 def handle_get_statistic_data(request):
@@ -414,7 +356,7 @@ def handle_get_topics_filtered(request):
             if Assignment.has_open_places(topic) != 0:
                 filter_topic_ids.append(topic.id)
         if filter_type == 2:
-            for application in TopicSelection.objects.filter(topic=topic):
+            for application in TopicSelection.objects.filter(topic=topic, collection_number__gt=0):
                 if application.dict_key not in accepted_application_dict:
                     filter_topic_ids.append(topic.id)
                     break
@@ -429,7 +371,7 @@ def handle_get_bulk_applications_update(request):
 
     app_ids = request.POST.getlist('applicationIDs[]')
     app_data = {}
-    for app in TopicSelection.objects.filter(pk__in=app_ids):
+    for app in TopicSelection.objects.filter(pk__in=app_ids, collection_number__gt=0):
         app_data[app.pk] = {
             'possibleAssignments': possible_assignments_for_group(app.group, app.collection_number),
             'collectionFulfilled': check_collection_satisfied(app)
@@ -495,8 +437,6 @@ def handle_post(request):
             return handle_new_assignment(request)
         if action == "removeAssignment":
             return handle_remove_assignment(request)
-        if action == "removeOtherAssignment":
-            return handle_remove_other_assignment(request)
         if action == "getStatisticData":
             return handle_get_statistic_data(request)
         if action == "selectTopic":

@@ -1,10 +1,10 @@
 import cProfile
-import itertools
 import statistics
 import time
 import traceback
 
 from course.models import Topic, Term, TopicSelection
+from ppsv import settings
 from .applications import Applications, init_applications
 from .assignments import Assignments, init_assignments, topic_data
 from .strategy import Strategy
@@ -25,11 +25,13 @@ def start_algo(override_assignments):
     running = True
     eta = "Initializing"
     try:
-        profiler = cProfile.Profile()
-        profiler.enable()
+        if settings.DEBUG:
+            profiler = cProfile.Profile()
+            profiler.enable()
         main(override_assignments)
-        profiler.disable()
-        profiler.dump_stats('py automatic_assignment.prof')
+        if settings.DEBUG:
+            profiler.disable()
+            profiler.dump_stats('py automatic_assignment.prof')
     except Exception as e:
         progress = 0.0
         running = False
@@ -111,9 +113,10 @@ def main(override_assignments):
             it_time_mean
         )
         progress = round(iteration / iterations * 100, 2)
-
-        # print(
-        #     "Automatic Assignment running: {:.2f}% ".format(progress) + str(eta) + " took " + str(time3 - time0) + "ms")
+        if settings.DEBUG:
+            print(
+                "Automatic Assignment running: {:.2f}% ".format(progress) + str(eta) + " took " + str(
+                    time3 - time0) + "ms")
 
     if best_assignments is not None and best_assignments_score > get_database_score():
         print("Saving to database")
