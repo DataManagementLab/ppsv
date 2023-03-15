@@ -1,40 +1,13 @@
 import copy
-from dataclasses import dataclass
 
+from backend.automatic_assignment.dataclasses import TempAssignment, TempApplication, TempTopic
 from backend.automatic_assignment.my_dict_list import MyDictList
 from backend.models import Assignment, AcceptedApplications
-from backend.pages.functions import get_score_for_assigned, get_score_for_not_assigned
-from course.models import Topic, Term
-
-
-@dataclass
-class TempAssignment:
-    """This class represents one temporary assignment for this iteration"""
-    topic: Topic
-    slot_id: int
-    accepted_applications: []
-
-    @property
-    def score(self):
-        """returns the score of this assignment in range [20,10], while 20 will be given for an application with
-        priority 1, 19 for priority 2 and so on"""
-        score = 0
-        for application in self.accepted_applications:
-            score += get_score_for_assigned(application.group.size, application.priority)
-        return score
-
-    @property
-    def student_size(self):
-        """returns how many students are in currently in this assignment(slot)"""
-        size = 0
-        for application in self.accepted_applications:
-            size += application.group.size
-        return size
-
+from backend.pages.functions import get_score_for_not_assigned
+from course.models import Topic, Term, TopicSelection
 
 all_assignments = MyDictList()
-locked_assignments = {}
-locked_applications = []
+topic_data = MyDictList()
 
 
 def init_assignments(override_assignments):
@@ -44,25 +17,51 @@ def init_assignments(override_assignments):
     global all_assignments
     all_assignments = MyDictList()
     for topic in Topic.objects.filter(course__term=Term.get_active_term()):
-        all_assignments[topic] = []
+        all_assignments[topic.pk] = []
+        topic_data[topic.pk] = TempTopic(
+            min_slot_size=topic.min_slot_size,
+            max_slot_size=topic.max_slot_size,
+            slots=topic.max_slots,
+            topic=topic
+        )
     for assignment in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
+        handled_locked_applications = []
         if assignment.locked or not override_assignments:
             if assignment.locked:
-                locked_assignments[(assignment.topic, assignment.slot_id)] = assignment.finalized_slot
-            all_assignments[assignment.topic].append(
-                TempAssignment(topic=assignment.topic,
-                               slot_id=assignment.slot_id,
-                               accepted_applications=list(assignment.accepted_applications.all())))
+                applications = []
+                for application in AcceptedApplications.objects.filter(assignment=assignment):
+                    handled_locked_applications.append(application.pk)
+                    applications.append(TempApplication(
+                        id=application.topic_selection.pk,
+                        priority=application.topic_selection.priority,
+                        topic_id=assignment.topic.pk,
+                        size=application.topic_selection.group.size,
+                        locked=application.finalized_assignment,
+                        collection_id=application.topic_selection.collection_number,
+                        group_id=application.topic_selection.group.pk
+                    ))
+                all_assignments[assignment.topic.pk].append(TempAssignment(
+                    topic_id=assignment.topic.pk,
+                    slot_id=assignment.slot_id,
+                    accepted_applications=applications,
+                    locked=assignment.finalized_slot))
         else:
-            locked_apps = []
             for application in AcceptedApplications.objects.filter(assignment=assignment):
-                if application.locked:
-                    locked_apps.append(application.topic_selection)
-                    locked_applications.append(application.topic_selection)
-            if len(locked_apps) > 0:
-                all_assignments[assignment.topic].append(TempAssignment(topic=assignment.topic,
-                                                                        slot_id=assignment.slot_id,
-                                                                        accepted_applications=locked_apps))
+                if application.locked and application.pk not in handled_locked_applications:
+                    handled_locked_applications.append(application.pk)
+                    temp_application = TempApplication(
+                        id=application.topic_selection.pk,
+                        priority=application.topic_selection.priority,
+                        topic_id=assignment.topic.pk,
+                        size=application.topic_selection.group.size,
+                        locked=application.finalized_assignment,
+                        collection_id=application.topic_selection.collection_number,
+                        group_id=application.topic_selection.group.pk
+                    )
+                    all_assignments[assignment.topic.pk].append(TempAssignment(topic_id=assignment.topic.pk,
+                                                                               slot_id=assignment.slot_id,
+                                                                               accepted_applications=[temp_application],
+                                                                               locked=0))
 
 
 class Assignments:
@@ -73,40 +72,28 @@ class Assignments:
     def __init__(self):
         self.assignments = copy.deepcopy(all_assignments)
 
-    def get_assignments(self, topic):
+    def get_assignments(self, topic_id):
         """Returns all assignments for the given topic"""
-        return self.assignments[topic]
+        return self.assignments[topic_id]
 
     def add_application(self, application, slot_id):
         """adds one application to a slot"""
-        for slot in self.assignments[application.topic]:
+        for slot in self.assignments[application.topic_id]:
             if slot.slot_id == slot_id:
                 slot.accepted_applications.append(application)
                 return
-        self.assignments[application.topic].append(TempAssignment(topic=application.topic,
-                                                                  slot_id=slot_id,
-                                                                  accepted_applications=[application]))
+        self.assignments[application.topic_id].append(TempAssignment(topic_id=application.topic_id,
+                                                                     slot_id=slot_id,
+                                                                     accepted_applications=[application],
+                                                                     locked=False))
 
-    def get_remaining_space_in_slot(self, topic, slot_id):
-        assignments = self.get_assignments(topic)
-        for slot in assignments:
-            if slot.slot_id == slot_id:
-                return topic.max_slot_size - slot.accepted_applications
-        return topic.max_slot_size
-
-    def biggest_open_slot(self, topic):
-        """returns a tuple of (slot_size, slot_id) for the biggest open slot of the given topic. will return (0,1) if
-        there are no slots or no open slots for the given topic"""
-        assignments = self.get_assignments(topic)
-        if len(assignments) < topic.max_slots:
-            return topic.max_slot_size, len(assignments) + 1
-        open_slot_size = 0
-        open_slot_id = 1
-        for slot in assignments:
-            if (topic.max_slot_size - slot.student_size) > open_slot_size:
-                open_slot_size = (topic.max_slot_size - slot.student_size)
-                open_slot_id = slot.slot_id
-        return open_slot_size, open_slot_id
+    def get_remaining_space_in_slot(self, topic_id, slot_id):
+        for assignment in self.get_assignments(topic_id):
+            if assignment.slot_id == slot_id:
+                if assignment.locked > 0:
+                    return 0
+                return topic_data[topic_id].max_slot_size - assignment.size
+        return topic_data[topic_id].max_slot_size
 
     def score(self, applications):
         """returns the score for the all saved assignments. will use all open applications to find collections of groups
@@ -120,21 +107,19 @@ class Assignments:
         score += get_score_for_not_assigned() * len(applications.applications_for_group.keys())
         return score
 
-    def save_to_database(self):
-        global locked_assignments, locked_applications
-        for _assignment in Assignment.objects.filter(topic__course__term=Term.get_active_term()):
-            _assignment.delete()
-        for _assignment in self.assignments.values():
-            for slot in _assignment:
-                assignment = Assignment.objects.get_or_create(topic=slot.topic, slot_id=slot.slot_id)[0]
-
-                for application in slot.accepted_applications:
-                    accepted_application = AcceptedApplications.objects.create(assignment=assignment,
-                                                                               topic_selection=application, )
-                    if application in locked_applications:
-                        accepted_application.finalized_assignment = True
-                        accepted_application.save()
-
-                if (slot.topic, slot.slot_id) in locked_assignments:
-                    assignment.finalized_slot = locked_assignments[(slot.topic, slot.slot_id)]
-                    assignment.save()
+    def save_to_database(self, term):
+        for assignment in Assignment.objects.filter(topic__course__term=term):
+            assignment.delete()
+        for assignments in self.assignments.values():
+            for assignment in assignments:
+                new_assignment = Assignment.objects.create(
+                    topic=topic_data[assignment.topic_id].topic,
+                    slot_id=assignment.slot_id,
+                    finalized_slot=assignment.locked
+                )
+                for application in assignment.accepted_applications:
+                    AcceptedApplications.objects.create(
+                        assignment=new_assignment,
+                        topic_selection=TopicSelection.objects.get(pk=application.id),
+                        finalized_assignment=application.locked
+                    )

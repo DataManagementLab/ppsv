@@ -1,3 +1,5 @@
+from django.shortcuts import render
+
 from .pages.admin_page import admin_page
 from .pages.assignment_page import assignment_page
 from .pages.home_page import home_page
@@ -22,3 +24,7 @@ def export_applications_and_assignments_view(request):
 def admin(request):
     # wtf warum?!
     return admin_page(request)
+
+
+def term_finalized(request):
+    return render(request, 'backend/term_finalized.html')

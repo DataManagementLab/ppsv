@@ -469,6 +469,7 @@ p {
 /* The main content of the assignment page */
 
 #assignment-content {
+    overflow: hidden;
     padding-top: 20px;
     display: flex;
     gap: 3px;
@@ -495,6 +496,7 @@ p {
 #assignment-content .title {
     display: flex;
     justify-content: space-between;
+    width: 100%;
 }
 
 #assignment-content .title i {
@@ -548,7 +550,6 @@ p {
     align-items: center;
     color: var(--blue);
     justify-content: space-between;
-
 }
 
 .inner-item .group-info {
@@ -623,7 +624,6 @@ p {
     margin: 3px;
     width: fit-content;
 }
-
 
 #assignment-content #groupdetails .section-inner {
     border-radius: 3px;
@@ -753,20 +753,34 @@ p {
 
 #overrideControl .fa:before {
     content: "\f00d";
-    margin-left: -1px;
 }
 
 #overrideControl.selected .fa:before {
     content: "\f00c";
+    font-size: 85%;
+
 }
 
 #ignoreAssigned .fa:before {
     content: "\f00d";
-    margin-left: -1px;
+
 }
 
 #ignoreAssigned.selected .fa:before {
     content: "\f00c";
+    font-size: 85%;
+
+}
+
+#openFirstAppGroup .fa:before {
+    content: "\f00d";
+
+}
+
+#openFirstAppGroup.selected .fa:before {
+    content: "\f00c";
+    font-size: 85%;
+
 }
 
 /* --- Modal ----*/
@@ -827,21 +841,95 @@ p {
     width: 100%;
 }
 
-/* --- Statistics window ----*/
-#statistics-window {
+/* --- Bottom tabs ----*/
+.bottom-tab {
     position: fixed;
     bottom: 0;
     right: 50px;
     background-color: #fff;
     border: 1px solid black;
     border-radius: 3px;
-    width: 700px;
 }
 
-#statistics-div {
+.bottom-tab .title i{
+    align-self: center;
+    margin-left: 10px;
+}
+
+
+.bottom-tab span {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    font-size: 20px;
+    background-color: var(--blue);
+    width: 100%;
+    color: white;
+    padding-left: 3px;
+    cursor: pointer;
+}
+
+.bottom-tab span .icon {
+    margin: 3px;
+    transform: rotate(180deg);
+    transition: rotate linear .2s;
+}
+
+.bottom-tab span .icon.rotation {
+    transform: rotate(0deg);
+}
+
+.bottom-tab-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 280px;
+}
+
+.bottom-tab button {
+    border: 0;
+    font-size: 160%;
+}
+
+.bottom-tab .inner-list {
+    margin: 0 ;
+    padding-top: 3px;
+    padding-left: 3px;
+}
+
+.bottom-tab#broken-slots {
+    right: 1150px;
+    width: 400px;
+}
+
+#broken-slots-div {
+    flex-direction: column;
+    overflow-y: scroll;
+    justify-content: flex-start;
+}
+
+#broken-slots-div .broken-slot {
+    display: flex;
+    flex-direction: row;
+    /*height: 40px;*/
+    width: 100%;
+    align-items: center;
+    overflow: visible;
+    justify-content: space-between;
+}
+
+.broken-slot button {
+    height: 80%;
+    border-radius: 3px;
+}
+
+#group-by-prio {
+    right: 750px;
+    width: 400px;
+}
+
+#statistics-window {
+    width: 700px;
 }
 
 #statistics-numbers {
@@ -859,30 +947,61 @@ p {
     font-size: 15px;
 }
 
-#statistics-window #statistics-chart {
+.bottom-tab #statistics-chart {
     width: 500px;
 }
 
-#statistics-window span {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    font-size: 20px;
-    background-color: var(--blue);
+/* Style the tab */
+.tabs-div {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    max-height: 330px;
+}
+
+.tabs-tabs {
     width: 100%;
-    color: white;
-    padding-left: 3px;
+}
+
+.tabs-sel {
+    display: flex;
+    flex-direction: column;
+    border-right: black solid 1px;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tabs-sel button {
+    background-color: var(--aliceblue);
+    float: left;
+    border: none;
+    outline: none;
     cursor: pointer;
+    transition: 0.3s;
+    border-bottom: var(--lightblue) 1px solid;
+    margin-bottom: 1px;
+    max-height: 34px;
 }
 
-#statistics-window span .icon {
-    margin: 3px;
-    transform: rotate(180deg);
-    transition: rotate linear .2s;
+/* Change background color of buttons on hover */
+.tabs-sel button:hover {
+    background-color: #ddd;
 }
 
-#statistics-window span .icon.rotation {
-    transform: rotate(0deg);
+/* Create an active/current tablink class */
+.tabs-sel button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tab {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.tab .inner-list-item {
+    cursor: pointer;
 }
 
 /* --- Scrollbar --- */

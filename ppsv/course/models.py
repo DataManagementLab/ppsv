@@ -4,15 +4,14 @@ This file describes or defines the basic structure of the PPSV.
 A class that extends the models.Model class may represent a Model
 of the platform and can be registered in admin.py.
 """
+
+from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.conf import settings
-from django.core.exceptions import ValidationError
-from datetime import datetime, time
-from django.utils.timezone import make_aware
 
 
 class CourseType(models.Model):
@@ -52,11 +51,8 @@ class Term(models.Model):
     only on can be active"""
     name = models.CharField(max_length=200, verbose_name=_("title"))
     active_term = models.BooleanField(default=False, verbose_name=_("active term"))
-    registration_start = models.DateTimeField(default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
-                                              verbose_name=_("registration Start"))
-    registration_deadline = models.DateTimeField(
-        default=make_aware(datetime.combine(datetime.today(), time(23, 59, 59))),
-        verbose_name=_("registration Deadline"))
+    registration_start = models.DateTimeField(verbose_name=_("registration Start"))
+    registration_deadline = models.DateTimeField(verbose_name=_("registration Deadline"))
 
     class Meta:
         """Meta options
@@ -362,12 +358,11 @@ class Group(models.Model):
     :type Group.applications: ManyToManyField - Topic
     :property Group.size: The size of a group
     :type Group.size: int
-    :property Group.get_display: The tucan_id of the students separated with commas
-    :type Group.get_display: str
 
     """
     students = models.ManyToManyField(Student, verbose_name=_("students"))
     collection_count = models.IntegerField(verbose_name=_("number of collections"), default=1)
+    term = models.ForeignKey(Term, verbose_name=_("term"), default=Term.get_active_term, on_delete=models.CASCADE)
 
     @property
     def members(self):
@@ -396,8 +391,8 @@ class Group(models.Model):
         """
         collections = {}
         for application in TopicSelection.objects.filter(group=self,
-                                                         topic__course__term=Term.get_active_term()).order_by(
-            "collection_number", "priority"):
+                                                         topic__course__term=Term.get_active_term()) \
+                .order_by("collection_number", "priority"):
             if application.collection_number in collections:
                 collections[application.collection_number].append(application)
             else:

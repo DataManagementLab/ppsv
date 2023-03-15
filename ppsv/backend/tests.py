@@ -43,7 +43,7 @@ class TestAssignmentModel(TestCase):
         cls.course_type = CourseType.objects.create(type='Testart')
         deadline = timezone.now()
 
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True, registration_start=deadline, registration_deadline=deadline)
         cls.course1 = Course.objects.create(registration_start=deadline,
                                             registration_deadline=deadline,
                                             cp=5,
@@ -230,7 +230,7 @@ class AssignmentViewTests(TestCase):
         start = timezone.now()
         start -= timedelta(days=1)
 
-        cls.term = Term.objects.create(name="WiSe22/23", active_term=True)
+        cls.term = Term.objects.create(name="WiSe22/23", active_term=True, registration_start=start, registration_deadline=deadline)
 
         cls.course1 = Course.objects.create(registration_start=start,
                                             registration_deadline=deadline,

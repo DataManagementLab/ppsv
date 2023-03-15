@@ -1,5 +1,3 @@
-import copy
-import time
 import traceback
 
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
@@ -12,6 +10,7 @@ from backend.pages.functions import possible_assignments_for_group, \
     get_or_none, \
     check_collection_satisfied, create_json_response, get_or_error, get_group_data, get_broken_slots, \
     get_score_and_chart_data
+from backend.pages.home_page import handle_clear_slot
 from course.models import TopicSelection, Topic, CourseType, Course, Term
 from ppsv import settings
 
@@ -369,9 +368,10 @@ def handle_change_finalized_value_application(request):
     })
 
 
-# -------MAIN POST Handling---------- #
-
 def handle_get_statistic_data(request):
+    """
+    Returns the statistic data for the current term
+    """
     data = get_score_and_chart_data(request)
     broken_slots = get_broken_slots()
 
@@ -383,21 +383,23 @@ def handle_get_statistic_data(request):
         "notAssignedGroups": data[3]
     })
 
-
 def handle_get_topics_filtered(request):
+    """
+    Returns the statistic data for the current term.
+    This method will also apply the given filters for CP, course type and faculty.
+    """
     min_cp = int(request.POST.get('minCP'))
     max_cp = int(request.POST.get('maxCP'))
     course_types = request.POST.getlist('courseTypes[]')
     faculties = request.POST.getlist('faculties[]')
 
-    t0 = time.time()
     if max_cp == -1:
         topics = list(Topic.objects.filter(course__cp__gte=min_cp,
                                            course__type__in=course_types,
                                            course__faculty__in=faculties,
                                            course__term=Term.get_active_term()))
     else:
-        topics = list(Topic.objects.filter(course__cp__in=[min_cp, max_cp],
+        topics = list(Topic.objects.filter(course__cp__range=(min_cp, max_cp),
                                            course__type__in=course_types,
                                            course__faculty__in=faculties,
                                            course__term=Term.get_active_term()))
@@ -417,14 +419,14 @@ def handle_get_topics_filtered(request):
                     filter_topic_ids.append(topic.id)
                     break
 
-    t1 = time.time()
-    print("filter took " + str(round(t1 - t0, 2)))
     return JsonResponse({
         'filteredTopics': filter_topic_ids,
     })
 
 
 def handle_get_bulk_applications_update(request):
+    """returns the status for all applications of the request"""
+
     app_ids = request.POST.getlist('applicationIDs[]')
     app_data = {}
     for app in TopicSelection.objects.filter(pk__in=app_ids):
@@ -433,6 +435,37 @@ def handle_get_bulk_applications_update(request):
             'collectionFulfilled': check_collection_satisfied(app)
         }
     return JsonResponse(app_data)
+
+
+def handle_groups_by_prio():
+    """
+    returns a json object with a list of groups (value) per prio (key)
+    0 stands for not assigned, 6 for prio over 5
+    """
+    group_by_prio = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+    accepted_application_dict = AcceptedApplications.get_collection_dict()
+    for app_key in TopicSelection.get_collection_dict():
+        group_id_collection_id_key = (app_key[0].id, app_key[1])
+        if app_key in accepted_application_dict:
+            if accepted_application_dict[app_key].priority > 5:
+                group_by_prio[6].append(group_id_collection_id_key)
+            else:
+                group_by_prio[accepted_application_dict[app_key].priority].append(group_id_collection_id_key)
+        else:
+            group_by_prio[0].append(group_id_collection_id_key)
+
+    return JsonResponse(group_by_prio)
+
+
+def handle_get_broken_slots():
+    """
+    returns two lists of all broken slots each with (topicID, slotid, String of the Slot, Error Message) Tuples.
+    The first list are slots that are non-critical errors, and the second are slots that are critical errors and could
+    cause issues
+    """
+    return JsonResponse({
+        'brokenSlots': get_broken_slots()
+    })
 
 
 def handle_post(request):
@@ -470,6 +503,12 @@ def handle_post(request):
             return handle_select_topic(request)
         if action == "loadGroupData":
             return handle_load_group_data(request)
+        if action == "groupsByPrio":
+            return handle_groups_by_prio()
+        if action == "getBrokenSlots":
+            return handle_get_broken_slots()
+        if action == "clearSlot":
+            return handle_clear_slot(request)
         if action == "getTopicsFiltered":
             return handle_get_topics_filtered(request)
         if action == "changeFinalizedValueSlot":
@@ -488,7 +527,7 @@ def handle_post(request):
 
 
 # ----------Site rendering--------- #
-def render_site(request, args=None):
+def render_site(request):
     """
     handles the rendering of the assignment page.
     parses additional information in the address and handles it accordingly
@@ -499,20 +538,18 @@ def render_site(request, args=None):
     :return: The rendered site
     :rtype: render() object
     """
-    if args is None:
-        args = {}
+    args = {}
     template_name = 'backend/assignment.html'
     topics_of_courses = []
     topics = []
     last_course = ""
-    if Topic.objects.exists():
-        for topic in Topic.objects.filter(max_slots__gt=0, course__term=Term.get_active_term()):
-            if last_course != topic.course.title:
-                last_course = topic.course.title
-                topics = []
-                topics_of_course = {"course": topic.course, "topics": topics}
-                topics_of_courses.append(topics_of_course)
-            topics.append(topic)
+    for topic in Topic.objects.filter(max_slots__gt=0, course__term=Term.get_active_term()):
+        if last_course != topic.course.title:
+            last_course = topic.course.title
+            topics = []
+            topics_of_course = {"course": topic.course, "topics": topics}
+            topics_of_courses.append(topics_of_course)
+        topics.append(topic)
 
     course_types = []
     for course_type in CourseType.objects.all():
