@@ -2024,7 +2024,8 @@ class HomePageTest(TestCase):
         response = self.client.post(reverse('backend:home_page'), data=data)
         self.assertJSONEqual(str(response.content, encoding='utf8'),
                              '{"brokenSlots": [[[1, 1, "Slot 2 of topic \\"topic1A\\" [3/5]", "Less than minimal '
-                             'amount of student in this slot"]], []], "unfulfilledCollections": []}')
+                             'amount of student in this slot"]], []], "unfulfilledCollections": [["group 3", 1, 3], '
+                             '["group 4", 1, 4], ["group 5", 1, 5]]}')
 
     def test_handle_get_chart_data(self):
         """
