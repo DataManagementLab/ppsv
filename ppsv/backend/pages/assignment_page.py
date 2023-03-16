@@ -160,9 +160,8 @@ def handle_select_topic(request):
     term_finalized = TermFinalization.is_finalized(Term.get_active_term())
     slots_finalized = [int(term_finalized) * 2 for _ in range(topic.max_slots)]
     if not term_finalized:
-        counter = 0
         for assignment in assignments:
-            slots_finalized[counter] = assignment.finalized_slot
+            slots_finalized[assignment.slot_id - 1] = assignment.finalized_slot
 
     return JsonResponse(
         {
