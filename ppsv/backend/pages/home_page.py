@@ -6,9 +6,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.automatic_assignment import main
-from backend.models import Assignment
+from backend.models import Assignment, AcceptedApplications, TopicSelection
 from backend.pages.functions import get_broken_slots, get_or_error, get_score_and_chart_data
-from course.models import Course, CourseType, Term, TopicSelection
+from course.models import Course, CourseType, Term
 from ppsv import settings
 
 
@@ -34,7 +34,7 @@ def handle_get_problems_listing():
     :rtype: JsonResponse
     """
     unfulfilled_collections = []
-    all_applications_in_assignments = TopicSelection.get_collection_dict()
+    all_applications_in_assignments = AcceptedApplications.get_collection_dict()
     for collection in TopicSelection.get_collection_dict():
         if collection not in all_applications_in_assignments:
             unfulfilled_collections.append((str(collection[0]), collection[1], collection[0].id))

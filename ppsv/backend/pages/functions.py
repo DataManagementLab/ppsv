@@ -39,7 +39,6 @@ def create_json_response(success, msg):
         'text': msg
     })
 
-
 def possible_assignments_for_group(group_id, collection_number):
     """
     Returns the number of possible applications of this group for the given collection
