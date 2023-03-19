@@ -290,4 +290,19 @@ def home_page(request):
     args["faculties"] = faculties
     args["range"] = range(1, 11)
 
+    # --- STATISTIC TERM --- #
+    active_term = Term.get_active_term()
+
+    terms = []
+    for term in Term.objects.all():
+        if term == active_term:
+            terms.append((str(term) + "(active)", term.id))
+        else:
+            terms.append((term, term.id))
+
+    args["terms"] = terms
+    args["active"] = active_term
+
+
+
     return render(request, 'backend/home.html', args)

@@ -32,7 +32,6 @@
                     Assignment Page
                 </button>
             </div>
-            <div id="score" class="text">Score: <i class="fa fa-spin fa-circle-o-notch loading"></i></div>
         </div>
         <div id="import-export">
             <div id="import-form">
@@ -124,8 +123,29 @@
             </div>
 
             <div id="statistics" class="section">
-                <span>Statistic</span>
+                <div id="statistics-title">
+                        Statistic
+                        <div id="score" class="text">Score: </div>
+                        <div>
+                            <div class="fa fa-spin fa-circle-o-notch loading"></div>
+                        </div>
+                        <div id="statistics-filter-term">
+                            <label for="term">
+                                Term:
+                                <select name="term" id="statistic-term-select" class="Filter-dropdown">
+                                    {% for term in terms %}
+                                        {% if 'active' in term.0 %}
+                                            <option selected="selected" value={{ term.1 }}>{{ term.0 }}</option>
+                                        {% else %}
+                                            <option value={{ term.1 }}>{{ term.0 }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
+                </div>
                 <i class="fa fa-circle-o-notch fa-spin loading"></i>
+
                 <div id="statistics-chart">
                     <canvas id="bar-chart"></canvas>
                 </div>
@@ -149,25 +169,40 @@
 
     <!-- Script-block for loading the statistics chart and problems -->
     <script>
+
+        $(document).ready(
+            function () {
+
+                // update statistic when term is changed
+                $('select').change(function () {
+                    updateStatistic();
+                });
+            });
+
         let statisticQueue = null;
 
         /**
          * Schedules an update of Statistic and Stats
          */
         function updateStatistic() {
+
             if (statisticQueue != null) {
                 clearTimeout(statisticQueue);
             }
             statisticQueue = setTimeout(() => {
                 const statisticsChartDiv = $("#statistics-chart");
+                let term = document.getElementById("statistic-term-select").value
+                let term2 = $("#statistic-term-select").find("option:selected").val()
+
                 $.ajax({
                     data: {
                         csrfmiddlewaretoken: "{{ csrf_token }}",
-                        action: 'getChartData',
+                        action: "getChartData",
                         minCP: filterSettings.selectedCPMin,
                         maxCP: filterSettings.selectedCPMax,
                         courseTypes: filterSettings.selectedCourseTypes,
-                        faculties: filterSettings.selectedFaculties
+                        faculties: filterSettings.selectedFaculties,
+                        term: term
                     },
                     method: "POST",
                     dataType: "json",
