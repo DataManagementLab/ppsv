@@ -1,12 +1,18 @@
+import csv
 import traceback
 
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from backend.automatic_assignment import main
-from backend.models import Assignment, AcceptedApplications, TopicSelection
+from backend.import_data.applications import *
+from backend.import_data.assignments import *
+from backend.models import Assignment, TopicSelection
+from backend.models import TermFinalization
 from backend.pages.functions import get_broken_slots, get_or_error, get_score_and_chart_data
 from course.models import Course, CourseType, Term
 from ppsv import settings
@@ -71,6 +77,148 @@ def handle_clear_slot(request):
     return HttpResponse(status=200)
 
 
+def handle_import(request):
+    """Imports the given file to the database, keeps all currently locked slots and locked assigned applications as they
+    are, but overrides all remaining assigned applications. Only the assigned applications of the faculties that are
+    imported get changed.
+
+    :param request: the request containing the csv file to import
+
+    :return: a JsonResponse containing a success status (true if import worked, false otherwise), a message with a
+    detailed description and possibly an error list, containing all errors that occurred while trying to import
+    :rtype: JsonResponse
+    """
+    uploaded_file = request.FILES.get('document')
+
+    if uploaded_file is None:
+        return JsonResponse(data={
+            'successStatus': False,
+            'msg': 'There was no file selected.',
+            'errorList': [],
+        })
+
+    if not uploaded_file.content_type == 'text/csv':
+        return JsonResponse(data={
+            'successStatus': False,
+            'msg': 'The file type was not "csv".',
+            'errorList': [],
+        })
+
+    if TermFinalization.is_finalized(Term.get_active_term()):
+        return JsonResponse(data={
+            'successStatus': False,
+            'msg': 'The term is already finalized.',
+            'errorList': [],
+        })
+
+    name_of_saved_file = 'imported_file.csv'
+    fs = FileSystemStorage(location='import_export_tmp/')
+    content = uploaded_file.read()
+    file_content = ContentFile(content)
+    if fs.exists(name_of_saved_file):
+        fs.delete(name_of_saved_file)
+    file_name = fs.save(name_of_saved_file, file_content)
+    tmp_file = fs.path(file_name)
+    csv_file = open(tmp_file, errors='ignore')
+    delimiter_char = ','
+    reader = csv.reader(csv_file, delimiter=delimiter_char)
+
+    for row in reader:
+        if ';' in row[0]:
+            delimiter_char = ';'
+        break
+
+    with open(tmp_file, errors='ignore') as imported_file:
+        imported_file_reader = csv.reader(imported_file, delimiter=delimiter_char)
+
+        init_assignments(True)
+        init_applications(True)
+
+        assignments = Assignments()
+        applications = Applications()
+
+        # list of ('row-number', 'row-content', 'ERROR string')
+        error_list = []
+
+        imported_faculties = []
+        row_count = 1
+        for row in imported_file_reader:
+            if row_count != 1:
+                if len(row) != 4:
+                    error_list.append([row_count, row, 'The row seems corrupted in a strange way'])
+                    continue
+                try:
+                    topic_id = int(row[0])
+                except:
+                    error_list.append([row_count, row, 'The topic ID (' + row[0] + ') is not a valid number'])
+                    continue
+
+                try:
+                    slot_id = int(row[1])
+                except:
+                    error_list.append([row_count, row, 'The slot ID (' + row[1] + ') is not a valid number'])
+                    continue
+
+                assignees = row[3]
+
+                if not Topic.objects.filter(id=topic_id).exists():
+                    error_list.append([row_count, row, 'Topic (' + row[0] + ') does not exist.'])
+                    continue
+
+                topic = Topic.objects.get(id=topic_id)
+
+                if not (topic.course.term.id == Term.get_active_term().id):
+                    error_list.append([row_count, row, 'Topic (' + row[0] + ') does not exist in current term.'])
+
+                if not (topic.course.faculty in imported_faculties):
+                    imported_faculties.append(topic.course.faculty)
+
+                for application in assignees.split(','):
+                    if application != '':
+                        try:
+                            application_id = int(application)
+                        except:
+                            error_list.append(
+                                [row_count, row, '"' + application + '" is not a valid number for an application'])
+                            continue
+
+                        # application exists
+                        if TopicSelection.objects.filter(id=application_id).exists():
+                            if TopicSelection.objects.get(id=application_id).topic.id != topic_id:
+                                error_list.append(
+                                    [row_count, row,
+                                     'The application (' + application + ') does not match the Topic (' + row[0] + ')'])
+                            else:
+                                # test if applicaton locke or in locked slot
+                                if applications.application_locked(application_id):
+                                    error_list.append([row_count, row,
+                                                       'The application (' + application + ') or the slot it is currently in, is locked.'])
+                                else:
+                                    assignment_worked, msg = assignments.add_application(
+                                        applications.get_application(application_id), slot_id)
+                                    if not assignment_worked:
+                                        error_list.append([row_count, row, msg])
+                        else:
+                            error_list.append([row_count, row, 'The application (' + application + ') does not exist'])
+
+            row_count += 1
+
+    if len(error_list) != 0:
+        return JsonResponse(data={
+            'successStatus': False,
+            'msg': 'Some errors occurred and import could not be saved.',
+            'errorList': error_list,
+        })
+
+    assignments.save_to_database(Term.get_active_term(), imported_faculties)
+
+    return JsonResponse(data={
+        'successStatus': True,
+        'msg': 'Data imported.',
+        'errorList': [],
+    })
+
+
 def handle_post(request):
     """
     handles a POST request depending on the content of the action attribute.
@@ -97,6 +245,8 @@ def handle_post(request):
             return handle_do_automatic_assignments()
         if action == "clearSlot":
             return handle_clear_slot(request)
+        if action == "import":
+            return handle_import(request)
 
         return HttpResponse(status=501,
                             content=f"invalid request action: {action}. Please report this and the actions you took "

@@ -198,7 +198,7 @@
 
     <div id="broken-slots" class="bottom-tab">
         <span title="not influenced by current active filters">
-            Broken Slots
+            Slots with Errors
             <i class="icon fa fa-chevron-up rotation"></i>
         </span>
         <div id="broken-slots-div" class="bottom-tab-content inner-list">
@@ -245,7 +245,7 @@
                     <p id="statistics-score"></p>
                 </div>
                 <div>
-                    <p> Broken Slots: </p>
+                    <p> Slots with Errors: </p>
                     <p id="statistics-broken_slots"></p>
                 </div>
                 <div>
@@ -458,7 +458,7 @@
         }
     </script>
 
-    <!-- Script block for Broken Slots -->
+    <!-- Script block for Slots with Errors -->
     <script>
         $(document).ready(function () {
             const div = $('#broken-slots-div')
@@ -474,7 +474,7 @@
 
 
         /**
-         * updated broken slots
+         * updated Slots with Errors
          */
         function updateBrokenSlots() {
 
@@ -484,7 +484,7 @@
             brokenSlotsQueue = setTimeout(() => {
                 if ($('#broken-slots-div').attr('style') !== 'display: none;') {
                     const brokenSlots = $("#broken-slots-div");
-                    $('#broken-slots span').html($('<div class="title"><span title="not influenced by current active filters">Broken Slots <i class="fa fa-spin fa-circle-o-notch loading"></i></span></div><i class="icon fa fa-chevron-up rotation"></i>'));
+                    $('#broken-slots span').html($('<div class="title"><span title="not influenced by current active filters">Slots with Errors <i class="fa fa-spin fa-circle-o-notch loading"></i></span></div><i class="icon fa fa-chevron-up rotation"></i>'));
                     $.ajax({
                         data: {
                             csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -2179,7 +2179,7 @@
         $.ajaxSetup({
             error: function (error) {
                 if (error.statusText === 'timeout') {
-                    infoPopup("bad", 'Request timeout after 10s.\nPlease reload the Page\n' )
+                    infoPopup("bad", 'Request timeout after 30s.\nPlease reload the Page\n')
                 } else
                     infoPopup("bad", error.statusText + " (╯°□°)╯︵ ┻━┻\n " + error.responseText);
             },

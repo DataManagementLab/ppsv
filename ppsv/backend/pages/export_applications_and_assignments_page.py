@@ -84,9 +84,12 @@ def export_applications_and_assignments_page(request):
         return redirect(reverse('admin:login') + '?next=' + reverse('backend:home_page'))
 
     # files
-    export_applications_file = "export_applications.csv"
-    export_assignments_file = "export_assignments.csv"
-    export_applications_and_assignments_file = "export_applications_and_assignments.zip"
+    directory = "import_export_tmp/"
+    export_applications_file_name = "export_applications.csv"
+    export_assignments_file_name = "export_assignments.csv"
+    export_applications_file = directory + export_applications_file_name
+    export_assignments_file = directory + export_assignments_file_name
+    export_applications_and_assignments_file = directory + "export_applications_and_assignments.zip"
 
     # variables
     faculty = request.GET.get('faculty')
@@ -99,7 +102,7 @@ def export_applications_and_assignments_page(request):
     application_writer.writerow(
         ['ApplicationID', 'TopicID', 'topic name', 'GroupID', 'group size', 'collection number', 'priority'])
 
-    for application in TopicSelection.objects.all():
+    for application in TopicSelection.objects.filter(topic__course__term=Term.get_active_term(), collection_number__gt=0):
         if 'all' == faculty or application.topic.course.faculty == faculty:
             write_row_application_helper(application, application_writer)
 
@@ -115,7 +118,7 @@ def export_applications_and_assignments_page(request):
     assignments_response = HttpResponse(content_type='text/csv')
 
     assignment_writer = csv.writer(assignments_response)
-    assignment_writer.writerow(['TopicID', 'SlotID', 'Slot size', 'assignees'])
+    assignment_writer.writerow(['TopicID', 'SlotID', 'Slot size', 'Assigned applications'])
 
     for topic in Topic.objects.filter(course__term=Term.get_active_term()):
         if 'all' == faculty or topic.course.faculty == faculty:
@@ -136,7 +139,7 @@ def export_applications_and_assignments_page(request):
 
     # creates the zip file and adds the created csv files to be exported
     zip_file_to_export = zipfile.ZipFile(export_applications_and_assignments_file, 'w')
-    zip_file_to_export.write(export_applications_file)
-    zip_file_to_export.write(export_assignments_file)
+    zip_file_to_export.write(export_applications_file, arcname=export_applications_file_name)
+    zip_file_to_export.write(export_assignments_file, arcname=export_assignments_file_name)
 
     return FileResponse(open(export_applications_and_assignments_file, 'rb'), as_attachment=True)
