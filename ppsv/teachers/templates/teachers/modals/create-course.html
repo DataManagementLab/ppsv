@@ -1,0 +1,91 @@
+{% extends 'teachers/modals/modal.html' %}
+
+{% block modal_id %}create_course{% endblock %}
+
+{% block modal_title %}Create new Course{% endblock %}
+
+{% block modal_content %}
+    <form>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="createCourse">
+        <table>
+            <tr>
+                <td><label for="course_title">Title</label></td>
+                <td><input id="course_title" type="text" name="course_title" required></td>
+            </tr>
+            <tr>
+                <td><label for="course_type">Type</label></td>
+                <td>
+                    <select id="course_type" name="course_type" required>
+                        {% for course_type in course_types %}
+                            <option value="{{ course_type.pk }}">{{ course_type.type }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="course_faculty">Faculty</label></td>
+                <td>
+                    <select id="course_faculty" name="course_faculty" required>
+                        {% for faculty in faculties %}
+                            <option value="{{ faculty }}">{{ faculty }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="course_term">Term</label></td>
+                <input type="hidden" name="course_term_id" value="{{ active_term.pk }}">
+                <td><input id="course_term" type="text" name="course_term" value="{{ active_term.name }}"
+                           disabled></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="course_registration_start_date">Registration start date</label>
+                    <br>
+                    <label for="course_registration_start_time">Registration start time</label>
+                </td>
+                <td>
+                    <input id="course_registration_start_date" type="date"
+                           name="course_registration_start_date" value="{{ active_term_reg_start_date }}"
+                           required>
+                    <br>
+                    <input id="course_registration_start_time" type="time"
+                           name="course_registration_start_time" value="{{ active_term_reg_start_time }}"
+                           required>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="course_registration_end_date">Registration end date</label>
+                    <br>
+                    <label for="course_registration_end_time">Registration end time</label>
+                </td>
+                <td>
+                    <input id="course_registration_end_date" type="date"
+                           name="course_registration_end_date" value="{{ active_term_reg_end_date }}"
+                           required>
+                    <br>
+                    <input id="course_registration_end_time" type="time"
+                           name="course_registration_end_time" value="{{ active_term_reg_end_time }}"
+                           required>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="course_cp">CP</label></td>
+                <td><input id="course_cp" type="number" name="course_cp" min="0" required></td>
+            </tr>
+            <tr>
+                <td><label for="course_motivational_text">Motivational text required</label></td>
+                <td><input id="course_motivational_text" type="checkbox" name="course_motivational_text">
+                </td>
+            </tr>
+            <tr>
+                <td><label for="course_description">Description</label></td>
+                <td><textarea id="course_description" name="course_description" cols="40"
+                              rows="5" required></textarea></td>
+            </tr>
+        </table>
+        <input type="submit" value="Create!">
+    </form>
+{% endblock %}

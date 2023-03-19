@@ -1,0 +1,67 @@
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
+<head>
+
+    <!-- This page contains all elements which all pages will use -->
+
+    <!-- Sets the character set of all html pages which extend base.html -->
+    <meta charset="UTF-8">
+
+    <!-- Defines a block where other html pages can use their own title -->
+    <title>{% block tab_name %} {% endblock %}</title>
+
+    <!-- Imports all important stylesheets and hyper references for all html pages which extend base.html -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/ppsv.css' %}">
+    <link rel="stylesheet" href="{% static 'teachers/css/style.css' %}">
+
+
+    <!-- JQuery & JQuery UI Integration -->
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+</head>
+<body>
+<!-- Both "header" and "navbar" will be included in all html pages which extend "base.html" -->
+<!-- Header -->
+<div id="header" class="header-background">
+    <div class="white-strip"></div>
+    <div id="header-content">
+        <h3>{% translate "Internship & Seminars" %} - {% block title %} {% endblock %}</h3>
+        <div id="controls">
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">Django
+                        Admin</a>
+                {% endif %}
+            {% endif %}
+            <div class="login-box">
+                <!-- user_menu -->
+                <div class="user-menu">
+                    {% block login %}
+                        {% if user.is_authenticated %}
+                            {{ user.username }} (<a href="{% url 'frontend:logout' %}">Logout</a>)
+                        {% else %}
+                            {% translate "You are not logged in." %}
+                            (<a href="{% url 'frontend:login' %}">Login</a>)
+                        {% endif %}
+                    {% endblock %}
+                </div>
+                <a class="login-link" href="{% url 'frontend:login' %}"><i
+                        class="fa fa-user-circle-o fa-3x"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="base">
+    {% block content %}
+
+    {% endblock %}
+</div>
+</body>
+</html>

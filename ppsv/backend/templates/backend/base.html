@@ -56,6 +56,8 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
                 {% block additional_buttons %}
                 {% endblock %}
                 {% if user.is_authenticated %}
+                    <a href="{% url 'teachers:overview_page' %}" class="adminbtn btn btn-danger navbar-inline-list">
+                        Teachers page</a>
                     {% if user.is_superuser %}
                         <a href="{% url 'admin:index' %}" class="adminbtn btn btn-danger navbar-inline-list">
                             Django Admin</a>
