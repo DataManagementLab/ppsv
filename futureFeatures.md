@@ -1,14 +1,13 @@
 ## Ideen für weitere Entwicklung
 + SSO-Login
-+ Mail-Benachrichtigungen
-+ Automatische Zuteilung
++ Nach der Zuweisung können Studierende auf einer Restplatzbörse offengebliebene / abgelehnte Themen selber asuwählen
 + "zugeteilte Themen"-Unterseite wo Nutzer:innen sehen können welche Themen ihnen zugewiesen wurden
-+ Archiv von vergangenen Kursen
 + Ansicht für Mobilgeräte
-+ Es wäre auch denkbar, den "Select all remaining topics" Button nur anzuzeigen, wenn es noch möglich ist, durch
-Anklicken des Buttons neue Themen des Kurses zu wählen.
-+ Beim Aufrufen von "your_selection" direkt nach dem Registrieren könnte 
-beispielsweise eine kurze Erklärung stehen, wie Themen gewählt werden können.
-Aktuell wird dort in diesem Fall noch nichts angezeigt.
-
-
++ Beim ersten Aufruf der Seite wird eine kurze (interaktive) Einführung angezeigt, die erklärt, wie die Seite funktioniert.
++ Lehrende können Kurse/Themen aus alten Semestern wiederverwenden bzw. duplizieren.
++ Der "Select all remaining topics" Knopf sollte nur angezeigt werden, wenn es auch noch topics in dem Kurs gibt, die noch nicht ausgewählt wurden.
++ Eine erweiterte Export Funktion, die explizit zur Archivierung der Zuweisung dient (-> auch gelockte Slot werden exportiert)
++ Der Algorithmus zur automatischen Zuweisungen weist bei Gruppen teilweise am Ende kein Thema zu, obwohl dies einfach möglich wäre.
++ Zweiten Algorithmus zur Verbesserung bereits bestehender Zuweisungen, welcher z.B. zyklische Abhängigkeiten löst.
++ Fachbereiche sind momentan noch in der Datenbank gehardcoded.
++ JQuery und weitere Abhängigkeiten werden momentan noch über CDN geladen. Diese könnten für bessere Zuverlässigkeit lokal gehostet werden.
