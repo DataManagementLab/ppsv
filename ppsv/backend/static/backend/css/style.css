@@ -207,16 +207,34 @@ a.default_look {
     display: flex;
     margin-left: auto;
     height: fit-content;
-    /*border: solid black 1px;*/
-    /*border-radius: 3px;*/
     width: fit-content;
     align-items: center;
-    gap: 3px;
+    gap: 10px;
 }
 
 #import-export label {
-    font-size: 1.5em;
-    margin: 0;
+    margin-top: 0;
+    margin-left: 0;
+    margin-bottom: 0;
+    margin-right: 3px;
+}
+
+#import-export form {
+    display: flex;
+    border: solid black 1px;
+    border-radius: 3px;
+    padding-left: 3px;
+    font-size: 1.2em;
+    align-items: center;
+}
+
+#import-export input {
+    margin-top: 1px;
+}
+
+#import-export button {
+    margin-left: 5px;
+    height: auto;
 }
 
 p {
@@ -723,7 +741,7 @@ p {
 }
 
 #admin-actions button,
-.topBar button {
+.topBar .group button {
     border: black solid 2px;
     border-radius: 3px;
 }
@@ -735,7 +753,7 @@ p {
 }
 
 #admin-actions button:hover,
-.topBar button:hover {
+.topBar .group button:hover {
     background-color: var(--aliceblue);
 }
 
@@ -757,11 +775,11 @@ p {
 
 #overrideControl.selected .fa:before {
     content: "\f00c";
-    font-size: 85%;
 }
 
 #ignoreAssigned .fa:before {
     content: "\f00d";
+    margin-left: -1px;
 }
 
 #ignoreAssigned.selected .fa:before {
@@ -881,7 +899,7 @@ p {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    height: 280px;
+    height: 250px;
 }
 
 .bottom-tab button {
@@ -954,7 +972,6 @@ p {
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
-    max-height: 330px;
 }
 
 .tabs-tabs {
@@ -1000,6 +1017,16 @@ p {
 
 .tab .inner-list-item {
     cursor: pointer;
+}
+
+#statistics-window span .icon {
+    margin: 3px;
+    transform: rotate(180deg);
+    transition: rotate linear .2s;
+}
+
+#statistics-window span .icon.rotation {
+    transform: rotate(0deg);
 }
 
 /* --- Scrollbar --- */

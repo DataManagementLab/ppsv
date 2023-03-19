@@ -51,7 +51,8 @@ def handle_finalize(request):
     else:
         fin = TermFinalization.objects.get_or_create(term=Term.get_active_term())[0]
         if fin.mails_send:
-            return HttpResponse(status=500, content="Emails got already send for this Term. Term is not changeable anymore")
+            return HttpResponse(status=500,
+                                content="Emails got already send for this Term. Term is not changeable anymore")
         for assignment in Assignment.objects.all():
             if assignment.finalized_slot > 1:
                 assignment.finalized_slot -= 2

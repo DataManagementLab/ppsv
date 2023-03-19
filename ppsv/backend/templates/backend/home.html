@@ -34,30 +34,16 @@
             </div>
             <div id="score" class="text">Score: <i class="fa fa-spin fa-circle-o-notch loading"></i></div>
         </div>
-        <form method="post" style="display: none;">
-            <div id="automatic-assignment" name="automatic-assignment">
-                <button href="/home/" class="adminbtn btn btn-danger navbar-inline-list">Automatic assignment</button>
-            </div>
-        </form>
-        <script>
-            $(document).ready(function () {
-                $("#automatic-assignment").click(e => {
-                        e.preventDefault();
-                        $.ajax({
-                            data: {
-                                csrfmiddlewaretoken: "{{ csrf_token }}",
-                                action: "doAutomaticAssignments",
-                            },
-                            method: "POST",
-                            dataType: "json",
-                            success: result => alert("Successfull: " + result),
-                        })
-                    }
-                )
-            });
-
-        </script>
         <div id="import-export">
+            <div id="import-form">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="import">
+                    <input type="file" name="document">
+                    <button type="submit" id="import-button" class="adminbtn btn btn-danger navbar-inline-list">Import
+                    </button>
+                </form>
+            </div>
             <form action="{% url 'backend:export_applications_and_assignments_page' %}" method="get">
                 <label for="export-filter-faculty"> Faculty: </label>
                 <select name="faculty" id="export-filter-faculty" class="Filter-dropdown">
@@ -147,7 +133,7 @@
         </div>
         <div id="problems-listing" class="section">
             <div id="unfulfilled-collections-div" class="section-inner">
-                <span>Unassigned Groups</span>
+                <span>Unfulfilled Collections</span>
                 <i class="fa fa-spin fa-circle-o-notch loading"></i>
                 <div id="unfulfilled-collections" class="inner-list">
                 </div>
@@ -305,6 +291,12 @@
                     for (let unfulfilledCollection of data["unfulfilledCollections"]) {
                         let item = $('<a href="/assignment/?group=' + unfulfilledCollection[2] + '&collection=' + unfulfilledCollection[1] + '"><div class="inner-list-item unfulfilled-collection"> <div class="group">' + unfulfilledCollection[0] + '</div><div class="collection-id"> Collection ' + unfulfilledCollection[1] + '</div></div></a>')
                         unfulfilledCollections.append(item)
+                    }
+                    if (!errors[0].length) {
+                        brokenSlots.append("No Slots with Errors!");
+                    }
+                    if (!data["unfulfilledCollections"].length) {
+                        unfulfilledCollections.append('No unfulfilled Collections!');
                     }
                 }
             });
@@ -730,5 +722,47 @@
                 alert("Server error on request!\n Check for critical broken slots or contact an administrator!\n" + error.statusText + "\n " + error.responseText);
             }
         })
+    </script>
+
+    <!-- script for handling the import-->
+    <script>
+        /**
+         * Handles submitted forms from the import preventing the sending action and sending it itself.
+         */
+        $('#import-form form').submit(function (event) {
+            event.preventDefault();
+
+            let importButton = document.getElementById("import-button");
+            if (!confirm("This will override the current database:\n- All faculties that are specified in the uploaded File\n- Locked slots cannot be overwritten and will result in an error\nDo you want to continue?"))
+                    return
+
+            $.ajax({
+                data: new FormData(this),
+                method: "POST",
+                dataType: "json",
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    importButton.innerHTML = '<i class="fa fa-spin fa-circle-o-notch loading"></i>';
+                },
+                success: function (data) {
+                    let alert_msg = data['msg'] + '\n'
+
+                    let err = data['errorList']
+                    for (let i = 0; i < err.length; i++) {
+                        alert_msg += '\n' + 'Row: ' + err[i][0] + ' ([' + err[i][1] + '])' + '\n' + 'Problem: ' + err[i][2] + '\n'
+                    }
+                    if (err.length < 9) {
+                        alert(
+                            alert_msg
+                        )
+                    } else {
+                        prompt("Copy to clipboard: Ctrl+C, Enter", alert_msg);
+                    }
+                    importButton.innerHTML = 'Import';
+                }
+            });
+            return false;
+        });
     </script>
 {% endblock content %}

@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
 from django.core import mail
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -500,7 +500,7 @@ class AssignmentViewTests(TestCase):
         self.assertContains(response, 'Override Application')
         self.assertContains(response, 'Open first open Application of group')
         self.assertContains(response, 'Groups by currently assigned priority')
-        self.assertContains(response, 'Broken Slots')
+        self.assertContains(response, 'Slots with Errors')
 
     def test_select_topic(self):
         """

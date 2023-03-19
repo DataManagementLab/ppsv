@@ -79,7 +79,7 @@
                 <button id="removeBrokenSlots" onclick="removeBrokenSlots()"><i
                         class="fa fa-trash" aria-hidden="true"></i>
                 </button>
-                <p>Remove all applications from all broken slots</p>
+                <p>Remove all applications from all Slots with Errors</p>
             </div>
         </div>
     </div>
@@ -198,7 +198,7 @@
                         if (data["success"])
                             alert("Finalized");
                         else
-                            alert("Could not finalize. There are broken slots");
+                            alert("Could not finalize. There are Slots with Errors");
                     } else {
                         alert("Finalization deleted");
                     }
@@ -249,10 +249,10 @@
     <!-- script block for removals -->
     <script>
         /**
-         * Sends an ajax request to the backend to remove all applications from all broken slots.
+         * Sends an ajax request to the backend to remove all applications from all Slots with Errors.
          */
         function removeBrokenSlots() {
-            if (confirm("Delete all assignments from all broken slots? \nIgnores finalized status \nASSIGNMENTS ARE NOT RECOVERABLE!")) {
+            if (confirm("Delete all assignments from all Slots with Errors? \nIgnores finalized status \nASSIGNMENTS ARE NOT RECOVERABLE!")) {
                 $.ajax({
                     data: {
                         csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -260,7 +260,7 @@
                     },
                     method: "POST",
                     success: () => {
-                        alert("Broken Slots cleared");
+                        alert("Slots with Errors cleared");
                     }
                 });
             }
@@ -271,7 +271,7 @@
     <script>
         $.ajaxSetup({
             error: function (error) {
-                alert("Server error on request!\n Check for critical broken slots or contact an administrator! (╯°□°)╯︵ ┻━┻ Oh wait you are the administrator. Well good luck fixing the problem and sorry for the inconvenience \n" + error.statusText + "\n " + error.responseText);
+                alert("Server error on request!\n Check for critical Slots with Errors or contact an administrator! (╯°□°)╯︵ ┻━┻ Oh wait you are the administrator. Well good luck fixing the problem and sorry for the inconvenience \n" + error.statusText + "\n " + error.responseText);
             }
         })
     </script>
