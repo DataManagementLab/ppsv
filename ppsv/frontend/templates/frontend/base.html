@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load auth_extras %}
 
 <html>
 <head>
@@ -41,6 +42,10 @@ logged in right now. If a user is logged in, a logout button is displayed. If no
             {% if user.is_staff %}
                 <a href="{% url 'backend:home_page' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px;margin-right:5px">
                 Assignment Home Page</a>
+            {% endif %}
+            {% if request.user|has_group:"teacher" or user.is_staff %}
+                <a href="{% url 'teachers:overview_page' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px;margin-right:5px">
+                Teachers Page</a>
             {% endif %}
             {% if user.is_superuser %}
             <a href="{% url 'admin:index' %}" class="btn btn-danger navbar-inline-list" style="height:35px;margin-top:5px">

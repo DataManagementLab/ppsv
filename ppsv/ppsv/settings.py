@@ -45,6 +45,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'backend.apps.BackendConfig',
     'course.apps.CourseConfig',
+    'teachers.apps.TeachersConfig',
     'frontend.apps.FrontendConfig',
     'django.contrib.admin',
     'django.contrib.auth',

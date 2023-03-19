@@ -1,0 +1,506 @@
+{% extends 'teachers/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block tab_name %}
+    Internship & Seminars - Teacher
+{% endblock tab_name %}
+
+{% block title %}
+    Course & Topic Interface
+{% endblock title %}
+
+{% block content %}
+    <div id="user-feedback"></div>
+    <div class="course_details_lists">
+        <div id="own_courses" class="courses">
+            <span>Your courses / topics</span>
+            <div class="buttons">
+                <div id="addbtn">
+                    <i class="fa fa-plus-square"></i>
+                </div>
+                <div class="more" data-modal="create_topic">Add a topic</div>
+                <div class="more" data-modal="create_course">Add a course</div>
+            </div>
+        </div>
+        <div id="info_details" class="courses">
+            <span class="info_title">Details</span>
+            <div class="content">
+            </div>
+            <div class="applications-detail">
+            </div>
+        </div>
+    </div>
+
+    {% include 'teachers/modals/create-course.html' %}
+    {% include 'teachers/modals/create-topic.html' %}
+    {% include 'teachers/modals/edit-course.html' %}
+    {% include 'teachers/modals/edit-topic.html' %}
+
+    <script>
+        /* Expandable add buttons */
+        $('#own_courses .buttons #addbtn').click(function () {
+            $(this).parent().toggleClass('expanded');
+        });
+        $('body').click(function (e) {
+            /* Create-modal handling */
+            let popup_modal = $('.popup_modal');
+            let course_details_lists = $('.course_details_lists');
+            if ((!$(e.target).closest('.popup_modal .window').length > 0 || $(e.target).is($('.popup_modal .close_icon'))) &&
+                !$(e.target).hasClass('edit-button') && course_details_lists.hasClass('blur')) {
+                closeModal(popup_modal);
+            } else if ($(e.target).is($('.buttons .more'))) {
+                let modal = $('.popup_modal#' + $(e.target).data('modal'));
+                if (modal.length > 0) {
+                    openModal(modal);
+                }
+            }
+            /* Handler for expanded add buttons*/
+            let addButton = $('#own_courses .buttons #addbtn');
+            if (!$(e.target).closest(addButton).length > 0 && addButton.parent().hasClass('expanded'))
+                addButton.parent().removeClass('expanded');
+        });
+
+        /**
+         * Displays a popup with information
+         * @param type the type of the message (good,bad,info)
+         * @param msg the message to show
+         */
+        function infoPopup(type, msg) {
+            const userFeedback = $('#user-feedback');
+            let userFeedbackClone = userFeedback.clone()
+            userFeedbackClone.removeClass("good bad info wait");
+            userFeedbackClone.addClass(type);
+            userFeedbackClone.html(msg);
+            if (type === "wait") {
+                userFeedbackClone.append('<i class="fa fa-circle-o-notch fa-spin" style="margin-left: 3px"></i>');
+            }
+            userFeedback.replaceWith(userFeedbackClone);
+        }
+
+        /**
+         * Handles opening  the given modal
+         * @param modal the modal that is to be opened
+         * @param editObject if given, it is either a topic or a course that can get
+         */
+        function openModal(modal, editObject = null) {
+            let course_details_list = $('.course_details_lists');
+            if (!course_details_list.hasClass('blur') && !modal.is(':visible')) {
+                course_details_list.addClass('blur');
+                modal.show();
+                if (modal.attr('id') === "create_topic") {
+                    let selectJQuery = modal.find("#topic_course").html("");
+                    activeCourses.forEach(course => {
+                        if (course.term_active) selectJQuery.append('<option value="' + course.id + '">' + course.title + ' - ' + course.term + '</option>');
+                    });
+                } else if (modal.attr('id') === "edit_topic") {
+                    let selectJQuery = modal.find("#edit_topic_course").html("");
+                    activeCourses.forEach(course => {
+                        selectJQuery.append('<option value="' + course.id + '">' + course.title + ' - ' + course.term + '</option>');
+                    });
+                }
+                if (editObject !== null) {
+                    if (editObject instanceof Course) {
+                        fillCourseEditModal(editObject);
+                    } else if (editObject instanceof Topic) {
+                        fillTopicEditModal(editObject);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Function for filling in the fields of the course edit modal with the data of the given course object
+         * @param course the course object from that the data will be used
+         */
+        function fillCourseEditModal(course) {
+            $('#edit_course input[name="course_id"]').val(course.id);
+            $('#edit_course #edit_course_title').val(course.title);
+            $('#edit_course #edit_course_type').val(course.typeID).change();
+            $('#edit_course #edit_course_faculty').val(course.faculty);
+            $('#edit_course #edit_course_term').val(course.term);
+            $('#edit_course #edit_course_registration_start_date').val(course.startdate_date);
+            $('#edit_course #edit_course_registration_start_time').val(course.startdate_time);
+            $('#edit_course #edit_course_registration_end_date').val(course.enddate_date);
+            $('#edit_course #edit_course_registration_end_time').val(course.enddate_time);
+            $('#edit_course #edit_course_cp').val(course.cp);
+            $('#edit_course #edit_course_motivational_text').prop('checked', course.motText);
+            $('#edit_course #edit_course_description').text(course.description);
+        }
+
+        /**
+         * Function for filling in the fields of the course edit modal with the data of the given course object
+         * @param topic the course object from that the data will be used
+         */
+        function fillTopicEditModal(topic) {
+            $('#edit_topic input[name="topic_id"]').val(topic.id);
+            $('#edit_topic #edit_topic_course').val(topic.courseID).change();
+            $('#edit_topic #edit_topic_title').val(topic.title);
+            $('#edit_topic #edit_topic_max_slots').val(topic.nrSlots);
+            $('#edit_topic #edit_topic_min_size').val(topic.minGroupSize);
+            $('#edit_topic #edit_topic_max_size').val(topic.maxGroupSize);
+            $('#edit_topic #edit_topic_description').val(topic.description);
+            $('#edit_topic #edit_topic_file').val(topic.enddate_date);
+        }
+
+        /**
+         * Handles closing the given modal and resetting its form
+         * @param modal the modal that needs to be closed
+         */
+        function closeModal(modal) {
+            modal.hide();
+            $('.course_details_lists').removeClass('blur');
+            modal.find('form').trigger("reset");
+        }
+
+        /**
+         * Handles submitted forms from modals
+         */
+        $('.popup_modal form').submit(function (event) {
+            event.preventDefault();
+
+            let modal = $(this).closest('.popup_modal');
+            let submitButton = modal.find('input[type="submit"]');
+
+            $.ajax({
+                data: new FormData(this),
+                method: "POST",
+                dataType: "json",
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    submitButton.attr('disabled', 'disabled');
+                    infoPopup("wait", "Sending data");
+                    closeModal(modal);
+                },
+                success: function (data) {
+                    if (data.status === "success") {
+                        loadCourseAndTopics();
+                        infoPopup("good", "Success!");
+                    } else {
+                        infoPopup("bad", data.message);
+                    }
+                    submitButton.removeAttr('disabled');
+                }
+            });
+            return false;
+        });
+
+        let activeCourses = [];
+
+        /**
+         * Class for managing courses and their html
+         */
+        class Course {
+            /**
+             * Constructor for Course
+             * @param id the id of the course in db
+             * @param title the title of the course
+             * @param topics the topics for this course
+             * @param type the type of this course
+             * @param typeID the type of this course as ID in db
+             * @param faculty the assigned faculty of this course
+             * @param term the term this course is in
+             * @param term_active if the term is active
+             * @param startdate the startdate of the registration for this course
+             * @param enddate the enddate of the registration for this course
+             * @param cp the cp for this course
+             * @param motText if a motivational text is required for registration
+             * @param description the description of this course
+             */
+            constructor(id, title, topics, type, typeID, faculty, term, term_active, startdate, enddate, cp, motText, description) {
+                this.id = id;
+                this.title = title;
+                this.topics = topics;
+                this.type = type;
+                this.typeID = typeID;
+                this.faculty = faculty;
+                this.term = term;
+                this.term_active = term_active;
+                this.startdate = new Date(startdate);
+                this.startdate_date = this.startdate.toISOString().split('T')[0];
+                this.startdate_time = this.startdate.toLocaleTimeString().slice(0, -3);
+                this.enddate = new Date(enddate);
+                this.enddate_date = this.enddate.toISOString().split('T')[0];
+                this.enddate_time = this.enddate.toLocaleTimeString().slice(0, -3);
+                this.cp = cp;
+                this.motText = motText;
+                this.description = description;
+                this.jqueryObject = $('<div class="course" data-course-id="' + this.id + '"></div>');
+                activeCourses.push(this);
+                $('#own_courses .buttons').before(this.jqueryObject);
+                this.updateHTML();
+                let course = this;
+                this.jqueryObject.click(function (e) {
+                    if ($(e.target).closest('.title').length > 0 && $(e.target).closest('.course_buttons').length === 0) {
+                        course.clickCourse();
+                    } else if ($(e.target).is($(this).find('.course_buttons .info-button'))) {
+                        course.buildDetails();
+                    } else if ($(e.target).is($(this).find('.course_buttons .edit-button'))) {
+                        openModal($('#edit_course'), course);
+                    }
+                });
+            }
+
+            /**
+             * Update the html of this course
+             */
+            updateHTML() {
+                this.jqueryObject.html("");
+                $('<div class="title"><i class="fa arrow"></i>' + this.title + ' - ' + this.term + '<div class="course_buttons"><i class="info-button fa fa-info-circle" title="View infos"></i><i class="edit-button fa fa-pencil-square-o" title="Edit"></i></div></div>').appendTo(this.jqueryObject);
+                for (const topic of this.topics) {
+                    topic.jqueryObject.appendTo(this.jqueryObject);
+                }
+            }
+
+            /**
+             * Remove this course from html dom and from activeCourses
+             */
+            removeCourse() {
+                this.jqueryObject.remove();
+                activeCourses = activeCourses.filter(item => item !== this);
+            }
+
+            /**
+             * Handles click events on course
+             */
+            clickCourse() {
+                this.jqueryObject.toggleClass('collapsed');
+            }
+
+            /**
+             * Update detail html block
+             */
+            buildDetails() {
+                let detailHTML = '<table>' +
+                    '<tr><td>This course</td><td>' + this.title + '</td></tr>' +
+                    '<tr><td>Course type</td><td>' + this.type + '</td></tr>' +
+                    '<tr><td>Faculty</td><td>' + this.faculty + '</td></tr>' +
+                    '<tr><td>Term</td><td>' + this.term + '</td></tr>' +
+                    '<tr><td>Registration start date</td><td>' + this.startdate + '</td></tr>' +
+                    '<tr><td>Registration end date</td><td>' + this.enddate + '</td></tr>' +
+                    '<tr><td>CP</td><td>' + this.cp + '</td></tr>' +
+                    '<tr><td>Motivational text required</td><td>' + this.motText + '</td></tr>' +
+                    '<tr><td>Description</td><td>' + this.description + '</td></tr>' +
+                    '<tr><td>Topic count</td><td>' + this.topics.length + '</td></tr>' +
+                    '</table>';
+                $('#info_details .content').html(detailHTML);
+            }
+        }
+
+        /**
+         * Class for managing topics and their html
+         */
+        class Topic {
+            /**
+             * Constructor for Topic
+             * @param id the id of this topic
+             * @param title the title of this topic
+             * @param courseTitle the title of the corresponding course
+             * @param courseID the id of the corresponding course
+             * @param nrSlots the number of available slots
+             * @param minGroupSize the required minimum group size for a valid slot
+             * @param maxGroupSize the highest possible group size for a valid slot
+             * @param description the description of this topic
+             * @param file uploaded file for this topic
+             */
+            constructor(id, title, courseTitle, courseID, nrSlots, minGroupSize, maxGroupSize, description, file) {
+                this.id = id;
+                this.title = title;
+                this.courseTitle = courseTitle;
+                this.courseID = courseID;
+                this.nrSlots = nrSlots;
+                this.minGroupSize = minGroupSize;
+                this.maxGroupSize = maxGroupSize;
+                this.description = description;
+                this.file = file;
+                this.jqueryObject = $('<div class="topic" data-topic-id="' + this.id + '"></div>');
+                this.updateHTML();
+                let topic = this;
+                this.jqueryObject.click(function () {
+                    topic.buildDetails();
+                });
+            }
+
+            /**
+             * Only update HTML of topic
+             */
+            updateHTML() {
+                this.jqueryObject.html("");
+                this.jqueryObject.text(this.title);
+                let editButton = $('<i class="edit-button fa fa-pencil-square-o" title="Edit"></i>');
+                this.jqueryObject.append(editButton);
+                let topic = this;
+                editButton.click(function () {
+                    openModal($('#edit_topic'), topic);
+                });
+            }
+
+            /**
+             * Update detail html block
+             */
+            buildDetails() {
+                let topic = this;
+
+                $.ajax({
+                        data: {
+                            csrfmiddlewaretoken: "{{ csrf_token }}",
+                            action: "selectTopic",
+                            topicID: this.id
+                        },
+                        method: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            let html = createTopicInfoHTML(topic) + '<div class="assignments-applications">' +
+                                createAssignmentsHTML(data) + createApplicationsHTML(data) + '</div>';
+                            $('#info_details .content').html(html);
+                        }
+                    }
+                );
+            }
+        }
+
+        /**
+         * Create the html for the topic information overview
+         * @param topic the topic to create the html for
+         * @returns {string} the create html
+         */
+        function createTopicInfoHTML(topic) {
+            let topicInfoHTML = '<table>' +
+                    '<tr><td>This topic</td><td>' + topic.title + '</td></tr>' +
+                    '<tr><td>Course</td><td>' + topic.courseTitle + '</td></tr>' +
+                    '<tr><td>Max number of slots</td><td>' + topic.nrSlots + '</td></tr>' +
+                    '<tr><td>Min group-size</td><td>' + topic.minGroupSize + '</td></tr>' +
+                    '<tr><td>Max group-size</td><td>' + topic.maxGroupSize + '</td></tr>' +
+                    '<tr><td>Description</td><td>' + topic.description + '</td></tr>';
+
+            if (topic.file === "") {
+                topicInfoHTML += '<tr><td>File</td><td>No file uploaded</td></tr>';
+            } else {
+                topicInfoHTML += '<tr><td>File</td><td><a target="_blank" href=' + topic.file + '>' + topic.file.substring(topic.file.lastIndexOf("/") + 1) + '</td></tr>';
+            }
+
+            topicInfoHTML += '</table>';
+
+            return topicInfoHTML;
+        }
+
+        /**
+         * Create the html for the assignment overview of a topic
+         * @param data the data to create the html for
+         * @returns {string} the created html
+         */
+        function createAssignmentsHTML(data) {
+            let assignmentHTML =
+                '<div class="assignments inner-list">' +
+                '<span>Assignments</span>';
+
+            //create Slots
+            for (let slot of data['slots']) {
+                let slotHTML = '<div class="inner-list-item">'
+
+                slotHTML += '<div class="status"> Slot ' + slot['slotID'] + '</div>';
+
+                //add assigned groups
+                for (let group of slot['groups']) {
+                    slotHTML += '<div class="application">';
+
+                    for (let student of group) {
+                        slotHTML += '<div class="inner-item">' + student + '</div>';
+                    }
+
+                    slotHTML += '</div>';
+                }
+
+                //add empty slots
+                for (let i = slot['studentCount'] + 1; i <= data['topicMaxSlotSize']; i++) {
+                    if (i > data['topicMinSlotSize'])
+                        slotHTML += '<div class="placeholder field optional"> place ' + i + '</div>';
+                    else
+                        slotHTML += '<div class="placeholder field"> place ' + i + '</div>';
+                }
+
+                slotHTML += '</div>';
+
+                assignmentHTML += slotHTML;
+            }
+
+            assignmentHTML += '</div>';
+
+            return assignmentHTML;
+
+        }
+
+        /**
+         * Create the html for the application overview of a topic
+         * @param data the data to create the html for
+         * @returns {string} the created html
+         */
+        function createApplicationsHTML(data) {
+            let applicationHTML = '<div class="applications inner-list">' +
+                '<span>Applications</span>';
+
+            let unassignedGroups = data['unassignedGroups'];
+
+            if (unassignedGroups.length > 0) {
+
+                //add all unassigned groups
+                for (let group of unassignedGroups) {
+                    applicationHTML += '<div class="application">';
+                    for (let student of group) {
+                        applicationHTML += '<div class="inner-item">' + student + '</div>';
+                    }
+                    applicationHTML += '</div>';
+                }
+            } else {
+                applicationHTML += '<div>No open applications</div>';
+            }
+
+            applicationHTML += '</div>';
+
+            return applicationHTML;
+        }
+
+        /**
+         * Gets all courses and topics from db and refreshes the list
+         */
+        function loadCourseAndTopics() {
+            $.ajax({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    action: "getBulkCourses",
+                    courseID: this.id,
+                },
+                method: "POST",
+                dataType: "JSON",
+                success: function (data) {
+                    activeCourses.forEach(course => {
+                        course.removeCourse()
+                    });
+                    for (let course of data['courses']) {
+                        let topics = [];
+                        for (let topic of course['topics']) {
+                            topics.push(new Topic(topic['id'], topic['title'], course['title'], course['id'], topic['nrSlots'],
+                                topic['minGroupSize'], topic['maxGroupSize'], topic['description'], topic['file']));
+                        }
+                        new Course(course['id'], course['title'], topics, course['type'], course['typeID'], course['faculty'],
+                            course['term'], course['term_active'], course['startdate'], course['enddate'], course['cp'], course['motText'],
+                            course['description']);
+                    }
+                    let showCreateTopicButton = false;
+                    activeCourses.forEach(course => {
+                        if (course.term_active) showCreateTopicButton = true;
+                    });
+                    let createTopicButton = $('.buttons .more[data-modal="create_topic"]');
+                    if (showCreateTopicButton) createTopicButton.removeClass('disabled');
+                    else createTopicButton.addClass('disabled');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            loadCourseAndTopics();
+        });
+    </script>
+
+{% endblock content %}

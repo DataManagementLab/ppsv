@@ -1465,6 +1465,10 @@ def login_request(request, *given_template):
             if user is not None:
                 login(request, user)
                 messages.info(request, _("You are now logged in as {}.").format(username))
+                if user.is_staff:
+                    return redirect("backend:home_page")
+                elif user.groups.filter(name="teacher").exists():
+                    return redirect("teachers:overview_page")
                 return redirect("frontend:homepage")
             else:
                 messages.error(request, _("Invalid username or password."))

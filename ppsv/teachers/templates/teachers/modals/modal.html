@@ -1,0 +1,12 @@
+<div id="{% block modal_id %}{% endblock %}" class="popup_modal">
+    <div class="window">
+        <div class="top_bar">
+            <span class="title">{% block modal_title %}{% endblock %}</span>
+            <i class="fa fa-times close_icon"></i>
+        </div>
+        <div class="content">
+            {% block modal_content %}
+            {% endblock %}
+        </div>
+    </div>
+</div>

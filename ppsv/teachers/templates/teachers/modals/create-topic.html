@@ -1,0 +1,56 @@
+{% extends 'teachers/modals/modal.html' %}
+
+{% block modal_id %}create_topic{% endblock %}
+
+{% block modal_title %}Create new Topic{% endblock %}
+
+{% block modal_content %}
+    <form>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="createTopic">
+        <table>
+            <tr>
+                <td><label for="topic_course">Course</label></td>
+                <td>
+                    <select id="topic_course" name="topic_course" required>
+                        {% for topics_of_course in topics_of_courses %}
+                            <option value="{{ topics_of_course.course.pk }}">{{ topics_of_course.course.title }} {{ topics_of_course.course.term.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="topic_title">Title</label></td>
+                <td><input id="topic_title" type="text" name="topic_title" required></td>
+            </tr>
+            <tr>
+                <td><label for="topic_max_slots">Max number of slots</label></td>
+                <td><input id="topic_max_slots" type="number" name="topic_max_slots" min="0" value="1"
+                           required>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="topic_min_size">Min group-size</label></td>
+                <td><input id="topic_min_size" type="number" name="topic_min_size" min="0" value="1"
+                           required>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="topic_max_size">Max group-size</label></td>
+                <td><input id="topic_max_size" type="number" name="topic_max_size" min="0" value="1"
+                           required>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="topic_description">Description</label></td>
+                <td><textarea id="topic_description" name="topic_description" cols="40"
+                              rows="5" required></textarea></td>
+            </tr>
+            <tr>
+                <td><label for="topic_file">Upload a file</label></td>
+                <td><input type="file" id="topic_file" name="topic_file"></td>
+            </tr>
+        </table>
+        <input type="submit" value="Create!">
+    </form>
+{% endblock %}
