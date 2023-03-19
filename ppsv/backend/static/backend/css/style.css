@@ -307,6 +307,24 @@ p {
     display: flex;
 }
 
+#statistics-title {
+    display: flex;
+    border-bottom: 1px solid black;
+    align-items: center;
+}
+
+#statistics-filter-term {
+    margin-left: auto;
+}
+
+#statistics-filter-term label {
+    margin-bottom: 0;
+}
+
+#score {
+    margin-left: auto;
+}
+
 #pre-filtering {
     height: available;
     display: block;

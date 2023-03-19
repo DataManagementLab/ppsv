@@ -179,26 +179,27 @@ def get_score_and_chart_data(request):
     max_cp = int(request.POST.get('maxCP'))
     course_types = request.POST.getlist('courseTypes[]')
     faculties = request.POST.getlist('faculties[]')
+    term = request.POST.get('term', Term.get_active_term())
 
     if max_cp == -1:
         assignment_query = Assignment.objects.filter(topic__course__cp__gte=min_cp,
                                                      topic__course__type__in=course_types,
                                                      topic__course__faculty__in=faculties,
-                                                     topic__course__term=Term.get_active_term())
+                                                     topic__course__term=term)
         application_query = TopicSelection.objects.filter(topic__course__cp__gte=min_cp,
                                                           topic__course__type__in=course_types,
                                                           topic__course__faculty__in=faculties,
-                                                          topic__course__term=Term.get_active_term(),
+                                                          topic__course__term=term,
                                                           collection_number__gt=0)
     else:
         assignment_query = Assignment.objects.filter(topic__course__cp__range=(min_cp, max_cp),
                                                      topic__course__type__in=course_types,
                                                      topic__course__faculty__in=faculties,
-                                                     topic__course__term=Term.get_active_term())
+                                                     topic__course__term=term)
         application_query = TopicSelection.objects.filter(topic__course__cp__range=(min_cp, max_cp),
                                                           topic__course__type__in=course_types,
                                                           topic__course__faculty__in=faculties,
-                                                          topic__course__term=Term.get_active_term(),
+                                                          topic__course__term=term,
                                                           collection_number__gt=0)
 
     data_statistic = {
