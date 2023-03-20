@@ -298,7 +298,7 @@ def overview(request):
                     # Don't select topics that have already been selected by the group
                     if not topic_selections_of_group.filter(topic=topic_to_select.id).exists():
                         # Only select topics that can fit the group
-                        if group_to_select.size <= topic_to_select.max_slots:
+                        if group_to_select.size <= topic_to_select.max_slot_size:
                             user_selection = TopicSelection()
                             user_selection.group = group_to_select
                             user_selection.topic = models.Topic.objects.get(id=topic_to_select.id,
@@ -525,7 +525,7 @@ def overview(request):
                             args["open_group_select"] = True
                             args["groups"] = filter(
                                 lambda x: 1 < x.size <= models.Topic.objects.get(id=data[0],
-                                                                                 course__term=Term.get_active_term()).max_slots,
+                                                                                 course__term=Term.get_active_term()).max_slot_size,
                                 models.Group.objects.filter(students=request.user.student, term=Term.get_active_term()))
                             messages.error(request, "No group selected!")
 
@@ -546,7 +546,7 @@ def overview(request):
 
                         if "".join(request.POST.get("new_student_id").split()) != "":
                             if members_in_new_group.count(str(request.POST.get("new_student_id"))) == 0:
-                                if models.Topic.objects.get(id=data[0]).max_slots > counter:
+                                if models.Topic.objects.get(id=data[0]).max_slot_size > counter:
                                     if models.Student.objects.filter(
                                             tucan_id=request.POST.get("new_student_id")).exists():
                                         members_in_new_group.insert(0, str(request.POST.get("new_student_id")))
@@ -560,7 +560,7 @@ def overview(request):
                                                                                 course__term=Term.get_active_term()).title)
                                                    + _(". Your group can only have a maximum of ") +
                                                    str(models.Topic.objects.get(id=data[0],
-                                                                                course__term=Term.get_active_term()).max_slots)
+                                                                                course__term=Term.get_active_term()).max_slot_size)
                                                    + _(" members."))
                             else:
                                 messages.error(request, _("A student with the TUCaN-ID ") +
