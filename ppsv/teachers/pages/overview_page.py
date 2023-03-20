@@ -1,6 +1,5 @@
 import traceback
 
-from django.core import serializers
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -49,6 +48,14 @@ def handle_create_course(request):
             }
         )
 
+    if course_term == "":
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": "There is no term active. Please contact an Administrator."
+            }
+        )
+
     Course.objects.create(title=course_title, type_id=course_type, faculty=course_faculty, term_id=course_term,
                           registration_start=course_registration_start,
                           registration_deadline=course_registration_end, description=course_description,
@@ -80,7 +87,7 @@ def handle_create_topic(request):
 
     if course.term.active_term is not True:
         return JsonResponse({
-            "status": "bad",
+            "status": "error",
             "message": "The selected course is not in an active term"
         })
 
@@ -167,13 +174,13 @@ def handle_edit_topic(request):
 
     if topic.course.term.active_term is not True:
         return JsonResponse({
-            "status": "bad",
+            "status": "error",
             "message": "The current term is in an not active term"
         })
 
     if course.term.active_term is not True:
         return JsonResponse({
-            "status": "bad",
+            "status": "error",
             "message": "The selected course is not in an active term"
         })
 
@@ -273,12 +280,14 @@ def handle_select_topic(request):
 
             # check if the application is assigned to the current slot
             if accepted_application is not None and accepted_application.assignment.slot_id == slot:
-                groups.append(list(map(lambda x: x.firstname + " " + x.lastname + " &lt" + x.email + "&gt", application.group.members)))
+                groups.append(list(map(lambda x: x.firstname + " " + x.lastname + " &lt" + x.email + "&gt",
+                                       application.group.members)))
                 student_count += application.group.members.count()
 
             # check if the application is not assigned to any slot (could be improved performance-wise)
             elif accepted_application is None:
-                unassigned_group = list(map(lambda x: x.firstname + " " + x.lastname + " &lt" + x.email + "&gt", application.group.members))
+                unassigned_group = list(
+                    map(lambda x: x.firstname + " " + x.lastname + " &lt" + x.email + "&gt", application.group.members))
 
                 # check if the group is already in the list of unassigned groups to avoid duplicates
                 if unassigned_group not in unassigned_groups:
@@ -348,7 +357,7 @@ def overview_page(request):
     :rtype: HttpResponse
     """
     if not request.user.is_staff and not request.user.groups.filter(name="teacher").exists():
-            return redirect(reverse('frontend:login') + '?next=' + reverse('teachers:overview_page'))
+        return redirect(reverse('frontend:login') + '?next=' + reverse('teachers:overview_page'))
 
     if request.method == "POST":
         return handle_post(request)
@@ -378,17 +387,17 @@ def overview_page(request):
         course_types.append(course_type)
 
     faculties = []
-    for course in Course.objects.all():
-        if course.faculty not in faculties:
-            faculties.append(course.faculty)
+    for faculty in Course.COURSE_FACULTY_CHOICES:
+        faculties.append(faculty)
     faculties.sort()
 
     args["topics_of_courses"] = topics_of_courses
     args["active_term"] = active_term
-    args["active_term_reg_start_date"] = active_term.registration_start.strftime("%Y-%m-%d")
-    args["active_term_reg_start_time"] = active_term.registration_start.strftime("%H:%S")
-    args["active_term_reg_end_date"] = active_term.registration_deadline.strftime("%Y-%m-%d")
-    args["active_term_reg_end_time"] = active_term.registration_deadline.strftime("%H:%S")
+    if active_term is not None:
+        args["active_term_reg_start_date"] = active_term.registration_start.strftime("%Y-%m-%d")
+        args["active_term_reg_start_time"] = active_term.registration_start.strftime("%H:%S")
+        args["active_term_reg_end_date"] = active_term.registration_deadline.strftime("%Y-%m-%d")
+        args["active_term_reg_end_time"] = active_term.registration_deadline.strftime("%H:%S")
     args["course_types"] = course_types
     args["faculties"] = faculties
 

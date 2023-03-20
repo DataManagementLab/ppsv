@@ -29,7 +29,7 @@
                 <td>
                     <select id="edit_course_faculty" name="course_faculty" required>
                         {% for faculty in faculties %}
-                            <option value="{{ faculty }}">{{ faculty }}</option>
+                            <option value="{{ faculty.0 }}">{{ faculty.1 }}</option>
                         {% endfor %}
                     </select>
                 </td>
