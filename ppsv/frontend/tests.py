@@ -90,14 +90,14 @@ class HomepageViewTests(TestCase):
         cls.internship_type = CourseType.objects.create(type='Internship')
         cls.course = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, motivation_text=True,
                                            type=cls.seminar_type, created_by=cls.superuser)
-        cls.topic = Topic.objects.create(course=cls.course, title='Title')
+        cls.topic = Topic.objects.create(course=cls.course, title='Title', max_slot_size=9999)
         cls.topic_selection = TopicSelection.objects.create(group=cls.group1, topic=cls.topic, collection_number=0)
         cls.course_mix1 = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, type=cls.seminar_type,
                                                 created_by=cls.superuser)
         cls.course_mix2 = Course.objects.create(term=cls.term,registration_deadline=timezone.now(), cp=5, type=cls.internship_type,
                                                 created_by=cls.superuser)
-        cls.topic_mix1 = Topic.objects.create(course=cls.course_mix1, title='Mix1')
-        cls.topic_mix2 = Topic.objects.create(course=cls.course_mix2, title='Mix2')
+        cls.topic_mix1 = Topic.objects.create(course=cls.course_mix1, title='Mix1', max_slot_size=9999)
+        cls.topic_mix2 = Topic.objects.create(course=cls.course_mix2, title='Mix2', max_slot_size=9999)
         cls.topic_selection_mix1 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_mix1,
                                                                  collection_number=1)
         cls.topic_selection_mix2 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_mix2,
@@ -180,13 +180,13 @@ class OverviewViewTests(TestCase):
                                                       description='Test course description unselected',
                                                       created_by=cls.superuser)
         cls.topic_unselected = Topic.objects.create(course=cls.course_unselected, title='Test topic unselected',
-                                                    description='Test topic description unselected')
+                                                    description='Test topic description unselected', max_slot_size=9999)
         cls.topic_max_part_alone = Topic.objects.create(course=cls.course_unselected, title='Test topic max part alone',
                                                         description='Test topic description max part alone',
-                                                        max_slots=1)
+                                                        max_slot_size=1)
         cls.topic_max_part_group = Topic.objects.create(course=cls.course_unselected, title='Test topic max part group',
                                                         description='Test topic description max part group',
-                                                        max_slots=2)
+                                                        max_slot_size=2)
 
         cls.course_selected = Course.objects.create(term=cls.term,registration_deadline=cls.date_future, cp=5, motivation_text=True,
                                                     registration_start=timezone.now(), type=cls.course_type,
@@ -194,9 +194,9 @@ class OverviewViewTests(TestCase):
                                                     description='Test course description selected',
                                                     created_by=cls.superuser)
         cls.topic_remaining = Topic.objects.create(course=cls.course_selected, title='Test topic remaining',
-                                                   description='Test topic description remaining')
+                                                   description='Test topic description remaining', max_slot_size=9999)
         cls.topic_selected = Topic.objects.create(course=cls.course_selected, title='Test topic selected',
-                                                  description='Test topic description selected')
+                                                  description='Test topic description selected', max_slot_size=9999)
         cls.topic_selection = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_selected,
                                                             collection_number=0)
 
@@ -308,18 +308,17 @@ class OverviewViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="select_all_remaining_topics"')
 
-    # TODO fix
-    # def test_select_all_remaining_topics(self):
-    #     """
-    #     Tests if all other topics of a course are correctly selected after selecting all remaining topics.
-    #     """
-    #     course_id = self.course_selected.id
-    #     remaining_topic_id = self.topic_remaining.id
-    #     data = {'select_all_remaining_topics': ['{}|FB01|open_course_info'.format(course_id)]}
-    #     self.client.force_login(self.user1)
-    #     response = self.client.post(reverse('frontend:overview'), data=data)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertTrue(TopicSelection.objects.filter(topic=remaining_topic_id).exists())
+    def test_select_all_remaining_topics(self):
+        """
+        Tests if all other topics of a course are correctly selected after selecting all remaining topics.
+        """
+        course_id = self.course_selected.id
+        remaining_topic_id = self.topic_remaining.id
+        data = {'select_all_remaining_topics': ['{}|FB01|open_course_info'.format(course_id)]}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(TopicSelection.objects.filter(topic=remaining_topic_id).exists())
 
     def test_back_to_faculty_view(self):
         """
@@ -361,19 +360,18 @@ class OverviewViewTests(TestCase):
         self.assertContains(response, 'name="select_with_new_group"')
         self.assertContains(response, 'ab22eeee')
 
-    # TODO fix
-    # def test_adding_student_to_group_draft(self):
-    #     """
-    #     Tests if a student is properly added to the group draft.
-    #     """
-    #     topic_id = self.topic_unselected.id
-    #     course_id = self.course_unselected.id
-    #     data = {'new_student_id': ['cd22eeee'],
-    #             'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)], 'member0': ['ab22eeee']}
-    #     self.client.force_login(self.user1)
-    #     response = self.client.post(reverse('frontend:overview'), data=data)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertContains(response, 'cd22eeee')
+    def test_adding_student_to_group_draft(self):
+        """
+        Tests if a student is properly added to the group draft.
+        """
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': ['cd22eeee'],
+                'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)], 'member0': ['ab22eeee']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'cd22eeee')
 
     def test_removing_student_from_group_draft(self):
         """
@@ -417,21 +415,20 @@ class OverviewViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(TopicSelection.objects.filter(topic=topic_id, group=group_id).exists())
 
-    # TODO fix
-    # def test_group_creation_student_not_found(self):
-    #     """
-    #     Tests the correct message is displayed when the user tries to add a non-existent student to the group.
-    #     """
-    #     topic_id = self.topic_unselected.id
-    #     course_id = self.course_unselected.id
-    #     data = {'new_student_id': ['xxxxxxxx'],
-    #             'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)], 'member0': ['ab22eeee']}
-    #     self.client.force_login(self.user1)
-    #     response = self.client.post(reverse('frontend:overview'), data=data)
-    #     self.assertEqual(response.status_code, 200)
-    #     messages = list(response.context['messages'])
-    #     self.assertEqual(len(messages), 1)
-    #     self.assertEqual(str(messages[0]), 'A student with the TUCaN-ID xxxxxxxx was not found.')
+    def test_group_creation_student_not_found(self):
+        """
+        Tests the correct message is displayed when the user tries to add a non-existent student to the group.
+        """
+        topic_id = self.topic_unselected.id
+        course_id = self.course_unselected.id
+        data = {'new_student_id': ['xxxxxxxx'],
+                'add_student': ['{}|{}|FB01|open_course_info'.format(topic_id, course_id)], 'member0': ['ab22eeee']}
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('frontend:overview'), data=data)
+        self.assertEqual(response.status_code, 200)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'A student with the TUCaN-ID xxxxxxxx was not found.')
 
     def test_group_creation_student_already_in_group(self):
         """
@@ -529,16 +526,16 @@ class YourSelectionViewTests(TestCase):
         cls.course_exclusive = Course.objects.create(term=cls.term,registration_deadline=cls.date_future,
                                                      registration_start=timezone.now(), cp=6, motivation_text=True,
                                                      faculty='FB02', title='TestCourse exklusiv', type=cls.course_type,
-                                                     description='Test description exklusiv', created_by=cls.superuser) # TODO was wurde hier mit collection_exclusive getestet?
+                                                     description='Test description exklusiv', created_by=cls.superuser)
 
         cls.topic_unassigned0 = Topic.objects.create(course=cls.course, title='Unassigned Topic 0',
-                                                     description='Testing unassigned 0')
+                                                     description='Testing unassigned 0', max_slot_size=9999)
         cls.topic_unassigned1 = Topic.objects.create(course=cls.course, title='Unassigned Topic 1',
-                                                     description='Testing unassigned 1')
+                                                     description='Testing unassigned 1', max_slot_size=9999)
         cls.topic_assigned0 = Topic.objects.create(course=cls.course1, title='Assigned Topic 0',
-                                                   description='Testing assigned 0')
-        cls.topic_col1_exclusive0 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 0')
-        cls.topic_col1_exclusive1 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 1')
+                                                   description='Testing assigned 0', max_slot_size=9999)
+        cls.topic_col1_exclusive0 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 0', max_slot_size=9999)
+        cls.topic_col1_exclusive1 = Topic.objects.create(course=cls.course_exclusive, title='Assigned Excl. Topic 1', max_slot_size=9999)
 
         cls.topic_selection_unassigned0 = TopicSelection.objects.create(group=cls.group1, topic=cls.topic_unassigned0,
                                                                         collection_number=0)
