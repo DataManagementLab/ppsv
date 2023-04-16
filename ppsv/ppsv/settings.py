@@ -69,6 +69,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -179,6 +180,14 @@ FONTAWESOME_6_PREFIX = "fa"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Content Security Policy
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_FRAME_SRC = ("'self'", )
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'",)
+CSP_STYLE_SRC_ATTR = ("'self'", "'unsafe-inline'",)
 
 # overwriting the built-in django login path
 LOGIN_URL = '/login'
