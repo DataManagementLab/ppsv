@@ -1,6 +1,12 @@
-Django==4.0
 psycopg2-binary
 uwsgi
 django-import-export
 coverage
 django-extensions
+django-bootstrap5==22.2
+fontawesomefree==6.2.1 # Makes static files (css, fonts) available locally
+django-fontawesome-6==1.0.0.0 # Provides an icon field for models and forms as well as handy shortcuts to render icons
+django-debug-toolbar==3.8.1
+django-split-settings==1.2.0
+django-betterforms==2.0.0
+django-csp==3.7

@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
+from split_settings.tools import optional, include
 
 
 # tags for different types of messages
@@ -53,9 +54,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'import_export',
     'django_extensions',
+    'debug_toolbar',
+    'django_bootstrap5',
+    'fontawesomefree',
+    'fontawesome_6',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -119,19 +125,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en'
 
-LOCALE_PATHS = [
-    os.path.join(BASE_DIR, "ppsv/locale"),
-    os.path.join(BASE_DIR, "frontend/locale"),
-    os.path.join(BASE_DIR, "course/locale"),
-    os.path.join(BASE_DIR, "backend/locale")
-]
-
 LANGUAGES = [
     ('de', _('German')),
     ('en', _('English')),
 ]
 
-TIME_ZONE = 'CET'
+INTERNAL_IPS = ['127.0.0.1', '::1']
+
 TIME_ZONE = 'CET'
 
 USE_I18N = True
@@ -175,3 +175,5 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
+
+include(optional("settings/*.py"))
