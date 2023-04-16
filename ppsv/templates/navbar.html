@@ -1,0 +1,83 @@
+{# Load the tag library #}
+{% load i18n %}
+{% load fontawesome_6 %}
+{% load base_tags %}
+
+{% if user.is_authenticated %}
+
+{% endif %}
+
+<div class="float-end" style="color: #ffffff;font-weight: bold;">
+    {% if user.is_authenticated %}
+        {% if 'backend'|check_app_installed %}
+            {% include 'backend/navbar.html' %}
+        {% endif %}
+        {% if 'teachers'|check_app_installed %}
+            {% include 'teachers/navbar.html' %}
+        {% endif %}
+        {% if user.is_superuser %}
+            <a href="{% url 'admin:index' %}" class="btn btn-danger navbar-inline-list">
+                {% trans "Admin Menu" %}
+            </a>
+            &nbsp;
+        {% endif %}
+        <a href=""
+           class="text-decoration-none text-white navbar-inline-list">
+            {% if user.profile.pic %}
+                <img src="{{ user.profile.pic.url }}" class="rounded-circle"
+                     style="width: 35px; height: 35px; object-fit: cover;"
+                     alt="{% trans 'User profile picture' %}">
+            {% else %}
+                {% fa6_icon 'user' 'far' %}
+            {% endif %}
+            {{ user.profile.display_name }}
+        </a>
+    {% else %}
+        <a href="{% url 'frontend:login' %}" class="btn btn-primary navbar-inline-list">
+            {% trans "Login" %}
+        </a>
+    {% endif %}
+
+    <div class="btn-group navbar-inline-list" role="group">
+        <div class="btn-group" role="group">
+            <button id="btnGroupNavbar" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">{% fa6_icon "bars" "fas" %}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="btnGroupNavbar" style="">
+                <div class="dropdown-header">
+                    {% trans "Language" %}:
+                </div>
+                {# Language switcher #}
+                <form action="{% url 'set_language' %}" method="post" class="form-inline" name="language-form"
+                      id="language-switcher" style="flex-direction: column;">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.path }}"/>
+
+                    {% get_current_language as LANGUAGE_CODE %}
+                    {% get_available_languages as LANGUAGES %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+
+                    {% for language in languages %}
+                        <button type="submit" class="dropdown-item" name="language" value="{{ language.code }}"
+                                style="align-self: end;">
+                            {{ language.code | upper }}
+                        </button>
+                    {% endfor %}
+                </form>
+                {% if user.is_authenticated %}
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'frontend:logout' %}" class="dropdown-item" style="">
+                        {% trans 'Logout' %}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<a href="" style="color: #ffffff;text-decoration: none;">
+    <h4 style="font-weight: bold;display: inline;">
+        {% trans "Internship & Seminar Allocation" %}
+    </h4>
+</a>

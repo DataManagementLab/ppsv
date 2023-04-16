@@ -1,0 +1,81 @@
+{% load static %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% load fontawesome_6 %}
+{% load auth_extras %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block meta %}{% endblock%}
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- Load bootstrap, jquery and fontawesome-->
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <script src="{% static 'vendor/jquery/jquery-3.6.3.min.js' %}"></script>
+    {% fontawesome_6_static %}
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    {% block imports %}{% endblock %}
+</head>
+<!-- Both "header" and "navbar" will be included in all html pages which extend "base.html" -->
+<body>
+
+{% block general_content %}
+    <div class="container-fluid" style="background-color: #0a3d62;padding-top:2em;padding-bottom:3em;color:#ffffff;">
+        {# Navigation bar #}
+        <div class="container" style="border-top: 0.5em solid #ffffff;padding-top:2em;">
+            {% block navbar %}
+                {% include 'navbar.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    {# Content container #}
+    <div class="container" style="padding-top: 2em;min-height:75vh;margin-bottom:50px;">
+        {# Message notifcation #}
+        {% bootstrap_messages %}
+
+<!-- "navbar" contains all links to important html pages like the homepage,overview etc. -->
+<div name="navbar" class="container-fluid" style="background-color: #0C8FCC;padding-left:50px;padding-right:50px;width:100%">
+    <div class="row" style="width:100%;">
+        {% block homepage_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:homepage' %}" style="float:left;padding-bottom: 0px;">
+            <button type="submit" class="navbar-btn" style="padding-top:0.42em;padding-bottom:0.42em;"> <i class="fa fa-home fa-lg" aria-hidden="true" style="font-size:26px"> </i></button>
+        </form>
+        {% endblock homepage_navbar_container %}
+        {% block selection_page_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:overview' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" class="navbar-btn" style="padding-bottom: 0.3em;padding-top: 0.3em"> {% translate "Overview" %} </button>
+        </form>
+        {% endblock selection_page_navbar_container %}
+        {% if user.is_authenticated %}
+        {% block your_selection_page_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:your_selection' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" style="padding-bottom: 0.3em;padding-top: 0.3em" class="navbar-btn"> {% translate "My Selection" %} </button>
+        </form>
+        {% endblock your_selection_page_navbar_container %}
+        {% endif %}
+        {% if user.is_authenticated %}
+        {% block groups_page_navbar_container %}
+        <form class="navbar-form" action="{% url 'frontend:groups' %}" style="float:left;padding-bottom: 0px">
+            <button type="submit" style="padding-bottom: 0.3em;padding-top: 0.3em" class="navbar-btn"> {% translate "My Groups" %} </button>
+        </form>
+        {% endblock groups_page_navbar_container %}
+        {% endif %}
+    </div>
+</div>
+
+        {# Content #}
+        {% block content %}
+            {# Insert content here #}
+        {% endblock %}
+    </div>
+{% endblock %}
+
+
+
+</body>
+</html>

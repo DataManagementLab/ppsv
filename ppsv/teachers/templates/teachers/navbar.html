@@ -1,0 +1,8 @@
+{% load i18n %}
+{% load auth_extras %}
+
+{% if request.user|has_group:"teacher" or user.is_staff %}
+    <a href="{% url 'teachers:overview_page' %}" class="btn btn-primary navbar-inline-list">
+        {% trans "Manage Courses & Topics" %}
+    </a>
+{% endif %}

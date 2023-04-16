@@ -1,0 +1,7 @@
+{% load i18n %}
+
+{% if user.is_staff %}
+    <a href="{% url 'backend:home_page' %}" class="btn btn-primary navbar-inline-list">
+        {% trans "Manage Assignments" %}
+    </a>
+{% endif %}
