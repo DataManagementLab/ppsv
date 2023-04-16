@@ -1,12 +1,7 @@
+from base.models import Topic
+from base.models import TopicSelection, Term
 from django.core.exceptions import ValidationError
 from django.db import models
-
-from course.models import Group
-from course.models import Group
-from course.models import Topic
-from course.models import Topic
-from course.models import TopicSelection
-from course.models import TopicSelection, Term
 
 
 class Assignment(models.Model):

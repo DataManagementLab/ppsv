@@ -4,7 +4,7 @@ from backend.automatic_assignment.dataclasses import TempAssignment, TempApplica
 from backend.automatic_assignment.my_dict_list import MyDictList
 from backend.models import Assignment, AcceptedApplications
 from backend.pages.functions import get_score_for_not_assigned
-from course.models import Topic, Term, TopicSelection
+from base.models import Topic, Term, TopicSelection
 
 all_assignments = MyDictList()
 topic_data = MyDictList()

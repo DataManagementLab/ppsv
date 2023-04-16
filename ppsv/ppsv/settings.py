@@ -40,11 +40,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Application definition
-#    'frontend.apps.FrontendConfig',
-#    'course.apps.CourseConfig',
 INSTALLED_APPS = [
+    'base.apps.CourseConfig',
     'backend.apps.BackendConfig',
-    'course.apps.CourseConfig',
     'teachers.apps.TeachersConfig',
     'frontend.apps.FrontendConfig',
     'django.contrib.admin',

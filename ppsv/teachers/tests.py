@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from course.models import CourseType, Course, Topic, TopicSelection, Student, Group as Course_group, Term
+from base.models import CourseType, Course, Topic, TopicSelection, Student, Group as Course_group, Term
 from backend.models import Assignment
 from teachers.pages import overview_page
 

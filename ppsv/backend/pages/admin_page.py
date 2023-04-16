@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from course.models import Term, Group, TopicSelection
+from base.models import Term, Group, TopicSelection
 from ppsv import settings
 from ..automatic_assignment import main as automatic_assigment
 from ..models import Assignment, TermFinalization, AcceptedApplications

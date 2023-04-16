@@ -9,7 +9,7 @@ from django.utils.timezone import make_aware
 
 from backend.models import TopicSelection, AcceptedApplications
 from backend.pages.functions import get_or_none
-from course.models import CourseType, Course, Topic, Term
+from base.models import CourseType, Course, Topic, Term
 from ppsv import settings
 from teachers.pages.functions import get_or_error
 

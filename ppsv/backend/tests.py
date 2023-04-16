@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from course.models import Topic, Group, CourseType, Course, Student, TopicSelection, Term
+from base.models import Topic, Group, CourseType, Course, Student, TopicSelection, Term
 from .automatic_assignment import main as automatic_assigment
 from .models import Assignment, AcceptedApplications, TermFinalization
 from .pages import admin_page, home_page

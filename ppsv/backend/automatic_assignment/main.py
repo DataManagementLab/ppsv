@@ -3,7 +3,7 @@ import statistics
 import time
 import traceback
 
-from course.models import Topic, Term, TopicSelection
+from base.models import Topic, Term, TopicSelection
 from ppsv import settings
 from .applications import Applications, init_applications
 from .assignments import Assignments, init_assignments, topic_data

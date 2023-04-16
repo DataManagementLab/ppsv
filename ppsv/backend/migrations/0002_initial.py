@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('course', '0001_initial'),
+        ('base', '0001_initial'),
         ('backend', '0001_initial'),
     ]
 
@@ -17,17 +17,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='termfinalization',
             name='term',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='course.term'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='base.term'),
         ),
         migrations.AddField(
             model_name='assignment',
             name='accepted_applications',
-            field=models.ManyToManyField(through='backend.AcceptedApplications', to='course.TopicSelection', verbose_name='Accepted Applications'),
+            field=models.ManyToManyField(through='backend.AcceptedApplications', to='base.TopicSelection', verbose_name='Accepted Applications'),
         ),
         migrations.AddField(
             model_name='assignment',
             name='topic',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='course.topic', verbose_name='Topic'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='base.topic', verbose_name='Topic'),
         ),
         migrations.AddField(
             model_name='acceptedapplications',
@@ -37,6 +37,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='acceptedapplications',
             name='topic_selection',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='course.topicselection'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='base.topicselection'),
         ),
     ]

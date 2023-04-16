@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 from backend.models import Assignment, AcceptedApplications
-from course.models import Topic, TopicSelection, Term
+from base.models import Topic, TopicSelection, Term
 
 
 def write_row_assignment_helper(topic, slot_id, assignment_writer):

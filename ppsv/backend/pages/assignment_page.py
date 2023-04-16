@@ -11,7 +11,7 @@ from backend.pages.functions import possible_assignments_for_group, \
     check_collection_satisfied, create_json_response, get_or_error, get_group_data, get_broken_slots, \
     get_score_and_chart_data
 from backend.pages.home_page import handle_clear_slot
-from course.models import TopicSelection, Topic, CourseType, Course, Term
+from base.models import TopicSelection, Topic, CourseType, Course, Term
 from ppsv import settings
 
 

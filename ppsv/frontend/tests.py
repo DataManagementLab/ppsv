@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
 import datetime
-from course.models import Course, Student, Group, Topic, TopicSelection, CourseType, Term
+from base.models import Course, Student, Group, Topic, TopicSelection, CourseType, Term
 from .forms.forms import NewStudentForm, NewUserForm, UserLoginForm
 from django.utils.safestring import mark_safe
 from django.utils.functional import lazy

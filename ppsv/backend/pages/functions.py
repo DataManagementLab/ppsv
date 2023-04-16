@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.http import JsonResponse
 
 from backend.models import Assignment
-from course.models import TopicSelection, Term, Group
+from base.models import TopicSelection, Term, Group
 
 
 # --- GENERAL FUNCTIONS FOR POST REQUESTS --- #

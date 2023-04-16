@@ -9,8 +9,8 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext_lazy as _
 
-from course import models
-from course.models import TopicSelection, Group, Term
+from base import models
+from base.models import TopicSelection, Group, Term
 from frontend.decorators import user_passes_test
 from .forms.forms import NewUserForm, NewStudentForm, UserLoginForm
 

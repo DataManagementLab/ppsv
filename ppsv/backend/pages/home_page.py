@@ -14,7 +14,7 @@ from backend.import_data.assignments import *
 from backend.models import Assignment, TopicSelection
 from backend.models import TermFinalization
 from backend.pages.functions import get_broken_slots, get_or_error, get_score_and_chart_data
-from course.models import Course, CourseType, Term
+from base.models import Course, CourseType, Term
 from ppsv import settings
 
 

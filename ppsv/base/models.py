@@ -19,7 +19,7 @@ class CourseType(models.Model):
 
     This model represents the types courses can have.
 
-    :attr CourseType.type: The course type
+    :attr CourseType.type: The base type
     :type CourseType.type: CharField
     """
     type = models.CharField(max_length=200, verbose_name=_('type'))

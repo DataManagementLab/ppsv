@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from backend.pages.functions import get_score_for_assigned
-from course.models import Topic
+from base.models import Topic
 
 
 @dataclass
