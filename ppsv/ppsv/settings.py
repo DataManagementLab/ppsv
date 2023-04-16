@@ -149,11 +149,31 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    'static_common',
+)
 
 # media files
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# Settings for Bootstrap
+BOOTSTRAP5 = {
+    "javascript_url": {
+        "url": STATIC_URL + "vendor/bootstrap/bootstrap.bundle.min.js",
+    },
+    "css_url": {
+        "url": STATIC_URL + "vendor/bootstrap/bootstrap.css",
+    },
+    "theme_url": {
+        "url": STATIC_URL + "vendor/bootstrap/bootswatch.css",
+    },
+}
+
+# Settings for FontAwesome
+FONTAWESOME_6_CSS_URL = STATIC_URL + "fontawesomefree/css/all.min.css"
+FONTAWESOME_6_PREFIX = "fa"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
