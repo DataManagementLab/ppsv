@@ -354,7 +354,7 @@ class Student(models.Model):
         :return: the string representation of this object
         :rtype: str
         """
-        return self.tucan_id
+        return f"{self.firstname} {self.lastname} ({self.tucan_id})"
 
 
 class Group(models.Model):
