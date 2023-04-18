@@ -19,6 +19,7 @@ app_name = "student"
 
 urlpatterns = [
     path('', views.Overview.as_view(), name="overview"),
-    path('complete-profile/', views.CompleteProfileView.as_view(), name="complete-profile"),
+    path('complete-profile', views.CompleteProfileView.as_view(), name="complete-profile"),
     path('register', views.RegisterView.as_view(), name="register"),
+    path('403', views.LoginRequiredView.as_view(), name="login-required"),
 ]

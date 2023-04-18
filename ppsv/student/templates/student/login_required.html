@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load fontawesome_6 %}
+
+{% block title %}
+    {% trans "Login Required" %}
+{% endblock %}
+
+{% block content %}
+    <div class="alert alert-danger">
+        <strong>{% trans "Login Required" %}</strong>
+        {% trans "Please log in to view this page" %}
+    </div>
+{% endblock %}

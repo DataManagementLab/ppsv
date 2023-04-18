@@ -1,6 +1,7 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, TemplateView
 from django.utils.translation import gettext_lazy as _
 
 from base.models import Group, Student
@@ -22,10 +23,11 @@ class Overview(RedirectToCompleteProfileViewMixin, ListView):
         return self.request.user.student.group_set.all()
 
 
-class CompleteProfileView(CreateView):
+class CompleteProfileView(LoginRequiredMixin, CreateView):
     model = Student
     template_name = "student/complete_profile.html"
     form_class = SetTUIDForm
+    login_url = "/403"
 
     def get(self, request, *args, **kwargs):
         if hasattr(self.request.user, "student"):
@@ -44,3 +46,12 @@ class RegisterView(RedirectToCompleteProfileViewMixin, CreateView):
     model = Group
     form_class = RegistrationForm
     template_name = "student/register.html"
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["students"] = self.request.user.student
+        return initial
+
+
+class LoginRequiredView(TemplateView):
+    template_name = "student/login_required.html"
