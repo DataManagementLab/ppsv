@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'django_bootstrap5',
     'fontawesomefree',
     'fontawesome_6',
+    'lti_provider',
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,29 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+}
+
+AUTHENTICATION_BACKENDS = [
+  'django.contrib.auth.backends.ModelBackend',
+  'lti_provider.auth.LTIBackend',
+]
+
+
+LTI_TOOL_CONFIGURATION = {
+    'title': 'Platzvergabe',
+    'description': 'Externes Tool zur Themen-/Platzwahl',
+    'launch_url': 'lti/',
+    'embed_url': '',
+    'embed_icon_url': '',
+    'embed_tool_id': '',
+    'landing_url': '/',
+    'course_aware': False,
+    'course_navigation': True,
+    'new_tab': True,
+    'allow_ta_access': True,
+    'assignments': {
+        'test': '<landing_url>',
+    },
 }
 
 # Password validation
