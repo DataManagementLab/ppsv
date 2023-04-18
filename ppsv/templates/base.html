@@ -14,6 +14,9 @@
 
     <!-- Load bootstrap, jquery and fontawesome-->
     {% bootstrap_css %}
+    <link rel="stylesheet" href="{% static 'vendor/chosen-js/chosen.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/chosen-js/bootstrap-chosen.css' %}">
+
     {% bootstrap_javascript %}
     <script src="{% static 'vendor/jquery/jquery-3.6.3.min.js' %}"></script>
     {% fontawesome_6_static %}
@@ -44,5 +47,7 @@
         {% endblock %}
     </div>
 {% endblock %}
+
+{% block bottom_script %}{% endblock %}
 </body>
 </html>

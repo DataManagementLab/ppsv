@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load fontawesome_6 %}
 {% load django_bootstrap5 %}
+{% load static %}
 
 {% block title %}
     {% trans "Register" %}
@@ -16,4 +17,13 @@
         {% bootstrap_form form %}
         <button class="btn btn-primary float-end" type="submit">{% trans "Register" %}</button>
     </form>
+{% endblock %}
+
+{% block bottom_script %}
+    <script src="{% static 'vendor/chosen-js/chosen.jquery.js' %}"></script>
+    <script>
+        $(function () {
+            $('.chosen-select').chosen();
+        });
+    </script>
 {% endblock %}
