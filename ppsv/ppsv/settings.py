@@ -177,7 +177,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
-    'static_common',
+    os.path.join(BASE_DIR, 'static_common'),
 )
 
 # media files
