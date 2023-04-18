@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load fontawesome_6 %}
+
+{% block title %}
+    {% trans "Your courses" %}
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Your courses" %}</h2>
+
+    {% for course in courses %}
+        <div class="card border-primary mt-3 mb-3">
+            <div class="card-header">{{ course.term }} -- {{ course.type }}</div>
+            <div class="card-body">
+                <h4 class="card-title">{{ course.title }}</h4>
+                <h5>{% fa6_icon "coins" %} {{ course.cp }} {% fa6_icon "building-columns" %} {{ course.faculty }}</h5>
+                <p class="card-text">
+                    {{ course.description }}
+                </p>
+                <h5>{% fa6_icon "list-check" %} {{ course.topic_set.count }} {% trans "Topic(s)" %}</h5>
+                <ul class="card-text">
+                    {% for topic in course.topic_set.all %}
+                        <li>
+                            {{ topic.title }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <a href="#" class="btn btn-primary">{% trans "Add topic" %}</a>
+            </div>
+            <div class="card-footer">
+                {% fa6_icon "right-to-bracket" %} {{ course.registration_start }} -- {{ course.registration_deadline }}
+            </div>
+        </div>
+        {% empty %}
+        {% trans "You do not manage any courses yet" %}
+    {% endfor %}
+{% endblock %}
