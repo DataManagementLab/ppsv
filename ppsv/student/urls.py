@@ -18,5 +18,7 @@ from . import views
 app_name = "student"
 
 urlpatterns = [
-
+    path('', views.Overview.as_view(), name="overview"),
+    path('complete-profile/', views.CompleteProfileView.as_view(), name="complete-profile"),
+    path('register', views.RegisterView.as_view(), name="register"),
 ]

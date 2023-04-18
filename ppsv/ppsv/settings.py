@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'backend.apps.BackendConfig',
     'teachers.apps.TeachersConfig',
     'frontend.apps.FrontendConfig',
+    'student',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

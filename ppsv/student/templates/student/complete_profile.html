@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load fontawesome_6 %}
+{% load django_bootstrap5 %}
+
+{% block title %}
+    {% trans "Complete Profile" %}
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Complete Profile" %}</h2>
+
+    <p>{% trans "Please enter your TU-ID to complete the profile creation for this registration system." %}</p>
+    <form method="post" class="post-form">
+            {% csrf_token %}
+        {% bootstrap_form form %}
+        <button class="btn btn-primary float-end" type="submit">{% trans "Set & Continue" %}</button>
+    </form>
+{% endblock %}
