@@ -66,6 +66,7 @@ class Term(models.Model):
         """
         verbose_name = _("term")
         verbose_name_plural = _("terms")
+        ordering = ['active_term', '-registration_deadline']
 
     def __str__(self):
         """String representation
@@ -181,6 +182,7 @@ class Course(models.Model):
         """
         verbose_name = _("course")
         verbose_name_plural = _("courses")
+        ordering = ['term']
 
     def clean(self):
         """
@@ -318,11 +320,20 @@ class Student(models.Model):
     :type Student.email: EmailField
 
     """
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     tucan_id = models.CharField(max_length=8, primary_key=True, verbose_name=_("student ID"))
-    firstname = models.CharField(max_length=200, verbose_name=_("first Name"))
-    lastname = models.CharField(max_length=200, verbose_name=_("last Name"))
-    email = models.EmailField()
+
+    @property
+    def firstname(self):
+        return self.user.first_name
+
+    @property
+    def lastname(self):
+        return self.user.last_name
+
+    @property
+    def email(self):
+        return self.user.email
 
     class Meta:
         """Meta options

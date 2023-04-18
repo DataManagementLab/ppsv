@@ -55,7 +55,7 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
         (None,
          {'fields': ['title', 'type']}),
         ('Course Information', {
-            'fields': ['description', 'motivation_text', 'cp', 'faculty', ]
+            'fields': ['description', 'motivation_text', 'cp', 'faculty', 'created_by', ]
         }),
         ('Date Information (Updates with Term)', {
             'fields': ['term', 'registration_start', 'registration_deadline', ],
