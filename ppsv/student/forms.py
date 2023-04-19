@@ -1,16 +1,16 @@
-from django.forms import ModelForm
+from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from base.models import Group, Student
+from base.models import Group, Student, Topic
 
 
-class SetTUIDForm(ModelForm):
+class SetTUIDForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = ['tucan_id']
 
 
-class RegistrationForm(ModelForm):
+class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ['students']
@@ -23,3 +23,16 @@ class RegistrationForm(ModelForm):
         self.fields["students"].widget.attrs = {'class': 'chosen-select'}
         self.fields["students"].label = _("Group members")
         self.fields["students"].help_text = _("Specify other group members here (if applicable)")
+
+
+class TopicSelectionForm(forms.Form):
+    multivalfrom = forms.ModelMultipleChoiceField(
+        label=_("Available topics"),
+        queryset=Topic.objects.all(),
+        required=False,
+    )
+    multivalto = forms.ModelMultipleChoiceField(
+        label=_("Selected topics"),
+        queryset=Topic.objects.all(),
+        required=False,
+    )

@@ -18,12 +18,12 @@ from . import views
 app_name = "frontend"
 
 urlpatterns = [
-    path('', views.homepage, name='homepage'),
-    path('your_selection/', views.your_selection, name='your_selection'),
-    path('overview/', views.overview, name='overview'),
-    path('groups/', views.groups, name='groups'),
+    #path('', views.homepage, name='homepage'),
+    #path('your_selection/', views.your_selection, name='your_selection'),
+    #path('overview/', views.overview, name='overview'),
+    #path('groups/', views.groups, name='groups'),
     path('login/', views.login_request, name='login'),
     path('logout/', views.logout_request, name='logout'),
-    path('register/', views.register, name='register'),
-    path('profile/', views.profile, name='profile'),
+    #path('register/', views.register, name='register'),
+    #path('profile/', views.profile, name='profile'),
 ]

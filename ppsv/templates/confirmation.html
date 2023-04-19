@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load fontawesome_6 %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block title %}{{event}}: {{ title }}{% endblock %}
+
+{% block content %}
+    <h2>{{ title }}</h2>
+    {% block action_preview %}
+        <p>
+            {{ preview|linebreaksbr }}
+        </p>
+    {% endblock %}
+
+    <form method="post">{% csrf_token %}
+        {% bootstrap_form form %}
+
+        <div class="float-end">
+            <button type="submit" class="save btn btn-success" value="Submit">
+                {% fa6_icon "check" 'fas' %} {% trans "Confirm" %}
+            </button>
+        </div>
+        <a href="javascript:history.back()" class="btn btn-info">
+            {% fa6_icon "times" 'fas' %} {% trans "Cancel" %}
+        </a>
+    </form>
+{% endblock %}

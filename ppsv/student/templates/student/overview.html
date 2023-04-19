@@ -9,4 +9,38 @@
 
 {% block content %}
     <h2>{% trans "Overview" %}</h2>
+
+    <div class="mt-4 mb-4">
+    {% for group in groups %}
+        <div class="card border-primary mt-3 mb-3">
+            <div class="card-header">{{ group.term }}</div>
+            <div class="card-body">
+                <h4 class="card-title">{{ group.members|join:", " }}
+                    <a href="{% url "student:register-edit-group" pk=group.pk %}" class="btn btn-outline-primary">
+                        {% fa6_icon "pencil" %} {% trans "Edit" %}
+                    </a>
+                </h4>
+                <ol class="card-text">
+                    {% for ts in group.topicselection_set.all %}
+                        <li>
+                            {{ ts.topic.title }}
+                        </li>
+                    {% empty %}
+                        <li class="text-danger">
+                            {% trans "Invalid registration, you did not select any topics yet" %}
+                        </li>
+                    {% endfor %}
+                </ol>
+                <a href="{% url "student:register-select-topics" pk=group.pk %}" class="btn btn-primary">{% trans "Edit registration" %}</a>
+                <a href="{% url "student:register-withdraw" pk=group.pk %}" class="btn btn-danger">{% trans "Withdraw registration" %}</a>
+            </div>
+        </div>
+        {% empty %}
+            {% trans "You did not register yet" %}
+    {% endfor %}
+    </div>
+
+    <a href="{% url "student:register" %}" class="btn btn-lg btn-primary">
+        {% trans "Start new registration "%}
+    </a>
 {% endblock %}

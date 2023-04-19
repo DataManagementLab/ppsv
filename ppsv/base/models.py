@@ -292,6 +292,7 @@ class Topic(models.Model):
         """
         verbose_name = _("topic")
         verbose_name_plural = _("topics")
+        ordering = ['title']
 
     def __str__(self):
         """String representation
@@ -524,6 +525,7 @@ class TopicSelection(models.Model):
         """
         verbose_name = _("topic Selection")
         verbose_name_plural = _("topic Selections")
+        ordering = ['group', 'priority']
 
     def __str__(self):
         """String representation

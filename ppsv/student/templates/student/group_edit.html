@@ -6,16 +6,16 @@
 {% load static %}
 
 {% block title %}
-    {% trans "Register" %}
+    {% trans "Select Group Members" %}
 {% endblock %}
 
 {% block content %}
-    <h2>{% trans "Register" %}</h2>
+    <h2>{% trans "Select Group Members" %}</h2>
 
     <form method="post" class="post-form">
             {% csrf_token %}
         {% bootstrap_form form %}
-        <button class="btn btn-primary float-end" type="submit">{% trans "Register" %}</button>
+        <button class="btn btn-primary float-end" type="submit">{% trans "Continue" %}</button>
     </form>
 {% endblock %}
 

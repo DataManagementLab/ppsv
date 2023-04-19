@@ -21,5 +21,8 @@ urlpatterns = [
     path('', views.Overview.as_view(), name="overview"),
     path('complete-profile', views.CompleteProfileView.as_view(), name="complete-profile"),
     path('register', views.RegisterView.as_view(), name="register"),
+    path('registration/<int:pk>/select-topics', views.EditRegistrationView.as_view(), name="register-select-topics"),
+    path('registration/<int:pk>/edit-members', views.EditGroupView.as_view(), name="register-edit-group"),
+    path('registration/<int:pk>/withdraw', views.WithdrawRegistrationView.as_view(), name="register-withdraw"),
     path('403', views.LoginRequiredView.as_view(), name="login-required"),
 ]
