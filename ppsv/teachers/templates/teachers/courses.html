@@ -33,7 +33,7 @@
                 {% fa6_icon "right-to-bracket" %} {{ course.registration_start }} -- {{ course.registration_deadline }}
             </div>
         </div>
-        {% empty %}
+    {% empty %}
         {% trans "You do not manage any courses yet" %}
     {% endfor %}
 {% endblock %}

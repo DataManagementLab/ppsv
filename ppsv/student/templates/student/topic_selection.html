@@ -70,9 +70,17 @@
         $(document).ready(function(){
 			assign_btn_action('multiselectlist');
 
-            $("#topicSelectionForm").on("submit", function() {
-               // TODO Make sure there is at least one option selected
-               $('#multiselectlist #id_multivalto option').prop('selected', true);
+            $("#topicSelectionForm").on("submit", function(event) {
+                let selected = $('#multiselectlist #id_multivalto option')
+                if(selected.length > 0 )
+                {
+                    $('#multiselectlist #id_multivalto option').prop('selected', true);
+                }
+                else
+                {
+                    alert("{% trans 'You have to select at least one topic' %}");
+                    event.preventDefault();
+                }
             });
 		});
     </script>

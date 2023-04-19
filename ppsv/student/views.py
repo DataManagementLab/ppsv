@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, TemplateView, FormView, UpdateView, DeleteView, DetailView
@@ -81,7 +82,7 @@ class EditGroupView(RedirectToCompleteProfileViewMixin, OwnGroupsOnlyMixin, Upda
         return super().get_queryset()
 
 
-class EditRegistrationView(RedirectToCompleteProfileViewMixin, OwnGroupsOnlyMixin, FormView):
+class EditRegistrationView(RedirectToCompleteProfileViewMixin, FormView):
     form_class = TopicSelectionForm
     template_name = "student/topic_selection.html"
     success_url = reverse_lazy("student:overview")
@@ -92,7 +93,7 @@ class EditRegistrationView(RedirectToCompleteProfileViewMixin, OwnGroupsOnlyMixi
         group = get_object_or_404(Group, pk=pk)
 
         if self.request.user.student not in group.students.all():
-            pass # TODO
+            raise PermissionDenied()
         return group
 
     def form_valid(self, form):
