@@ -151,3 +151,8 @@ This repository contains a Django project called seminarplatzvergabe. The functi
 1. **course**: This app contains the general Django models used to represent courses, students, etc.
 1. **frontend**: This app provides everything the users see when interacting with the platform
 1. **ppsv**: This directory contains basic settings.
+
+
+## Developer Notes
+* to regenerate translations use ````python manage.py makemessages -l de_DE --ignore venv````
+* to create a data backup use ````python manage.py dumpdata --indent=2 > db.json --traceback````
