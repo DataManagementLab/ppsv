@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-28 21:53+0100\n"
+"POT-Creation-Date: 2023-04-19 19:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,216 +18,218 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\course\models.py:25 .\course\models.py:144
+#: base/admin.py:184
+msgid "Term"
+msgstr "Semester"
+
+#: base/models.py:25 base/models.py:143
 msgid "type"
 msgstr "Art"
 
-#: .\course\models.py:37
+#: base/models.py:37
 msgid "course Type"
 msgstr "Kursart"
 
-#: .\course\models.py:38
+#: base/models.py:38
 msgid "course Types"
 msgstr "Kursarten"
 
-#: .\course\models.py:52 .\course\models.py:143 .\course\models.py:253
+#: base/models.py:52 base/models.py:142 base/models.py:253
 msgid "title"
 msgstr "Titel"
 
-#: .\course\models.py:53
+#: base/models.py:53
 msgid "active term"
 msgstr "Angezeigtes Semester"
 
-#: .\course\models.py:55 .\course\models.py:147
+#: base/models.py:54 base/models.py:146
 msgid "registration Start"
 msgstr "Anmeldebeginn"
 
-#: .\course\models.py:57 .\course\models.py:149
+#: base/models.py:55 base/models.py:148
 msgid "registration Deadline"
 msgstr "Anmeldeschluss"
 
-#: .\course\models.py:69
+#: base/models.py:67 base/models.py:377
 msgid "term"
 msgstr "Semester"
 
-#: .\course\models.py:70
+#: base/models.py:68
 msgid "terms"
 msgstr "Semester"
 
-#: .\course\models.py:85 .\course\models.py:193
+#: base/models.py:84 base/models.py:193
 msgid "The registration deadline cannot be before the registration start."
 msgstr ""
 "Die Deadline zur Registrierung darf nicht vor dem Start der Registrierung "
 "liegen."
 
-#: .\course\models.py:150 .\course\models.py:260
+#: base/models.py:149 base/models.py:260
 msgid "description"
 msgstr "Beschreibung"
 
-#: .\course\models.py:155
+#: base/models.py:154
 msgid "Dept. 01 - Law and Economics"
 msgstr "FB01 - Rechts- und Wirtschaftswissenschaften"
 
-#: .\course\models.py:156
+#: base/models.py:155
 msgid "Dept. 02 - History and Social Sciences"
 msgstr "FB02 - Gesellschafts- und Geschichtswissenschaften"
 
-#: .\course\models.py:157
+#: base/models.py:156
 msgid "Dept. 03 - Human Sciences"
 msgstr "FB03 - Humanwissenschaften"
 
-#: .\course\models.py:158
+#: base/models.py:157
 msgid "Dept. 04 - Mathematics"
 msgstr "FB04 - Mathematik"
 
-#: .\course\models.py:159
+#: base/models.py:158
 msgid "Dept. 05 – Physics"
 msgstr "FB05 - Physik"
 
-#: .\course\models.py:160
+#: base/models.py:159
 msgid "Dept. 07 - Chemistry"
 msgstr "FB07 - Chemie"
 
-#: .\course\models.py:161
+#: base/models.py:160
 msgid "Dept. 10 - Biology"
 msgstr "FB10 - Biologie"
 
-#: .\course\models.py:162
+#: base/models.py:161
 msgid "Dept. 11 - Materials and Earth Sciences"
 msgstr "FB11 - Material- und Geowissenschaften"
 
-#: .\course\models.py:163
+#: base/models.py:162
 msgid "Dept. 13 - Civil and Environmental Engineering"
 msgstr "FB13 - Bau- und Umweltingenieurwissenschaften"
 
-#: .\course\models.py:164
+#: base/models.py:163
 msgid "Dept. 15 - Architecture"
 msgstr "FB15 - Architektur"
 
-#: .\course\models.py:165
+#: base/models.py:164
 msgid "Dept. 16 - Mechanical Engineering"
 msgstr "FB16 - Maschinenbau"
 
-#: .\course\models.py:166
+#: base/models.py:165
 msgid "Dept. 18 - Electrical Engineering and Information Technology"
 msgstr "FB18 - Elektrotechnik und Informationstechnik"
 
-#: .\course\models.py:167
+#: base/models.py:166
 msgid "Dept. 20 - Computer Science"
 msgstr "FB20 - Informatik"
 
-#: .\course\models.py:169
+#: base/models.py:168
 msgid "faculty"
 msgstr "Fachbereich"
 
-#: .\course\models.py:170
+#: base/models.py:169
 msgid "motivation texts are required"
 msgstr "Motivationstexte werden benötigt"
 
-#: .\course\models.py:172
+#: base/models.py:171
 msgid "organizer"
 msgstr "Veranstalter"
 
-#: .\course\models.py:184 .\course\models.py:252
+#: base/models.py:183 base/models.py:252
 msgid "course"
 msgstr "Kurs"
 
-#: .\course\models.py:185
+#: base/models.py:184
 msgid "courses"
 msgstr "Kurse"
 
-#: .\course\models.py:254
+#: base/models.py:254
 msgid "max slot count"
 msgstr "Maximale Anzahl Slots"
 
-#: .\course\models.py:256
+#: base/models.py:256
 #, fuzzy
 #| msgid "group Size"
 msgid "min GroupSize"
 msgstr "Gruppengröße"
 
-#: .\course\models.py:258
+#: base/models.py:258
 #, fuzzy
 #| msgid "group Size"
 msgid "max GroupSize"
 msgstr "Gruppengröße"
 
-#: .\course\models.py:261
+#: base/models.py:261
 msgid "file"
 msgstr "Datei"
 
-#: .\course\models.py:293 .\course\models.py:458 .\course\models.py:522
+#: base/models.py:293 base/models.py:469 base/models.py:553
 msgid "topic"
 msgstr "Thema"
 
-#: .\course\models.py:294
+#: base/models.py:294
 msgid "topics"
 msgstr "Themen"
 
-#: .\course\models.py:324
+#: base/models.py:325
 msgid "student ID"
 msgstr "ID"
 
-#: .\course\models.py:325
-msgid "first Name"
-msgstr "Vorname"
-
-#: .\course\models.py:326
-msgid "last Name"
-msgstr "Nachname"
-
-#: .\course\models.py:339 .\course\models.py:521
+#: base/models.py:349 base/models.py:552
 msgid "student"
 msgstr "Student:in"
 
-#: .\course\models.py:340 .\course\models.py:367
+#: base/models.py:350 base/models.py:375
 msgid "students"
 msgstr "Studierende"
 
-#: .\course\models.py:368
+#: base/models.py:376
 msgid "number of collections"
 msgstr "Anzahl an collections"
 
-#: .\course\models.py:389
+#: base/models.py:398
 msgid "group Size"
 msgstr "Gruppengröße"
 
-#: .\course\models.py:415 .\course\models.py:423 .\course\models.py:435
-#: .\course\models.py:457 .\course\models.py:484
+#: base/models.py:426 base/models.py:434 base/models.py:446 base/models.py:468
+#: base/models.py:514
 msgid "group"
 msgstr "Gruppe"
 
-#: .\course\models.py:436
+#: base/models.py:447
 msgid "groups"
 msgstr "Gruppen"
 
-#: .\course\models.py:459 .\course\models.py:523
+#: base/models.py:470 base/models.py:554
 msgid "motivation Text"
 msgstr "Motivationstext"
 
-#: .\course\models.py:460
+#: base/models.py:471
 msgid "priority"
 msgstr "Priorität"
 
-#: .\course\models.py:462
+#: base/models.py:473
 msgid "collection number"
 msgstr "collection Nummer"
 
-#: .\course\models.py:496
+#: base/models.py:526
 msgid "topic Selection"
 msgstr "Themenwahl"
 
-#: .\course\models.py:497
+#: base/models.py:527
 msgid "topic Selections"
 msgstr "Themenwahlen"
 
-#: .\course\models.py:535
+#: base/models.py:566
 msgid "text Save"
 msgstr "gespeicherter Text"
 
-#: .\course\models.py:536
+#: base/models.py:567
 msgid "text Saves"
 msgstr "gespeicherte Texte"
+
+#~ msgid "first Name"
+#~ msgstr "Vorname"
+
+#~ msgid "last Name"
+#~ msgstr "Nachname"
 
 #~ msgid "Date Information"
 #~ msgstr "Anmeldezeitraum"

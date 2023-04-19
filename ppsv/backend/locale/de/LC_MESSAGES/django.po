@@ -1,0 +1,39 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-19 19:40+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: backend/templates/backend/assignment.html:32
+msgid "Search course/topic"
+msgstr "Nach Kursen/Themen suchen"
+
+#: backend/templates/backend/base.html:53
+msgid "Internship & Seminar Allocation"
+msgstr "Praktikums- und Seminarplatzvergabe"
+
+#: backend/templates/backend/base.html:75
+msgid "You are not logged in."
+msgstr "Du bist nicht eingeloggt"
+
+#: backend/templates/backend/navbar.html:5
+msgid "Manage Assignments"
+msgstr "Zuweisungen verwalten"
+
+#: backend/templates/backend/term_finalized.html:6
+msgid "The currently active Term is finalized."
+msgstr "Das aktuelle Semester ist abgeschlossen"
