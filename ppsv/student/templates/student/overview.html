@@ -31,7 +31,7 @@
                         </li>
                     {% endfor %}
                 </ol>
-                <a href="{% url "student:register-select-topics" pk=group.pk %}" class="btn btn-primary">{% trans "Edit registration" %}</a>
+                <a href="{% url "student:register-select-topics" pk=group.pk %}" class="btn btn-primary">{% trans "Edit selection" %}</a>
                 <a href="{% url "student:register-withdraw" pk=group.pk %}" class="btn btn-danger">{% trans "Withdraw registration" %}</a>
             </div>
         </div>

@@ -1487,7 +1487,7 @@ def logout_request(request):
     # logs the user out
     logout(request)
     messages.info(request, _("You have successfully logged out."))
-    return redirect("frontend:homepage")
+    return redirect("student:overview")
 
 
 def register(request):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-19 19:40+0200\n"
+"POT-Creation-Date: 2023-04-19 19:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,7 +43,9 @@ msgstr "Profil vervollständigen"
 msgid ""
 "Please enter your TU-ID to complete the profile creation for this "
 "registration system."
-msgstr "Bitte gib deine TU-ID ein, um die Profilerstellung für dieses Registrierungssystem abzuschließen."
+msgstr ""
+"Bitte gib deine TU-ID ein, um die Profilerstellung für dieses "
+"Registrierungssystem abzuschließen."
 
 #: student/templates/student/complete_profile.html:18
 msgid "Set & Continue"
@@ -82,8 +84,8 @@ msgid "Invalid registration, you did not select any topics yet"
 msgstr "Ungültige Registrierung, du hast noch keine Themen ausgewählt"
 
 #: student/templates/student/overview.html:34
-msgid "Edit registration"
-msgstr "Registrierung bearbeiten"
+msgid "Edit selection"
+msgstr "Auswahl bearbeiten"
 
 #: student/templates/student/overview.html:35
 msgid "Withdraw registration"
