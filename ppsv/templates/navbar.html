@@ -32,10 +32,6 @@
             {% endif %}
             {{ user.profile.display_name }}
         </a>
-    {% else %}
-        <a href="{% url 'frontend:login' %}" class="btn btn-primary navbar-inline-list">
-            {% trans "Login" %}
-        </a>
     {% endif %}
 
     <div class="btn-group navbar-inline-list" role="group">
