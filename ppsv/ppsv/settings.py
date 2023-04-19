@@ -122,12 +122,9 @@ LTI_TOOL_CONFIGURATION = {
     'embed_tool_id': '',
     'landing_url': '/',
     'course_aware': False,
-    'course_navigation': True,
-    'new_tab': True,
+    'course_navigation': False,
+    'new_tab': False,
     'allow_ta_access': True,
-    'assignments': {
-        'test': '<landing_url>',
-    },
 }
 
 # Password validation
