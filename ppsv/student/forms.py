@@ -1,13 +1,28 @@
+import re
+
 from django import forms
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from base.models import Group, Student, Topic
+
+
+valid_tu_id = re.compile(r"^[a-zA-Z]{2}\d{2}[a-zA-Z]{4}$")
 
 
 class SetTUIDForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = ['tucan_id']
+
+    def clean_tucan_id(self):
+        if not valid_tu_id.fullmatch(self.cleaned_data['tucan_id']):
+            raise ValidationError(
+                _("Your input does not follow the typical format of a TU ID. In case you are sure your input was correct "
+                  "nevertheless, please contact the organizers."),
+                code="invalid"
+            )
+        return self.cleaned_data['tucan_id']
 
 
 class GroupForm(forms.ModelForm):

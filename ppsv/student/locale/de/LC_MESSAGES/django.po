@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-19 19:59+0200\n"
+"POT-Creation-Date: 2023-04-23 20:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,19 +18,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: student/forms.py:24
+#: student/forms.py:21
+msgid ""
+"Your input does not follow the typical format of a TU ID. In case you are "
+"sure your input was correct nevertheless, please contact the organizers."
+msgstr "Deine Eingabe folgt nicht dem typischen Format einer TU-ID. Wenn du dir sicher bist, dass deine Eingabe korrekt ist, kontaktiere bitte die Organisator*innen."
+
+#: student/forms.py:39
 msgid "Group members"
 msgstr "Gruppenmitglieder"
 
-#: student/forms.py:25
+#: student/forms.py:40
 msgid "Specify other group members here (if applicable)"
 msgstr "Weitere Gruppenmitglieder hier eintragen (wenn relevant)"
 
-#: student/forms.py:30 student/templates/student/topic_selection.html:29
+#: student/forms.py:45 student/templates/student/topic_selection.html:29
 msgid "Available topics"
 msgstr "Verfügbare Themen"
 
-#: student/forms.py:35 student/templates/student/topic_selection.html:46
+#: student/forms.py:50 student/templates/student/topic_selection.html:46
 msgid "Selected topics"
 msgstr "Gewählte Themen"
 
@@ -50,6 +56,15 @@ msgstr ""
 #: student/templates/student/complete_profile.html:18
 msgid "Set & Continue"
 msgstr "Setzen & Fortfahren"
+
+#: student/templates/student/edit_profile.html:8
+#: student/templates/student/edit_profile.html:12
+msgid "Edit Profile"
+msgstr "Profil bearbeiten"
+
+#: student/templates/student/edit_profile.html:17
+msgid "Save"
+msgstr "Speichern"
 
 #: student/templates/student/group_edit.html:9
 #: student/templates/student/group_edit.html:13
@@ -112,18 +127,22 @@ msgstr "Du musst mindestens ein Thema auswählen"
 msgid "Profile information saved"
 msgstr "Profilinformationen gespeichert"
 
-#: student/views.py:78
+#: student/views.py:60
+msgid "Profile updated"
+msgstr "Profil aktualisiert"
+
+#: student/views.py:93
 msgid "Group members updated"
 msgstr "Gruppenmitglieder aktualisiert"
 
-#: student/views.py:114
+#: student/views.py:129
 msgid "Registration saved"
 msgstr "Registrierung gespeichert"
 
-#: student/views.py:126
+#: student/views.py:141
 msgid "Withdraw registration?"
 msgstr "Registrierung zurückziehen?"
 
-#: student/views.py:131
+#: student/views.py:146
 msgid "Registration withdrawn"
 msgstr "Registrierung zurückgezogen"

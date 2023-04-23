@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-19 19:59+0200\n"
+"POT-Creation-Date: 2023-04-23 20:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,10 +47,14 @@ msgid "Language"
 msgstr "Sprache"
 
 #: templates/navbar.html:66
+msgid "Edit profile"
+msgstr "Profil bearbeiten"
+
+#: templates/navbar.html:70
 msgid "Logout"
 msgstr "Logout"
 
-#: templates/navbar.html:77
+#: templates/navbar.html:81
 msgid "Lab & Seminar Assignment"
 msgstr "Praktikums- & Seminarplatzvergabe"
 

@@ -50,9 +50,15 @@ class EditProfileView(RedirectToCompleteProfileViewMixin, LoginRequiredMixin, Up
     model = Student
     template_name = "student/edit_profile.html"
     form_class = SetTUIDForm
+    success_url = reverse_lazy("student:overview")
 
     def get_object(self, queryset=None):
         return self.request.user.student
+
+    def form_valid(self, form):
+        r =  super().form_valid(form)
+        messages.success(self.request, _("Profile updated"))
+        return r
 
 
 class RegisterView(RedirectToCompleteProfileViewMixin, CreateView):
