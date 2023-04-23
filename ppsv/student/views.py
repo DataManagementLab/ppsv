@@ -46,6 +46,15 @@ class CompleteProfileView(LoginRequiredMixin, CreateView):
         return redirect("student:overview")
 
 
+class EditProfileView(RedirectToCompleteProfileViewMixin, LoginRequiredMixin, UpdateView):
+    model = Student
+    template_name = "student/edit_profile.html"
+    form_class = SetTUIDForm
+
+    def get_object(self, queryset=None):
+        return self.request.user.student
+
+
 class RegisterView(RedirectToCompleteProfileViewMixin, CreateView):
     model = Group
     form_class = GroupForm

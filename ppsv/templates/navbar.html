@@ -21,7 +21,7 @@
             </a>
             &nbsp;
         {% endif %}
-        <a href=""
+        <!--<a href=""
            class="text-decoration-none text-white navbar-inline-list">
             {% if user.profile.pic %}
                 <img src="{{ user.profile.pic.url }}" class="rounded-circle"
@@ -31,7 +31,7 @@
                 {% fa6_icon 'user' 'far' %}
             {% endif %}
             {{ user.profile.display_name }}
-        </a>
+        </a>-->
     {% endif %}
 
     <div class="btn-group navbar-inline-list" role="group">
@@ -61,6 +61,10 @@
                     {% endfor %}
                 </form>
                 {% if user.is_authenticated %}
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'student:edit-profile' %}" class="dropdown-item" style="">
+                        {% trans 'Edit profile' %}
+                    </a>
                     <div class="dropdown-divider"></div>
                     <a href="{% url 'frontend:logout' %}" class="dropdown-item" style="">
                         {% trans 'Logout' %}

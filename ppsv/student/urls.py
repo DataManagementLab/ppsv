@@ -20,6 +20,7 @@ app_name = "student"
 urlpatterns = [
     path('', views.Overview.as_view(), name="overview"),
     path('complete-profile', views.CompleteProfileView.as_view(), name="complete-profile"),
+    path('edit-profile', views.EditProfileView.as_view(), name="edit-profile"),
     path('register', views.RegisterView.as_view(), name="register"),
     path('registration/<int:pk>/select-topics', views.EditRegistrationView.as_view(), name="register-select-topics"),
     path('registration/<int:pk>/edit-members', views.EditGroupView.as_view(), name="register-edit-group"),
