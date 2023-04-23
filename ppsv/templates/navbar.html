@@ -61,10 +61,10 @@
                     {% endfor %}
                 </form>
                 {% if user.is_authenticated %}
-                    <div class="dropdown-divider"></div>
+                    <!--<div class="dropdown-divider"></div>
                     <a href="{% url 'student:edit-profile' %}" class="dropdown-item" style="">
                         {% trans 'Edit profile' %}
-                    </a>
+                    </a>-->
                     <div class="dropdown-divider"></div>
                     <a href="{% url 'frontend:logout' %}" class="dropdown-item" style="">
                         {% trans 'Logout' %}
