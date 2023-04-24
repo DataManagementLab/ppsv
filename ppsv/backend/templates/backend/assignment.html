@@ -1,12 +1,8 @@
 {% extends 'backend/base.html' %}
 {% load static %}
 {% load i18n %}
+{% load fontawesome_6 %}
 
-
-
-{% block tab_name %}
-    Assignment
-{% endblock tab_name %}
 
 {% block title %}
     Assignment
@@ -22,179 +18,195 @@
     {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block content_container %}
+    <div class="container-fluid">
     <div id="user-feedback"></div>
 
-    <div id="assignment-topBar" class="topBar">
-        <div class="group">
-            <div id="searchbarDiv">
-                <label>
-                    <input id="searchbar" type="text" placeholder="{% translate "Search course/topic" %}">
-                </label>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <div class="input-group mb-3" id="searchbarDiv">
+                  <input id="searchbar" type="text" class="form-control" placeholder="{% translate "Search course/topic" %}">
+                  <span class="input-group-text">{% fa6_icon "filter" %}</span>
+                </div>
             </div>
-            <div id="filterDiv" class="button-text">
-                <button id="filterButton" onclick="openFilterModal()"><i class="fa fa-filter" aria-hidden="true"></i>
-                    Filter
 
-                </button>
-
-            </div>
-            <div id="overrideControlDiv" class="text-button">
-                <p>Override Slot:</p>
-                <button id="overrideControl" onclick="overrideControl()"><i class="fa fa-times"></i></button>
-            </div>
-            <div id="ignoreAssigned" class="text-button">
-                <p>Override Application:</p>
-                <button id="ignoreAssigned" onclick="ignoreAssigned()"><i class="fa fa-times"></i></button>
-            </div>
-            <div id="openFirstAppGroup" class="text-button">
-                <p>Open first open Application of group:</p>
-                <button id="openFirstAppGroup" onclick="openFirstAppGroup()"><i class="fa fa-times"></i></button>
+            <div class="section" id="topics">
+                <div class="section-inner">
+                    <span>Topics</span>
+                    <div class="inner-list">
+                        {% for topics_of_course in topics_of_courses %}
+                            <div class="topics_of_course inner-list-item"
+                                 data-courseid="{{ topics_of_course.course.id }}">
+                                <details open>
+                                    <summary>{{ topics_of_course.course.title }}</summary>
+                                    {% for topic in topics_of_course.topics %}
+                                        <div class="topic field"
+                                             data-topicid="{{ topic.id }}"
+                                             data-cp="{{ topics_of_course.course.cp }}"
+                                             data-faculty="{{ topics_of_course.course.faculty }}"
+                                             data-course_type="{{ topics_of_course.course.type.pk }}">{{ topic.title }}</div>
+                                    {% endfor %}
+                                </details>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
+        <div class="col-md-6">
+            <div class="group">
+                <span id="filterDiv" class="button-text">
+                    <button class="btn btn-outline-primary" id="filterButton" onclick="openFilterModal()"><i class="fa fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                </span>
+                <span id="overrideControlDiv" class="text-button">
+                    Override Slot:
+                    <button class="btn btn-outline-primary" id="overrideControl" onclick="overrideControl()"><i class="fa fa-times"></i></button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                </span>
+                <span id="ignoreAssigned" class="text-button">
+                    Override Application:
+                    <button class="btn btn-outline-primary" id="ignoreAssigned" onclick="ignoreAssigned()"><i class="fa fa-times"></i></button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                </span>
+                <span id="openFirstAppGroup" class="text-button">
+                    Open first open Application of group:
+                    <button class="btn btn-outline-primary" id="openFirstAppGroup" onclick="openFirstAppGroup()"><i class="fa fa-times"></i></button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                </span>
+            </div>
+
+            <div id="assignment-content">
+                <div id="assignment-application" class="section multi">
+                    <div id="no-topic-selected" class="section section-inner">Select a topic to start assigning</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="section" id="groupdetails" data-groupid="-1" data-applicationid="-1" data-collectionid="-1">
+                    <span>Group Details</span>
+                    <p class="description">Please click on the info button on an application.</p>
+                    <div class="section-inner members" style="display: none;">
+                        <p>Group Members <i class="icon fa fa-chevron-up"></i></p>
+
+                        <div class="inner-list" style="display: none">
+                        </div>
+                    </div>
+                    <div class="section-inner choices" style="display: none;">
+                        <p>Choices in current collection <i class="icon fa fa-chevron-up" style="rotate: 180deg;"></i></p>
+
+                        <div class="inner-list">
+                        </div>
+
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    {# FILTER MODAL #}
+                <div id="filter-modal" class="modal-container" style="display: none;">
+                    <div class="modal-content">
+                        <div class="title"><span>Filter</span><i class="fa fa-times"></i></div>
+                        <div class="filter-content">
+                            <div class="filter" data-filter="cp">
+                                <div class="title-bar">
+                                    <div class="text">
+                                        <p>Choose CP: </p>
+                                        <p id="chosen-cp" class="slider-info"></p>
+                                    </div>
+                                    <div class="chips">
+                                        <div class="chip multi selected" data-filter="cp"><i class="fa"></i>Select all</div>
+                                    </div>
+                                </div>
+                                <div class="slider multi">
+                                    <div id="slider-range"></div>
+                                </div>
+                            </div>
+
+                            <div class="filter" data-filter="course">
+                                <div class="title-bar">
+                                    <div>
+                                        <p>Choose Course Type:</p>
+                                    </div>
+                                    <div class="chips">
+                                        <div class="chip multi selected" data-filter="courseType"><i class="fa"></i>
+                                            <div class="unsel">Unselect all</div>
+                                            <div class="sel">Select all</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chips">
+                                    <div class="single">
+                                        {% for courseType in course_types %}
+                                            <div class="chip" data-filter="courseType" data-value="{{ courseType.pk }}">
+                                                <i class="fa"></i>{{ courseType }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="filter" data-filter="faculty">
+                                <div class="title-bar">
+                                    <div>
+                                        <p>Choose Faculty:</p>
+                                    </div>
+                                    <div class="chips">
+                                        <div class="chip multi selected" data-filter="faculty"><i class="fa"></i>
+                                            <div class="unsel">Unselect all</div>
+                                            <div class="sel">Select all</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chips">
+                                    <div class="single">
+                                        {% for faculty in faculties %}
+                                            <div class="chip" data-filter="faculty" data-value="{{ faculty }}">
+                                                <i class="fa"></i>{{ faculty }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="filter" data-filter="special">
+                                <div class="title-bar">
+                                    <div>
+                                        <p>Shows only a type of Topics:</p>
+                                    </div>
+                                    <div class="chips">
+                                        <div class="chip multi selected special" data-filter="special"><i class="fa"></i>
+                                            <div class="sel">Update with this filter</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chips">
+                                    <div class="single">
+                                        <div class="chip special selected" data-filter="special" data-value="showAll">
+                                            <i class="fa"></i>All Topics
+                                        </div>
+                                        <div class="chip special" data-filter="special" data-value="showEmpty">
+                                            <i class="fa"></i>Topics with remaining space
+                                        </div>
+                                        <div class="chip special" data-filter="special" data-value="showOpen">
+                                            <i class="fa"></i>Topics with open applications
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+    <div id="assignment-topBar" class="topBar">
+
         <div class="group">
             <div id="applications-pending-update"></div>
         </div>
     </div>
 
-    <div id="assignment-content">
-        <div class="section" id="topics">
-            <div class="section-inner">
-                <span>Topics</span>
-                <div class="inner-list">
-                    {% for topics_of_course in topics_of_courses %}
-                        <div class="topics_of_course inner-list-item"
-                             data-courseid="{{ topics_of_course.course.id }}">
-                            <details open>
-                                <summary>{{ topics_of_course.course.title }}</summary>
-                                {% for topic in topics_of_course.topics %}
-                                    <div class="topic field"
-                                         data-topicid="{{ topic.id }}"
-                                         data-cp="{{ topics_of_course.course.cp }}"
-                                         data-faculty="{{ topics_of_course.course.faculty }}"
-                                         data-course_type="{{ topics_of_course.course.type.pk }}">{{ topic.title }}</div>
-                                {% endfor %}
-                            </details>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        <div id="assignment-application" class="section multi">
-            <div id="no-topic-selected" class="section section-inner">Select a topic to start assigning</div>
-        </div>
-        <div class="section" id="groupdetails" data-groupid="-1" data-applicationid="-1" data-collectionid="-1">
-            <span>Group Details</span>
-            <p class="description">Please click on the info button on an application.</p>
-            <div class="section-inner members" style="display: none;">
-                <p>Group Members <i class="icon fa fa-chevron-up"></i></p>
 
-                <div class="inner-list" style="display: none">
-                </div>
-            </div>
-            <div class="section-inner choices" style="display: none;">
-                <p>Choices in current collection <i class="icon fa fa-chevron-up" style="rotate: 180deg;"></i></p>
-
-                <div class="inner-list">
-                </div>
-
-            </div>
-        </div>
-
-        {# FILTER MODAL #}
-        <div id="filter-modal" class="modal-container" style="display: none;">
-            <div class="modal-content">
-                <div class="title"><span>Filter</span><i class="fa fa-times"></i></div>
-                <div class="filter-content">
-                    <div class="filter" data-filter="cp">
-                        <div class="title-bar">
-                            <div class="text">
-                                <p>Choose CP: </p>
-                                <p id="chosen-cp" class="slider-info"></p>
-                            </div>
-                            <div class="chips">
-                                <div class="chip multi selected" data-filter="cp"><i class="fa"></i>Select all</div>
-                            </div>
-                        </div>
-                        <div class="slider multi">
-                            <div id="slider-range"></div>
-                        </div>
-                    </div>
-
-                    <div class="filter" data-filter="course">
-                        <div class="title-bar">
-                            <div>
-                                <p>Choose Course Type:</p>
-                            </div>
-                            <div class="chips">
-                                <div class="chip multi selected" data-filter="courseType"><i class="fa"></i>
-                                    <div class="unsel">Unselect all</div>
-                                    <div class="sel">Select all</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chips">
-                            <div class="single">
-                                {% for courseType in course_types %}
-                                    <div class="chip" data-filter="courseType" data-value="{{ courseType.pk }}">
-                                        <i class="fa"></i>{{ courseType }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="filter" data-filter="faculty">
-                        <div class="title-bar">
-                            <div>
-                                <p>Choose Faculty:</p>
-                            </div>
-                            <div class="chips">
-                                <div class="chip multi selected" data-filter="faculty"><i class="fa"></i>
-                                    <div class="unsel">Unselect all</div>
-                                    <div class="sel">Select all</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chips">
-                            <div class="single">
-                                {% for faculty in faculties %}
-                                    <div class="chip" data-filter="faculty" data-value="{{ faculty }}">
-                                        <i class="fa"></i>{{ faculty }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="filter" data-filter="special">
-                        <div class="title-bar">
-                            <div>
-                                <p>Shows only a type of Topics:</p>
-                            </div>
-                            <div class="chips">
-                                <div class="chip multi selected special" data-filter="special"><i class="fa"></i>
-                                    <div class="sel">Update with this filter</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chips">
-                            <div class="single">
-                                <div class="chip special selected" data-filter="special" data-value="showAll">
-                                    <i class="fa"></i>All Topics
-                                </div>
-                                <div class="chip special" data-filter="special" data-value="showEmpty">
-                                    <i class="fa"></i>Topics with remaining space
-                                </div>
-                                <div class="chip special" data-filter="special" data-value="showOpen">
-                                    <i class="fa"></i>Topics with open applications
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
 
     <div id="broken-slots" class="bottom-tab">
         <span title="not influenced by current active filters">
@@ -257,6 +269,7 @@
                 <canvas id="bar-chart"></canvas>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Script block for statistics window -->
@@ -550,7 +563,7 @@
         }
 
         $(document).ready(function () {
-            $('#assignment-content #groupdetails .section-inner p').on('click', function () {
+            $('#groupdetails .section-inner p').on('click', function () {
                 let innerlist = $(this).siblings('.inner-list').first();
                 if (innerlist.is(':visible')) {
                     $(this).find('.icon').first().css('rotate', '0deg');
@@ -579,8 +592,8 @@
          * @param appID the application id
          */
         function updateApplicationGroupDetails(appID) {
-            $('#assignment-content #groupdetails .description').hide();
-            $('#assignment-content #groupdetails .section-inner').show();
+            $('#groupdetails .description').hide();
+            $('#groupdetails .section-inner').show();
             $.ajax({
                     data: {
                         csrfmiddlewaretoken: "{{ csrf_token }}",
@@ -2163,7 +2176,7 @@
                 }
 
                 // --- SEARCHBAR HANDLING --- //
-                let searchbar = $('#assignment-topBar #searchbar');
+                let searchbar = $('#searchbar');
                 if (searchbar != null) {
                     searchbar.val('');
                     searchbar.keyup(() => {
@@ -2188,4 +2201,4 @@
     </script>
 
 
-{% endblock content %}
+{% endblock content_container %}
