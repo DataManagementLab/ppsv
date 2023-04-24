@@ -36,7 +36,7 @@ class CourseStatsView(TeacherMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["topics"] = self.object.topic_set \
             .annotate(selected_count=Count("topicselection__group__students")) \
-            .annotate(favorite_count=Count("topicselection__group__students", filter=Q(topicselection__priority=0)))
+            .annotate(favorite_count=Count("topicselection__group__students", filter=Q(topicselection__priority=1)))
         context["applications"] = TopicSelection.objects.filter(topic__course=self.object)
         return context
 

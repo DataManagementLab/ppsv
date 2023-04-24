@@ -123,7 +123,7 @@ class EditRegistrationView(RedirectToCompleteProfileViewMixin, FormView):
             TopicSelection.objects.create(
                 group=group,
                 topic=topics_by_pk[int(pk)],
-                priority=i
+                priority=i+1
             )
 
         messages.success(self.request, _("Registration saved"))
