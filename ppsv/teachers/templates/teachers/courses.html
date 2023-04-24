@@ -14,7 +14,12 @@
         <div class="card border-primary mt-3 mb-3">
             <div class="card-header">{{ course.term }} -- {{ course.type }}</div>
             <div class="card-body">
-                <h4 class="card-title">{{ course.title }}</h4>
+                <h4 class="card-title">
+                    {{ course.title }}
+                    <a href="{% url "teachers:course" pk=course.pk %}">
+                        {% fa6_icon "up-right-from-square" %}
+                    </a>
+                </h4>
                 <h5>{% fa6_icon "coins" %} {{ course.cp }} {% fa6_icon "building-columns" %} {{ course.faculty }}</h5>
                 <p class="card-text">
                     {{ course.description }}

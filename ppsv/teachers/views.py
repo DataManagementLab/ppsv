@@ -1,9 +1,10 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.views.generic import CreateView, ListView
+from django.db.models import Count, Q
+from django.views.generic import CreateView, ListView, DetailView
 
 from base.forms import CourseForm
+from base.models import Course, TopicSelection
 from .pages.overview_page import overview_page
-from base.models import Course
 
 
 def overview(request):
@@ -21,6 +22,23 @@ class CoursesOverview(TeacherMixin, ListView):
 
     def get_queryset(self):
         return self.request.user.courses.all()
+
+
+class CourseStatsView(TeacherMixin, DetailView):
+    model = Course
+    context_object_name = "course"
+    template_name = "teachers/course.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('term', 'type')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["topics"] = self.object.topic_set \
+            .annotate(selected_count=Count("topicselection__group__students")) \
+            .annotate(favorite_count=Count("topicselection__group__students", filter=Q(topicselection__priority=0)))
+        context["applications"] = TopicSelection.objects.filter(topic__course=self.object)
+        return context
 
 
 class AddCourseView(TeacherMixin, CreateView):

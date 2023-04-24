@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load fontawesome_6 %}
+
+{% block title %}
+    {% trans "Course" %}: {{ course.title }}
+{% endblock %}
+
+{% block content %}
+    <h2>{{ course.title }}</h2>
+    <h3>{{ course.type }}</h3>
+    <h4>{{ course.term }}</h4>
+    <h5>
+        {% fa6_icon "coins" %} {{ course.cp }}
+        {% fa6_icon "building-columns" %} {{ course.faculty }}
+        {% fa6_icon "right-to-bracket" %} {{ course.registration_start }} -- {{ course.registration_deadline }}
+    </h5>
+
+    <p class="">
+        {{ course.description }}
+    </p>
+
+    <h5>{% fa6_icon "list-check" %} {{ course.topic_set.count }} {% trans "Topic(s)" %}</h5>
+    <ul class="card-text">
+        {% for topic in topics %}
+            <li>
+                {{ topic.title }}
+                <span class="text-muted">
+                    {% fa6_icon "heart" %} {{ topic.selected_count }}
+                    {% fa6_icon "crown" %} {{ topic.favorite_count }}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="#" class="btn btn-primary">{% trans "Add topic" %}</a>
+
+    <h5 class="mt-4">{% trans "Applications" %}: {{ applications.count }}</h5>
+
+{% endblock %}
