@@ -149,6 +149,8 @@ class Course(models.Model):
     description = models.TextField(verbose_name=_("description"))
     cp = models.IntegerField('CP', validators=[MaxValueValidator(100), MinValueValidator(0)])
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    instructors = models.ManyToManyField(User, related_name='courses', verbose_name=_("Instructors"),
+                                         null=True, blank=True)
 
     COURSE_FACULTY_CHOICES = [
         ('FB01', _('Dept. 01 - Law and Economics')),

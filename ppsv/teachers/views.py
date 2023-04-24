@@ -20,7 +20,7 @@ class CoursesOverview(TeacherMixin, ListView):
     template_name = "teachers/courses.html"
 
     def get_queryset(self):
-        return super().get_queryset().filter(created_by=self.request.user)
+        return self.request.user.courses.all()
 
 
 class AddCourseView(TeacherMixin, CreateView):
