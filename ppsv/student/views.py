@@ -133,7 +133,7 @@ class EditRegistrationView(RedirectToCompleteProfileViewMixin, FormView):
         context = super().get_context_data(**kwargs)
         group = self.get_group()
         context['selected_topics'] = [ts.topic for ts in group.topicselection_set.all()]
-        context['unselected_topics'] = [topic for topic in Topic.objects.all() if topic not in context['selected_topics']]
+        context['unselected_topics'] = [topic for topic in Topic.currently_selectable() if topic not in context['selected_topics']]
         return context
 
 

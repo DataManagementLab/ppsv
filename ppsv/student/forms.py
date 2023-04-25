@@ -51,3 +51,9 @@ class TopicSelectionForm(forms.Form):
         queryset=Topic.objects.all(),
         required=False,
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        qs = Topic.currently_selectable()
+        self.fields["multivalfrom"].queryset = qs
+        self.fields["multivalto"].queryset = qs

@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models.functions import Now
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -303,6 +304,10 @@ class Topic(models.Model):
         :rtype: str
         """
         return self.title
+
+    @staticmethod
+    def currently_selectable():
+        return Topic.objects.filter(course__registration_start__lte=Now(), course__registration_deadline__gt=Now())
 
 
 class Student(models.Model):
