@@ -38,6 +38,8 @@ class CourseStatsView(TeacherMixin, DetailView):
             .annotate(selected_count=Count("topicselection__group__students")) \
             .annotate(favorite_count=Count("topicselection__group__students", filter=Q(topicselection__priority=1)))
         context["applications"] = TopicSelection.objects.filter(topic__course=self.object)
+        context["assignments"] = self.object.topic_set.\
+            annotate(assigned_count=Count("assignment__accepted_applications__group__students"))
         return context
 
 

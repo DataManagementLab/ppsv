@@ -35,6 +35,17 @@
     </ul>
     <a href="#" class="btn btn-primary">{% trans "Add topic" %}</a>
 
-    <h5 class="mt-4">{% trans "Applications" %}: {{ applications.count }}</h5>
+    {# <h5 class="mt-4">{% trans "Applications" %}: {{ applications.count }}</h5> #}
+
+    {% if assignments.count > 0 %}
+        <h5 class="mt-4">{% trans "Assignments" %}</h5>
+        <ul>
+            {% for topic in assignments %}
+                <li>{{ topic.title}}: {% fa6_icon "circle-check" %} {{ topic.assigned_count }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+
 
 {% endblock %}

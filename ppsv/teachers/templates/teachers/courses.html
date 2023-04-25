@@ -20,19 +20,14 @@
                         {% fa6_icon "up-right-from-square" %}
                     </a>
                 </h4>
-                <h5>{% fa6_icon "coins" %} {{ course.cp }} {% fa6_icon "building-columns" %} {{ course.faculty }}</h5>
+                <h5>{% fa6_icon "coins" %} {{ course.cp }} CP<br>
+                    {% fa6_icon "building-columns" %} {{ course.faculty }}<br>
+                    {% fa6_icon "list-check" %} {{ course.topic_set.count }} {% trans "Topic(s)" %}
+                </h5>
                 <p class="card-text">
                     {{ course.description }}
                 </p>
-                <h5>{% fa6_icon "list-check" %} {{ course.topic_set.count }} {% trans "Topic(s)" %}</h5>
-                <ul class="card-text">
-                    {% for topic in course.topic_set.all %}
-                        <li>
-                            {{ topic.title }}
-                        </li>
-                    {% endfor %}
-                </ul>
-                <a href="#" class="btn btn-primary">{% trans "Add topic" %}</a>
+                <a href="{% url "teachers:course" pk=course.pk %}" class="btn btn-primary">{% fa6_icon "up-right-from-square" %} {% trans "Details" %}</a>
             </div>
             <div class="card-footer">
                 {% fa6_icon "right-to-bracket" %} {{ course.registration_start }} -- {{ course.registration_deadline }}
