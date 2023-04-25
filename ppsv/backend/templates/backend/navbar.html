@@ -1,7 +1,21 @@
 {% load i18n %}
+{% load fontawesome_6 %}
 
 {% if user.is_staff %}
-    <a href="{% url 'backend:home_page' %}" class="btn btn-primary navbar-inline-list">
-        {% trans "Manage Assignments" %}
-    </a>
+    <div class="btn-group" role="group">
+    <button id="btnGroupNavbar" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">{% trans "Manage Assignments" %}
+    </button>
+    <div class="dropdown-menu" aria-labelledby="btnGroupNavbar" style="">
+        <a href="{% url 'assignments:overview' %}" class="dropdown-item" style="">
+            {% trans 'Overview' %}
+        </a>
+        <a href="{% url 'assignments:manage' %}" class="dropdown-item" style="">
+            {% trans 'Control Workflow' %}
+        </a>
+        <a href="{% url 'assignments:manual' %}" class="dropdown-item" style="">
+            {% trans 'Adjust manually' %}
+        </a>
+    </div>
+</div>
 {% endif %}

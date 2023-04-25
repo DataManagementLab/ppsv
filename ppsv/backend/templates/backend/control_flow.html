@@ -10,19 +10,6 @@
     Admin Control
 {% endblock title %}
 
-{% block additional_buttons %}
-    {% if user.is_authenticated %}
-        {% if user.is_staff %}
-            <a href="{% url 'backend:home_page' %}"
-               class="adminbtn btn btn-danger navbar-inline-list">
-                Home Page </a>
-            <a href="{% url 'backend:assignment_page' %}"
-               class="adminbtn btn btn-danger navbar-inline-list">
-                Assignment Page </a>
-        {% endif %}
-    {% endif %}
-{% endblock %}
-
 {% block content %}
     <h1>Custom Admin Actions</h1>
     <div id="admin-actions">

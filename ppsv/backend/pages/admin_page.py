@@ -225,7 +225,7 @@ def render_site(request):
     :rtype: render() object
     """
     args = {}
-    template_name = 'backend/admin.html'
+    template_name = 'backend/control_flow.html'
 
     args["running"] = automatic_assigment.running
     args["terms"] = list(Term.objects.all())
@@ -234,7 +234,7 @@ def render_site(request):
     return render(request, template_name, args)
 
 
-def admin_page(request):
+def control_flow(request):
     """The view for the custom django admin page.
 
     :param request: the given request send by the assignment html-page
@@ -245,7 +245,7 @@ def admin_page(request):
     """
 
     if not request.user.is_superuser:
-        return redirect(reverse('admin:login') + '?next=' + reverse('backend:admin_page'))
+        return redirect(reverse('admin:login') + '?next=' + reverse('assignments:manage'))
 
     # check if the request is a post
     if request.method == "POST":

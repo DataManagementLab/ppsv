@@ -258,7 +258,7 @@ def handle_post(request):
         return HttpResponse(status=500, content=f"request {action} caused an exception: \n {e}")
 
 
-def home_page(request):
+def overview(request):
     """The view for the home page.
 
     :param request: the given request send by the home html-page
@@ -267,7 +267,7 @@ def home_page(request):
     :rtype: HttpResponse
     """
     if not request.user.is_staff:
-        return redirect(reverse('admin:login') + '?next=' + reverse('backend:home_page'))
+        return redirect(reverse('admin:login') + '?next=' + reverse('assignments:overview'))
 
     if request.method == "POST":
         return handle_post(request)
@@ -303,6 +303,4 @@ def home_page(request):
     args["terms"] = terms
     args["active"] = active_term
 
-
-
-    return render(request, 'backend/home.html', args)
+    return render(request, 'backend/overview.html', args)

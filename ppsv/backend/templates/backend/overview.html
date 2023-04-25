@@ -1,36 +1,20 @@
 {% extends 'backend/base.html' %}
 {% load static %}
 {% load i18n %}
-
-
-
-{% block tab_name %}
-    Homepage
-{% endblock tab_name %}
+{% load fontawesome_6 %}
 
 {% block title %}
-    Homepage
+    {% trans "Manage Assignments" %} - {% trans "Overview" %}
 {% endblock title %}
-
-{% block additional_buttons %}
-    {% if user.is_authenticated %}
-        {% if user.is_staff %}
-            <a href="{% url 'backend:assignment_page' %}"
-               class="adminbtn btn btn-danger navbar-inline-list">
-                Assignment Page </a>
-        {% endif %}
-    {% endif %}
-{% endblock %}
 
 {% block content %}
 
     <div id="home-top-bar" class="topBar">
         <div class="group">
             <div id="assignmentPage" class="button-text">
-                <button id="filterButton" onclick="window.location.href={% url 'backend:assignment_page' %}"><i
-                        class="fa fa-bars" aria-hidden="true"></i>
-                    Assignment Page
-                </button>
+                <a href="{% url 'assignments:manual' %}" class="btn btn-primary">
+                    {% fa6_icon "sliders" %} {% trans "Adjust assignments manually" %}
+                </a>
             </div>
         </div>
         <div id="import-export">
@@ -43,7 +27,7 @@
                     </button>
                 </form>
             </div>
-            <form action="{% url 'backend:export_applications_and_assignments_page' %}" method="get">
+            <form action="{% url 'assignments:export' %}" method="get">
                 <label for="export-filter-faculty"> Faculty: </label>
                 <select name="faculty" id="export-filter-faculty" class="Filter-dropdown">
                     <option value="all">all</option>
