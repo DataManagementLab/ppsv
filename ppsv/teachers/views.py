@@ -4,7 +4,7 @@ from django.views.generic import CreateView, ListView, DetailView
 
 from backend.models import Assignment
 from base.forms import CourseForm
-from base.models import Course, TopicSelection
+from base.models import Course, TopicSelection, Topic
 from .pages.overview_page import overview_page
 
 
@@ -53,6 +53,21 @@ class CourseStatsView(TeacherMixin, DetailView):
                 "students": ", ".join(students),
             })
             context['students_assigned'] += len(students)
+        return context
+
+
+class TopicView(TeacherMixin, DetailView):
+    model = Topic
+    context_object_name = "topic"
+    template_name = "teachers/topic.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        for a in self.object.assignment_set.all():
+            context["assigned_students"] = []
+            for ts in a.accepted_applications.select_related('group').prefetch_related('group__students').all():
+                context["assigned_students"].extend(s for s in ts.group.students.all())
+            context["assigned_students_count"] = len(context["assigned_students"])
         return context
 
 

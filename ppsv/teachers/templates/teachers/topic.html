@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load fontawesome_6 %}
+
+{% block title %}
+    {% trans "Topic" %}: {{ topic.title }}
+{% endblock %}
+
+{% block content %}
+    <h2>{{ topic.title }}</h2>
+    <h3>{{ topic.course.title }}</h3>
+
+    {% if assigned_students_count > 0 %}
+        <h5 class="mt-4">{% trans "Assignments" %} ({{ assigned_students_count }})</h5>
+        <ul>
+            {% for s in assigned_students %}
+                <li>{{ s }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

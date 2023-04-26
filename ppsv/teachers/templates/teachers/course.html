@@ -25,7 +25,7 @@
     <ul class="card-text">
         {% for topic in topics %}
             <li>
-                {{ topic.title }}
+                <a href="{% url "teachers:topic" pk=topic.pk %}">{{ topic.title }}</a>
                 <span class="text-muted">
                     {% fa6_icon "heart" %} {{ topic.selected_count }}
                     {% fa6_icon "crown" %} {{ topic.favorite_count }}
@@ -41,7 +41,7 @@
         <h5 class="mt-4">{% trans "Assignments" %} ({{ students_assigned }})</h5>
         <ul>
             {% for a in assignments %}
-                <li>{{ a.topic}}: {% fa6_icon "circle-check" %} {{ a.count }} -- {{ a.students }}</li>
+                <li><a href="{% url "teachers:topic" pk=a.topic.pk %}">{{ a.topic}}</a>: {% fa6_icon "circle-check" %} {{ a.count }} -- {{ a.students }}</li>
             {% endfor %}
         </ul>
     {% endif %}
