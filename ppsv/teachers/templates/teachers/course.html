@@ -37,15 +37,12 @@
 
     {# <h5 class="mt-4">{% trans "Applications" %}: {{ applications.count }}</h5> #}
 
-    {% if assignments.count > 0 %}
-        <h5 class="mt-4">{% trans "Assignments" %}</h5>
+    {% if students_assigned > 0 %}
+        <h5 class="mt-4">{% trans "Assignments" %} ({{ students_assigned }})</h5>
         <ul>
-            {% for topic in assignments %}
-                <li>{{ topic.title}}: {% fa6_icon "circle-check" %} {{ topic.assigned_count }}</li>
+            {% for a in assignments %}
+                <li>{{ a.topic}}: {% fa6_icon "circle-check" %} {{ a.count }} -- {{ a.students }}</li>
             {% endfor %}
         </ul>
     {% endif %}
-
-
-
 {% endblock %}

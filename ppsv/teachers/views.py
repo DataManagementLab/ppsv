@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Count, Q
 from django.views.generic import CreateView, ListView, DetailView
 
+from backend.models import Assignment
 from base.forms import CourseForm
 from base.models import Course, TopicSelection
 from .pages.overview_page import overview_page
@@ -38,8 +39,20 @@ class CourseStatsView(TeacherMixin, DetailView):
             .annotate(selected_count=Count("topicselection__group__students")) \
             .annotate(favorite_count=Count("topicselection__group__students", filter=Q(topicselection__priority=1)))
         context["applications"] = TopicSelection.objects.filter(topic__course=self.object)
-        context["assignments"] = self.object.topic_set.\
-            annotate(assigned_count=Count("assignment__accepted_applications__group__students"))
+        context["assignments"] = []
+
+        context['students_assigned'] = 0
+        for a in Assignment.objects.select_related('topic').filter(topic__course=self.object):
+            students = []
+            for ts in a.accepted_applications.select_related('group').prefetch_related('group__students').all():
+                for s in ts.group.students.all():
+                    students.append(s.tucan_id)
+            context["assignments"].append({
+                "topic": a.topic,
+                "count": len(students),
+                "students": ", ".join(students),
+            })
+            context['students_assigned'] += len(students)
         return context
 
 
