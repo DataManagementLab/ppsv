@@ -12,7 +12,7 @@ def overview(request):
 
 
 class TeacherMixin(PermissionRequiredMixin):
-    permission_required = ('courses.can_edit')
+    permission_required = ('base.courses.can_edit')
 
 
 class CoursesOverview(TeacherMixin, ListView):
