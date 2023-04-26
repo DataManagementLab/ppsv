@@ -35,14 +35,14 @@ class CourseStatsView(TeacherMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["topics"] = self.object.topic_set \
+        context["topics"] = self.object.topic_set.order_by('title') \
             .annotate(selected_count=Count("topicselection__group__students")) \
             .annotate(favorite_count=Count("topicselection__group__students", filter=Q(topicselection__priority=1)))
         context["applications"] = TopicSelection.objects.filter(topic__course=self.object)
         context["assignments"] = []
 
         context['students_assigned'] = 0
-        for a in Assignment.objects.select_related('topic').filter(topic__course=self.object):
+        for a in Assignment.objects.select_related('topic').order_by('topic__title').filter(topic__course=self.object):
             students = []
             for ts in a.accepted_applications.select_related('group').prefetch_related('group__students').all():
                 for s in ts.group.students.all():
