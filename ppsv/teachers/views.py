@@ -67,6 +67,7 @@ class TopicView(TeacherMixin, DetailView):
             context["assigned_students"] = []
             for ts in a.accepted_applications.select_related('group').prefetch_related('group__students').all():
                 context["assigned_students"].extend(s for s in ts.group.students.all())
+            context["assigned_students"].sort(key=lambda s: s.user.last_name)
             context["assigned_students_count"] = len(context["assigned_students"])
         return context
 
