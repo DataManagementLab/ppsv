@@ -36,11 +36,10 @@
             </div>
         </div>
         {% empty %}
-            {% trans "You did not register yet" %}
+            <a href="{% url "student:register" %}" class="btn btn-lg btn-primary">
+                {% trans "Start new registration "%}
+            </a>
     {% endfor %}
     </div>
 
-    <a href="{% url "student:register" %}" class="btn btn-lg btn-primary">
-        {% trans "Start new registration "%}
-    </a>
 {% endblock %}
