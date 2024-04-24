@@ -64,6 +64,7 @@ class CourseAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('title', 'type', 'cp', 'faculty', 'term',)
     list_filter = ['term', 'faculty', ]
     search_fields = ['title', 'type__type']
+    save_as = True
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
