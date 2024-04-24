@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-24 13:04+0200\n"
+"POT-Creation-Date: 2024-04-24 20:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,9 @@ msgstr ""
 msgid ""
 "Your input does not follow the typical format of a TU ID. In case you are "
 "sure your input was correct nevertheless, please contact the organizers."
-msgstr "Deine Eingabe hat nicht das typische Format einer TU-ID. Wenn du dir sicher bist, dass die Eingabe dennoch korrekt ist, kontaktiere bitte das Orgateam."
+msgstr ""
+"Deine Eingabe hat nicht das typische Format einer TU-ID. Wenn du dir sicher "
+"bist, dass die Eingabe dennoch korrekt ist, kontaktiere bitte das Orgateam."
 
 #: student/forms.py:39
 msgid "Group members"
@@ -48,7 +50,9 @@ msgstr "Profil vervollständigen"
 msgid ""
 "Please enter your TU-ID to complete the profile creation for this "
 "registration system."
-msgstr "Bitte TU-ID eingeben, um die Profilerstellung für dieses Registrierungssystem abzuschließen."
+msgstr ""
+"Bitte TU-ID eingeben, um die Profilerstellung für dieses "
+"Registrierungssystem abzuschließen."
 
 #: student/templates/student/complete_profile.html:18
 msgid "Set & Continue"
@@ -116,7 +120,10 @@ msgstr "Themen auswählen"
 msgid ""
 "Select at least one topic. A higher number of choices will increase the "
 "chance that we can assign you a topic. Put your highest priority first."
-msgstr "Mindestens ein Thema auswählen. Eine höhere Anzahl ausgewählter Themen erhöht die Wahrscheinlichkeit, dass wir ein Thema zuweisen können. Das Thema mit der höchsten Priorität bitte zuerst angeben."
+msgstr ""
+"Mindestens ein Thema auswählen. Eine höhere Anzahl ausgewählter Themen "
+"erhöht die Wahrscheinlichkeit, dass wir ein Thema zuweisen können. Das Thema "
+"mit der höchsten Priorität bitte zuerst angeben."
 
 #: student/templates/student/topic_selection.html:83
 msgid "You have to select at least one topic"
@@ -130,18 +137,22 @@ msgstr "Profilinformationen gespeichert"
 msgid "Profile updated"
 msgstr "Profil aktualisiert"
 
-#: student/views.py:93
+#: student/views.py:76 student/views.py:90
+msgid "You are already registered"
+msgstr "Du bist bereits registriert"
+
+#: student/views.py:110
 msgid "Group members updated"
 msgstr "Gruppenmitglieder aktualisiert"
 
-#: student/views.py:129
+#: student/views.py:146
 msgid "Registration saved"
 msgstr "Registrierung gespeichert"
 
-#: student/views.py:141
+#: student/views.py:158
 msgid "Withdraw registration?"
 msgstr "Registrierung zurückziehen?"
 
-#: student/views.py:146
+#: student/views.py:163
 msgid "Registration withdrawn"
 msgstr "Registrierung zurückgezogen"

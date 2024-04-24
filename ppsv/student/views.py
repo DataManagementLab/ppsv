@@ -56,15 +56,26 @@ class EditProfileView(RedirectToCompleteProfileViewMixin, LoginRequiredMixin, Up
         return self.request.user.student
 
     def form_valid(self, form):
-        r =  super().form_valid(form)
+        r = super().form_valid(form)
         messages.success(self.request, _("Profile updated"))
         return r
 
 
-class RegisterView(RedirectToCompleteProfileViewMixin, CreateView):
+class RegisterView(CreateView):
     model = Group
     form_class = GroupForm
     template_name = "student/group_edit.html"
+
+    def _student_has_already_a_group(self):
+        return self.request.user.student.group_set.filter(term__active_term=True).exists()
+
+    def get(self, request, *args, **kwargs):
+        if not hasattr(self.request.user, "student"):
+            return redirect('student:complete-profile')
+        elif self._student_has_already_a_group():
+            messages.error(self.request, _("You are already registered"))
+            return redirect('student:overview')
+        return super().get(request, *args, **kwargs)
 
     def get_initial(self):
         initial = super().get_initial()
@@ -73,6 +84,12 @@ class RegisterView(RedirectToCompleteProfileViewMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy('student:register-select-topics', kwargs={"pk":self.object.pk})
+
+    def form_valid(self, form):
+        if self._student_has_already_a_group():
+            messages.error(self.request, _("You are already registered"))
+            return redirect('student:overview')
+        return super().form_valid(form)
 
 
 class OwnGroupsOnlyMixin:
