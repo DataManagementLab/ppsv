@@ -16,6 +16,8 @@
 {% block content %}
     <h2>{% trans "Select Topics" %}</h2>
 
+    <p>{% trans "Select at least one topic. A higher number of choices will increase the chance that we can assign you a topic. Put your highest priority first." %}</p>
+
     <form method="post" class="post-form" id="topicSelectionForm">
         {% csrf_token %}
         {% bootstrap_form form exclude='multivalfrom,multivalto' %}

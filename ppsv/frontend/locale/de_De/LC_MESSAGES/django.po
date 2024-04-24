@@ -1,0 +1,647 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-24 13:04+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: frontend/forms/forms.py:53 frontend/forms/forms.py:112
+msgid "username"
+msgstr "Username"
+
+#: frontend/forms/forms.py:55
+msgid ""
+"<div style=\"padding-left: 10px\"><small>Letters, numbers and @/./+/-/_ only."
+"</small></div>"
+msgstr ""
+
+#: frontend/forms/forms.py:58 frontend/forms/forms.py:116
+msgid "password"
+msgstr "Passwort"
+
+#: frontend/forms/forms.py:61
+msgid "confirm password"
+msgstr "Passwort bestätigen"
+
+#: frontend/forms/forms.py:63
+msgid ""
+"<div style=\"padding-left: 10px\"><small>The password must not contain any "
+"personal information.<br>The password has to be at least 8 digits long."
+"<br>The password must not be commonly used.<br>The password must not contain "
+"only numbers.</small></div>"
+msgstr ""
+
+#: frontend/forms/forms.py:84
+msgid "first name"
+msgstr "Vorname"
+
+#: frontend/forms/forms.py:86
+msgid "last name"
+msgstr "Nachname"
+
+#: frontend/templates/frontend/base.html:39
+msgid "Internship & Seminar Allocation"
+msgstr "Praktikums- & Seminarplatzvergabe"
+
+#: frontend/templates/frontend/base.html:62
+msgid "You are not logged in."
+msgstr "Nicht eingeloggt."
+
+#: frontend/templates/frontend/base.html:82
+#: frontend/templates/frontend/overview.html:5
+#: frontend/templates/frontend/overview.html:9
+msgid "Overview"
+msgstr "Übersicht"
+
+#: frontend/templates/frontend/base.html:88
+#: frontend/templates/frontend/your_selection.html:5
+#: frontend/templates/frontend/your_selection.html:9
+msgid "My Selection"
+msgstr "Meine Auswahl"
+
+#: frontend/templates/frontend/base.html:95
+#: frontend/templates/frontend/groups.html:8
+msgid "My Groups"
+msgstr "Meine Gruppen"
+
+#: frontend/templates/frontend/groups.html:26
+msgid "Create a new group"
+msgstr "Neue Gruppe anlegen"
+
+#: frontend/templates/frontend/groups.html:57
+#: frontend/templates/frontend/groups.html:80
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: frontend/templates/frontend/groups.html:60
+#: frontend/templates/frontend/overview.html:106
+msgid "Create new group"
+msgstr "Neue Gruppe anlegen"
+
+#: frontend/templates/frontend/groups.html:77
+msgid "Are you sure"
+msgstr "Sicher"
+
+#: frontend/templates/frontend/groups.html:78
+msgid "you want to delete this group?"
+msgstr "Gruppe löschen?"
+
+#: frontend/templates/frontend/groups.html:81
+msgid "Delete"
+msgstr "Löschen"
+
+#: frontend/templates/frontend/groups.html:88
+msgid "Edit Group"
+msgstr "Gruppe bearbeiten"
+
+#: frontend/templates/frontend/groups.html:128
+#: frontend/templates/frontend/groups.html:165
+msgid "Delete Group"
+msgstr "Gruppe löschen"
+
+#: frontend/templates/frontend/groups.html:162
+msgid ""
+"If you remove this member, your group will be too small and will be deleted."
+msgstr "Wenn dieses Mitglied entfernt wird, wird die Gruppe zu klein sein und daher gelöscht."
+
+#: frontend/templates/frontend/groups.html:173
+msgid ""
+"Duplicates are not allowed! If you remove this member, another group will "
+"have the same members as this group."
+msgstr "Duplikate sind nicht erlaubt! Wenn dieses Mitglied entfernt wird, wird eine andere Gruppe dieselben Mitglieder haben wie diese."
+
+#: frontend/templates/frontend/groups.html:176
+msgid "Delete this group"
+msgstr "Gruppe löschen"
+
+#: frontend/templates/frontend/homepage.html:5
+msgid "Home"
+msgstr "Home"
+
+#: frontend/templates/frontend/homepage.html:12
+msgid "What to do next"
+msgstr "Was als nächstes"
+
+#: frontend/templates/frontend/homepage.html:40
+#: frontend/templates/frontend/overview.html:109
+#: frontend/templates/registration/login.html:21
+msgid "or"
+msgstr "oder"
+
+#: frontend/templates/frontend/homepage.html:44
+msgid "You do not have an account yet?"
+msgstr "Noch keinen Account?"
+
+#: frontend/templates/frontend/homepage.html:45
+#: frontend/templates/registration/login.html:26
+#: frontend/templates/registration/register.html:6
+#: frontend/templates/registration/register.html:18
+msgid "Register"
+msgstr "Registrieren"
+
+#: frontend/templates/frontend/homepage.html:50
+msgid "Welcome"
+msgstr "Willkommen"
+
+#: frontend/templates/frontend/homepage.html:51
+msgid ""
+"This website serves as a platform for registering for seminars, internships "
+"and other courses. You can select topics and prioritize them across multiple "
+"courses."
+msgstr "Diese Plattform dient zur Registrierung für Seminare, Praktika und andere Kurse. Du kannst Themen auswählen und sie über mehrere Kurse hinweg priorisieren."
+
+#: frontend/templates/frontend/overview.html:30
+msgid "Select Topic"
+msgstr "Thema auswählen"
+
+#: frontend/templates/frontend/overview.html:30
+msgid "Choose a Course"
+msgstr "Kurs auswählen"
+
+#: frontend/templates/frontend/overview.html:30
+msgid "Choose a Topic"
+msgstr "Thema auswählen"
+
+#: frontend/templates/frontend/overview.html:30
+msgid "Choose a Faculty"
+msgstr "Fachbereich auswählen"
+
+#: frontend/templates/frontend/overview.html:37
+msgid "Information for Course"
+msgstr "Kursinformation"
+
+#: frontend/templates/frontend/overview.html:44
+#: frontend/templates/frontend/your_selection.html:271
+msgid "Organizer"
+msgstr "Orga"
+
+#: frontend/templates/frontend/overview.html:45
+#: frontend/templates/frontend/your_selection.html:272
+msgid "Course Type"
+msgstr "Kurstyp"
+
+#: frontend/templates/frontend/overview.html:46
+#: frontend/templates/frontend/your_selection.html:273
+msgid "Faculty"
+msgstr "Fachbereich"
+
+#: frontend/templates/frontend/overview.html:47
+#: frontend/templates/frontend/your_selection.html:274
+msgid "Language"
+msgstr "Sprache"
+
+#: frontend/templates/frontend/overview.html:48
+#: frontend/templates/frontend/your_selection.html:276
+msgid "Registration"
+msgstr "Registrierung"
+
+#: frontend/templates/frontend/overview.html:50
+#: frontend/templates/frontend/your_selection.html:278
+msgid "Motivation Text"
+msgstr "Motivationstext"
+
+#: frontend/templates/frontend/overview.html:50
+#: frontend/templates/frontend/your_selection.html:278
+msgid "required"
+msgstr "benötigt"
+
+#: frontend/templates/frontend/overview.html:50
+#: frontend/templates/frontend/your_selection.html:278
+msgid "not required"
+msgstr "nicht benötigt"
+
+#: frontend/templates/frontend/overview.html:53
+#: frontend/templates/frontend/overview.html:233
+#: frontend/templates/frontend/your_selection.html:279
+#: frontend/templates/frontend/your_selection.html:289
+msgid "Description"
+msgstr "Beschreibung"
+
+#: frontend/templates/frontend/overview.html:67
+msgid "Select all remaining topics of this course"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:74
+#: frontend/templates/frontend/overview.html:93
+#: frontend/templates/frontend/overview.html:246
+msgid "Title"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:75
+#: frontend/templates/frontend/your_selection.html:275
+#: frontend/templates/frontend/your_selection.html:288
+msgid "Min | Max Participants"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:94
+msgid "Max Participants"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:113
+msgid "Choose a group"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:118
+msgid "Select topic with chosen group"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:126
+msgid "Select with group"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:153
+msgid ""
+"You cannot choose this topic yet. The registration for this topic starts on"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:160
+msgid "You cannot choose this topic anymore."
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:168
+msgid " Select with a group"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:169
+#: frontend/templates/frontend/overview.html:175
+msgid "Select without a group"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:169
+#: frontend/templates/frontend/overview.html:175
+msgid "Select topic"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:180
+msgid "Group members:"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:182
+msgid "Select with this group"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:188
+msgid "Your group for this course is too big for this topic."
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:200
+msgid "selected"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:201
+msgid "View My Selection"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:211
+msgid "You need to be logged in to select a topic."
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:211
+msgid "You need to be a student to select a topic."
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:222
+msgid "There are no topics in this course."
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:228
+msgid "Information for Topic"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:247
+msgid "Type"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:248
+msgid "Status"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:249
+msgid "Registration End"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:260
+msgid "Open"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:261
+msgid "Imminent"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:262
+msgid "Upcoming"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:263
+msgid "Closed"
+msgstr ""
+
+#: frontend/templates/frontend/overview.html:274
+msgid "There are no courses in this faculty right now."
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:21
+msgid "Edit Collections"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:59
+msgid "Assign these topics to your desired collections"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:65
+msgid "You need to assign this topic to a collection"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:79
+#: frontend/templates/frontend/your_selection.html:145
+msgid "Choose collection"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:86
+#: frontend/templates/frontend/your_selection.html:152
+msgid "Move to selected collection"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:89
+#: frontend/templates/frontend/your_selection.html:176
+msgid "Remove Topic"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:99
+msgid "Delete collection"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:123
+msgid ""
+"You need to set the priority for this topic and write a motivation text."
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:125
+msgid "You need to set the priority for this topic."
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:127
+msgid "You need to write a motivation text."
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:163
+#: frontend/templates/frontend/your_selection.html:199
+msgid "Save Motivation Text"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:168
+msgid "Edit Motivation Text"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:182
+msgid "Show Details"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:195
+msgid "Discard Changes"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:231
+msgid ""
+"If you delete this collection, all selections in this collection will be "
+"deleted"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:234
+msgid "Delete Collection"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:241
+msgid "Add Collection"
+msgstr ""
+
+#: frontend/templates/frontend/your_selection.html:242
+msgid "Add new collection"
+msgstr ""
+
+#: frontend/templates/registration/login.html:25
+msgid "I don't have an account."
+msgstr ""
+
+#: frontend/templates/registration/profile.html:12
+msgid "Create your student profile"
+msgstr ""
+
+#: frontend/templates/registration/profile.html:13
+msgid "This information cannot be changed later!"
+msgstr ""
+
+#: frontend/templates/registration/profile.html:18
+msgid "Save profile permanently"
+msgstr ""
+
+#: frontend/templates/registration/register.html:12
+msgid "Create an account"
+msgstr ""
+
+#: frontend/templates/registration/register.html:21
+msgid "If you already have an account,"
+msgstr ""
+
+#: frontend/templates/registration/register.html:21
+msgid "instead."
+msgstr ""
+
+#: frontend/views.py:102
+msgid "You still need to write one or more motivation texts!"
+msgstr ""
+
+#: frontend/views.py:108
+msgid "There is at least one collection that has mixed course types!"
+msgstr ""
+
+#: frontend/views.py:114
+msgid "You have not selected any topics yet!"
+msgstr ""
+
+#: frontend/views.py:119
+msgid "You can view and manage your selected topics and collections here:"
+msgstr ""
+
+#: frontend/views.py:125
+msgid "You can create a group here:"
+msgstr ""
+
+#: frontend/views.py:316 frontend/views.py:457 frontend/views.py:513
+#: frontend/views.py:645 frontend/views.py:687
+msgid ""
+"Your selection was successful! You can find and edit your chosen topics on "
+"the \"My Selection\" page."
+msgstr ""
+
+#: frontend/views.py:320
+msgid "Could not select any new topics!"
+msgstr ""
+
+#: frontend/views.py:322
+msgid ""
+"There was at least one topic that could not be selected because it does not "
+"have enough space for your group."
+msgstr ""
+
+#: frontend/views.py:419
+msgid ""
+"Your selection was successful! You can prioritize and edit your chosen "
+"topics on the 'My Selection' page."
+msgstr ""
+
+#: frontend/views.py:423
+msgid ""
+"You need to add a motivation text to your selection in order to fully "
+"complete your selection."
+msgstr ""
+
+#: frontend/views.py:436 frontend/views.py:486
+msgid "Selection failed! You have already selected this topic."
+msgstr ""
+
+#: frontend/views.py:462 frontend/views.py:518 frontend/views.py:650
+#: frontend/views.py:692
+msgid ""
+"You need to add a motivation text (when required) to your selection in order "
+"to fully complete your selection. You can do this on the \"My Selection\" "
+"page."
+msgstr ""
+
+#: frontend/views.py:467
+msgid "You already have selected a topic from the same course with a group."
+msgstr ""
+
+#: frontend/views.py:523 frontend/views.py:697
+msgid ""
+"A member of your group has already selected this topic or a topic in this "
+"course."
+msgstr ""
+
+#: frontend/views.py:554 frontend/views.py:566 frontend/views.py:1266
+#: frontend/views.py:1271
+msgid "A student with the TUCaN-ID "
+msgstr ""
+
+#: frontend/views.py:556
+msgid " was not found."
+msgstr ""
+
+#: frontend/views.py:558
+msgid "Your group would be too large for "
+msgstr ""
+
+#: frontend/views.py:561
+msgid ". Your group can only have a maximum of "
+msgstr ""
+
+#: frontend/views.py:564
+msgid " members."
+msgstr ""
+
+#: frontend/views.py:568 frontend/views.py:1273
+msgid " is already in the group."
+msgstr ""
+
+#: frontend/views.py:605 frontend/views.py:1305
+msgid "Your group needs to contain more members than yourself!"
+msgstr ""
+
+#: frontend/views.py:616 frontend/views.py:1314
+msgid "This group already exists!"
+msgstr ""
+
+#: frontend/views.py:623
+msgid ""
+"A member of the group you are trying to create has already selected this "
+"topic or a topic in this course."
+msgstr ""
+
+#: frontend/views.py:755
+msgid "Please create a student profile before selecting courses."
+msgstr ""
+
+#: frontend/views.py:883
+msgid "Your motivation text has been saved."
+msgstr ""
+
+#: frontend/views.py:1160
+msgid ""
+"Automatically assigned topics from the same course to a matching collection"
+msgstr ""
+
+#: frontend/views.py:1163
+msgid "Automatically assigned \""
+msgstr ""
+
+#: frontend/views.py:1164
+msgid "\" to a matching collection"
+msgstr ""
+
+#: frontend/views.py:1235
+msgid "Please create a student profile before accessing your groups."
+msgstr ""
+
+#: frontend/views.py:1268
+msgid " does not exist."
+msgstr ""
+
+#: frontend/views.py:1328
+msgid "Group has been created."
+msgstr ""
+
+#: frontend/views.py:1370
+msgid "Adding {} would make this group a duplicate of an already existing one."
+msgstr ""
+
+#: frontend/views.py:1380
+msgid "{} is already a member of this group."
+msgstr ""
+
+#: frontend/views.py:1385
+msgid "A student with the TUCaN-ID {} does not exist."
+msgstr ""
+
+#: frontend/views.py:1467
+msgid "You are now logged in as {}."
+msgstr ""
+
+#: frontend/views.py:1474 frontend/views.py:1476
+msgid "Invalid username or password."
+msgstr ""
+
+#: frontend/views.py:1489
+msgid "You have successfully logged out."
+msgstr ""
+
+#: frontend/views.py:1506
+msgid "Registration successful."
+msgstr ""
+
+#: frontend/views.py:1508
+msgid "Unsuccessful registration. Invalid information."
+msgstr ""
+
+#: frontend/views.py:1530
+msgid "Student profile has been saved successfully."
+msgstr ""
+
+#: frontend/views.py:1534
+msgid "Student profile could not be saved. A user can only create one student."
+msgstr ""
+
+#: frontend/views.py:1536
+msgid "Saving unsuccessful. Invalid information."
+msgstr ""

@@ -1,0 +1,147 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-24 13:04+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: student/forms.py:21
+msgid ""
+"Your input does not follow the typical format of a TU ID. In case you are "
+"sure your input was correct nevertheless, please contact the organizers."
+msgstr "Deine Eingabe hat nicht das typische Format einer TU-ID. Wenn du dir sicher bist, dass die Eingabe dennoch korrekt ist, kontaktiere bitte das Orgateam."
+
+#: student/forms.py:39
+msgid "Group members"
+msgstr "Gruppenmitglieder"
+
+#: student/forms.py:40
+msgid "Specify other group members here (if applicable)"
+msgstr "Weitere Gruppenmitglieder angeben (wenn zutreffend)"
+
+#: student/forms.py:45 student/templates/student/topic_selection.html:31
+msgid "Available topics"
+msgstr "Verfügbare Themen"
+
+#: student/forms.py:50 student/templates/student/topic_selection.html:48
+msgid "Selected topics"
+msgstr "Gewählte Themen"
+
+#: student/templates/student/complete_profile.html:8
+#: student/templates/student/complete_profile.html:12
+msgid "Complete Profile"
+msgstr "Profil vervollständigen"
+
+#: student/templates/student/complete_profile.html:14
+msgid ""
+"Please enter your TU-ID to complete the profile creation for this "
+"registration system."
+msgstr "Bitte TU-ID eingeben, um die Profilerstellung für dieses Registrierungssystem abzuschließen."
+
+#: student/templates/student/complete_profile.html:18
+msgid "Set & Continue"
+msgstr "Speichern & Fortfahren"
+
+#: student/templates/student/edit_profile.html:8
+#: student/templates/student/edit_profile.html:12
+msgid "Edit Profile"
+msgstr "Profil bearbeiten"
+
+#: student/templates/student/edit_profile.html:17
+msgid "Save"
+msgstr "Speichern"
+
+#: student/templates/student/group_edit.html:9
+#: student/templates/student/group_edit.html:13
+msgid "Select Group Members"
+msgstr "Gruppenmitglieder auswählen"
+
+#: student/templates/student/group_edit.html:18
+#: student/templates/student/topic_selection.html:65
+msgid "Continue"
+msgstr "Fortfahren"
+
+#: student/templates/student/login_required.html:7
+#: student/templates/student/login_required.html:12
+msgid "Login Required"
+msgstr "Login benötigt"
+
+#: student/templates/student/login_required.html:13
+msgid "Please log in to view this page"
+msgstr "Bitte einloggen, um diese Seite zu sehen"
+
+#: student/templates/student/overview.html:7
+#: student/templates/student/overview.html:11
+msgid "Overview"
+msgstr "Übersicht"
+
+#: student/templates/student/overview.html:20
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: student/templates/student/overview.html:30
+msgid "Invalid registration, you did not select any topics yet"
+msgstr "Ungültige Registrierung, noch keine Themen ausgewählt"
+
+#: student/templates/student/overview.html:34
+msgid "Edit selection"
+msgstr "Wahl bearbeiten"
+
+#: student/templates/student/overview.html:35
+msgid "Withdraw registration"
+msgstr "Registrierung zurückziehen"
+
+#: student/templates/student/overview.html:40
+msgid "Start new registration "
+msgstr "Neue Registrierung beginnen"
+
+#: student/templates/student/topic_selection.html:9
+#: student/templates/student/topic_selection.html:17
+msgid "Select Topics"
+msgstr "Themen auswählen"
+
+#: student/templates/student/topic_selection.html:19
+msgid ""
+"Select at least one topic. A higher number of choices will increase the "
+"chance that we can assign you a topic. Put your highest priority first."
+msgstr "Mindestens ein Thema auswählen. Eine höhere Anzahl ausgewählter Themen erhöht die Wahrscheinlichkeit, dass wir ein Thema zuweisen können. Das Thema mit der höchsten Priorität bitte zuerst angeben."
+
+#: student/templates/student/topic_selection.html:83
+msgid "You have to select at least one topic"
+msgstr "Es muss mindestens ein Thema ausgewählt werden"
+
+#: student/views.py:45
+msgid "Profile information saved"
+msgstr "Profilinformationen gespeichert"
+
+#: student/views.py:60
+msgid "Profile updated"
+msgstr "Profil aktualisiert"
+
+#: student/views.py:93
+msgid "Group members updated"
+msgstr "Gruppenmitglieder aktualisiert"
+
+#: student/views.py:129
+msgid "Registration saved"
+msgstr "Registrierung gespeichert"
+
+#: student/views.py:141
+msgid "Withdraw registration?"
+msgstr "Registrierung zurückziehen?"
+
+#: student/views.py:146
+msgid "Registration withdrawn"
+msgstr "Registrierung zurückgezogen"
