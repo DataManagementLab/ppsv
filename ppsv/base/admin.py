@@ -105,6 +105,7 @@ class TopicAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('title', 'course', 'max_slots')
     search_fields = ['title', 'course__title']
     autocomplete_fields = ('course',)
+    list_filter = ['course', 'course__term']
 
 
 admin.site.register(Topic, TopicAdmin)
@@ -141,7 +142,7 @@ class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr GroupAdmin.filter_horizontal: enables searching for students while creating or editing a group
     :type GroupAdmin.filter_horizontal: tuple[str, ]
     """
-    list_display = ('get_display', 'size', 'term')
+    list_display = ('get_display', 'size', 'term', 'pk')
     readonly_fields = ('get_display', 'size', 'term')
     list_filter = ['term']
     search_fields = ['students__tucan_id']
@@ -177,10 +178,10 @@ class TopicSelectionAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr TopicSelectionAdmin.list_filter: activates filters in the right sidebar of the change list page of the admin
     :type TopicSelectionAdmin.list_filter: list[str]
     """
-    list_display = ('__str__', 'get_display', 'topic', 'collection_number', 'get_term')
+    list_display = ('__str__', 'get_display', 'topic', 'collection_number', 'get_term', 'pk')
     readonly_fields = ('group', 'topic', 'motivation', 'priority', 'collection_number')
     search_fields = ('group__id', 'topic__course__title', 'topic__title', 'group__students__tucan_id')
-    list_filter = ['topic__course__term']
+    list_filter = ['topic__course__term', 'group']
 
     @admin.display(description=_('Term'))
     def get_term(self, obj):
