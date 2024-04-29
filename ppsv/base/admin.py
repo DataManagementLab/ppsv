@@ -102,7 +102,7 @@ class TopicAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr TopicAdmin.autocomplete_fields: allows searching for courses while editing/creating topics
     :type TopicAdmin.autocomplete_fields: tuple[str, ]
     """
-    list_display = ('title', 'course', 'max_slots')
+    list_display = ('title', 'course', 'max_slots', 'pk')
     search_fields = ['title', 'course__title']
     autocomplete_fields = ('course',)
     list_filter = ['course', 'course__term']
