@@ -142,7 +142,7 @@ class GroupAdmin(ImportExportMixin, admin.ModelAdmin):
     :attr GroupAdmin.filter_horizontal: enables searching for students while creating or editing a group
     :type GroupAdmin.filter_horizontal: tuple[str, ]
     """
-    list_display = ('get_display', 'size', 'term', 'pk')
+    list_display = ('get_display', 'size', 'topic_selection_count', 'term', 'pk')
     readonly_fields = ('get_display', 'size', 'term')
     list_filter = ['term']
     search_fields = ['students__tucan_id']

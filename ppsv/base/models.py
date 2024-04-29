@@ -405,6 +405,16 @@ class Group(models.Model):
     size.fget.short_description = _("group Size")
 
     @property
+    def topic_selection_count(self):
+        """
+        :return: number of topic selections by this group
+        :rtype: int
+        """
+        return self.topicselection_set.count()
+
+    topic_selection_count.fget.short_description = _("# of Topic Selections")
+
+    @property
     def get_collections(self):
         """collections of this group as dictionary order by top to low priority
         """
