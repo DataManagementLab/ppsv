@@ -32,6 +32,14 @@
                 </span>
             </li>
         {% endfor %}
+        <br>
+        <label for="topics">{% trans "Topic Import for Moodle:" %}</label>
+        <br>
+        {% spaceless %}
+            <textarea name="topics" id="topic" cols="80" rows="5">
+groupname;groupingname{% for topic in topics %}
+{{ topic.title }};Topic{% endfor %}</textarea>
+        {% endspaceless %}
     </ul>
     <a href="#" class="btn btn-primary">{% trans "Add topic" %}</a>
 
